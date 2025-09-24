@@ -1,3 +1,17 @@
+"use client";
+import { useState } from "react";
+import { auth } from "../lib/firebase/firebaseClient";
+import { onAuthStateChanged } from "firebase/auth";
+
 export default function Page() {
-  return <h1>rManager coming soon</h1>;
+  const [email, setEmail] = useState(auth.currentUser?.email);
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setEmail(user.email);
+    } else {
+      setEmail("");
+    }
+  });
+
+  return <h1>Your email: {email}</h1>;
 }
