@@ -66,7 +66,10 @@ interface ProtectedRouteProps {
 }
 
 // Functions //
-async function enforceRules(rules: Rule[]): RuleResult {
+async function enforceRules(
+  rules: Rule[],
+  cookieStore: ReadonlyRequestCookies
+): RuleResult {
   for (const rule of rules) {
     // Check if rule exist or skip it
     if (!ruleCallbacks.has(rule as string)) {
@@ -76,9 +79,7 @@ async function enforceRules(rules: Rule[]): RuleResult {
 
     // Try to enforce the rule
     try {
-      const { success } = await ruleCallbacks.get(rule as string)!(
-        await cookies()
-      );
+      const { success } = await ruleCallbacks.get(rule as string)!(cookieStore);
 
       // Runs if rule didnt pass
       if (!success) {
@@ -106,8 +107,9 @@ export default async function ProtectedRoute({
   errorHandler,
   children,
 }: ProtectedRouteProps) {
+  const cookieStore = await cookies();
   // Try to enforce rules given by the user
-  const { success, error } = await enforceRules(rules);
+  const { success, error } = await enforceRules(rules, cookieStore);
 
   if (!success) {
     if (error) {
