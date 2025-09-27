@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { Analytics, AnalyticsCallOptions, getAnalytics, logEvent } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { AppCheck, getToken, initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
+import { AppCheck, initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -32,9 +32,6 @@ if (typeof window !== "undefined") {
       provider: new ReCaptchaEnterpriseProvider(siteKey),
       isTokenAutoRefreshEnabled: true,
     });
-    getToken(appCheck)
-    .then((token) => console.log('App Check token:', token.token))
-    .catch((error) => console.error('Token fetch error:', error));
   }
 }
 

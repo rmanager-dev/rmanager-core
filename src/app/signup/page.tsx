@@ -68,41 +68,11 @@ export default function SignupCard() {
   const handeSignup = async (callback: () => Promise<UserCredential>) => {
     try {
       setIsLoading(true);
-      const userCreds = await callback();
-      const idToken = await userCreds.user.getIdToken();
-
-      if (!idToken) {
-        throw new Error(
-          "Error while signing you up: error while retrieving token"
-        );
-      }
-
-      // Exange idToken against session cookie
-      const response = await fetch("/api/auth/getSessionCookie", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          "Error while signing you up: error while retrieving cookie"
-        );
-      }
+      await callback();
 
       toast.success("Signed up successfully");
       router.push("/");
     } catch (error: unknown) {
-      // Non firebase errors (errors while getting cookie from server)
-      if (typeof error != "object") {
-        auth.signOut();
-        console.log(error);
-        toast.error("There was an error while signing up", {
-          description: error as string,
-        });
-        return;
-      }
-
       // Firebase errors
       const code = (error as FirebaseError).code;
       switch (code) {
