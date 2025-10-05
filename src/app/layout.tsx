@@ -10,7 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AuthProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
+            defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
