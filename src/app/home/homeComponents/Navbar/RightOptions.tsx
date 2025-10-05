@@ -1,0 +1,111 @@
+"use client";
+import { Button } from "@/src/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/src/components/ui/dropdown-menu";
+import { Skeleton } from "@/src/components/ui/skeleton";
+import { useAuth } from "@/src/hooks/useAuth";
+import { auth } from "@/src/lib/firebase/firebaseClient";
+import { revokeSessionCookie } from "@/src/lib/utils/AuthUtils";
+import { signOut } from "firebase/auth";
+import { User } from "lucide-react";
+import { useTheme } from "next-themes";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+export default function RightOptions() {
+  const { user, loading } = useAuth();
+  const { setTheme, theme } = useTheme();
+  const router = useRouter();
+
+  const logoutUser = async () => {
+    signOut(auth);
+    await revokeSessionCookie();
+    router.push("/login");
+  };
+
+  if (loading) {
+    return (
+      <div className="flex gap-4 items-center">
+        <Skeleton className="h-8 w-8" />
+        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-8 w-16" />
+      </div>
+    );
+  }
+  if (!user) {
+    return (
+      <div className="flex gap-4 items-center">
+        <Button asChild>
+          <Link href={"/signup"}>Sign Up</Link>
+        </Button>
+        <Button variant={"outline"} asChild>
+          <Link href={"/login"}>Login</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (user) {
+    return (
+      <div className="flex gap-4 items-center">
+        <Button variant={"outline"} size={"icon"} asChild>
+          <a href="https://github.com/rmanager-dev/rmanager-core">
+            <Image
+              alt={"Logo"}
+              height="20"
+              width="20"
+              src="github.svg"
+              className="dark:invert"
+            />
+          </a>
+        </Button>
+        <Button variant={"outline"} asChild>
+          <Link href={"/dashboard"}>Dashboard</Link>
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={"outline"} size={"icon"}>
+              <User />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end">
+            <DropdownMenuLabel>
+              <div className="flex gap-1 items-center">
+                <User size={16} /> {user.email}
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuItem asChild>
+                <Link href={"/dashboard"}>Dashboard</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={"/account"}>Account Preferences</Link>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Theme</DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+              <DropdownMenuRadioItem value="light">Light</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="system">
+                System
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={logoutUser}>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  }
+}
