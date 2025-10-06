@@ -33,6 +33,21 @@ export default function RightOptions() {
     router.push("/login");
   };
 
+  const GithubButton = () => {
+    return (
+      <Button variant={"outline"} size={"icon"} asChild>
+        <a href="https://github.com/rmanager-dev/rmanager-core">
+          <Image
+            alt={"Logo"}
+            height="20"
+            width="20"
+            src="icons/github.svg"
+            className="dark:invert"
+          />
+        </a>
+      </Button>
+    );
+  };
   if (loading) {
     return (
       <div className="flex gap-4 items-center">
@@ -45,6 +60,7 @@ export default function RightOptions() {
   if (!user) {
     return (
       <div className="flex gap-4 items-center">
+        <GithubButton />
         <Button asChild>
           <Link href={"/signup"}>Sign Up</Link>
         </Button>
@@ -58,17 +74,7 @@ export default function RightOptions() {
   if (user) {
     return (
       <div className="flex gap-4 items-center">
-        <Button variant={"outline"} size={"icon"} asChild>
-          <a href="https://github.com/rmanager-dev/rmanager-core">
-            <Image
-              alt={"Logo"}
-              height="20"
-              width="20"
-              src="github.svg"
-              className="dark:invert"
-            />
-          </a>
-        </Button>
+        <GithubButton />
         <Button variant={"outline"} asChild>
           <Link href={"/dashboard"}>Dashboard</Link>
         </Button>
