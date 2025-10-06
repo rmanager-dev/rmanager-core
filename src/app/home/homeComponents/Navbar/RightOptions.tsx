@@ -16,7 +16,15 @@ import { useAuth } from "@/src/hooks/useAuth";
 import { auth } from "@/src/lib/firebase/firebaseClient";
 import { revokeSessionCookie } from "@/src/lib/utils/AuthUtils";
 import { signOut } from "firebase/auth";
-import { User } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  Moon,
+  Settings,
+  Sun,
+  SunMoon,
+  User,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
@@ -90,25 +98,42 @@ export default function RightOptions() {
                 <User size={16} /> {user.email}
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href={"/dashboard"}>Dashboard</Link>
+                <Link href={"/dashboard"}>
+                  <LayoutDashboard />
+                  <span>Dashboard</span>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={"/account"}>Account Preferences</Link>
+                <Link href={"/account"}>
+                  <Settings />
+                  <span>Account Preferences</span>
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Theme</DropdownMenuLabel>
+
             <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
-              <DropdownMenuRadioItem value="light">Light</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="light">
+                <Sun />
+                <span>Light</span>
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">
+                <Moon />
+                <span>Dark</span>
+              </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="system">
-                System
+                <SunMoon />
+                <span>System</span>
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logoutUser}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={logoutUser}>
+              <LogOut />
+              <span>Logout</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
