@@ -61,7 +61,7 @@ export default function RightOptions() {
       <div className="flex gap-4 items-center">
         <Skeleton className="h-8 w-8" />
         <Skeleton className="h-8 w-16" />
-        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-8 w-8" />
       </div>
     );
   }
@@ -114,7 +114,6 @@ export default function RightOptions() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-
             <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
               <DropdownMenuRadioItem value="light">
                 <Sun />
