@@ -1,5 +1,5 @@
-import HomepageFeatureCards from "./homeComponents/FeatureCards";
-import HomepageHeader from "./homeComponents/Header";
+import HomepageFeatureCards from "./components/FeatureCards";
+import HomepageHeader from "./components/HeaderText";
 
 export default function Page() {
   return (

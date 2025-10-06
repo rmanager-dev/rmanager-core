@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import RightOptions from "./RightOptions";
+import RightOptions from "./Buttons";
 
 export default function Navbar() {
   return (
