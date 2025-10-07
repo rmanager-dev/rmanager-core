@@ -38,7 +38,7 @@ export default function RightOptions() {
   const logoutUser = async () => {
     signOut(auth);
     await revokeSessionCookie();
-    router.push("/login");
+    router.push("/home");
   };
 
   const GithubButton = () => {
