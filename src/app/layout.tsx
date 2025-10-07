@@ -21,7 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             disableTransitionOnChange
           >
             <main className="h-screen">{children}</main>
-            <ThemedToaster position="top-center" richColors />
+            <ThemedToaster position="bottom-right" closeButton />
           </ThemeProvider>
         </AuthProvider>
       </body>
