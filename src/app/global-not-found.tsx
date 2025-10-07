@@ -25,7 +25,7 @@ export default function GlobalNotFound() {
       <body className="flex justify-center">
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
