@@ -1,20 +1,16 @@
 "use client";
 import { Button } from "@/src/components/ui/button";
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
+  Empty,
+  EmptyContent,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/src/components/ui/empty";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
@@ -89,76 +85,79 @@ export default function LoginCard() {
   };
 
   return (
-    <div className="min-h-full flex justify-center items-center bg-background">
-      <Card className="w-full max-w-md m-12">
-        <CardHeader>
-          <CardTitle>Welcome back!</CardTitle>
-          <CardDescription>
-            Enter your email and password to login to your account
-          </CardDescription>
-          <CardAction>
-            <Button variant={"ghost"} asChild>
-              <Link href={"/signup"}>Sign Up</Link>
-            </Button>
-          </CardAction>
-        </CardHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit((values) =>
-              handleLoginWithEmail(values.email, values.password)
-            )}
-            className="space-y-6"
-          >
-            <CardContent>
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex justify-between">
-                        <FormLabel>Password</FormLabel>
-                        <a
-                          href="#"
-                          className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                        >
-                          Forgot password?
-                        </a>
-                      </div>
-                      <FormControl>
-                        <Input
-                          type={"password"}
-                          placeholder="Password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+    <div className="size-full flex flex-col items-center">
+      <Empty className="w-full p-10">
+        <EmptyHeader>
+          <EmptyTitle className="text-3xl font-semibold">
+            Login to rManager
+          </EmptyTitle>
+        </EmptyHeader>
+        <EmptyContent>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit((values) =>
+                handleLoginWithEmail(values.email, values.password)
+              )}
+              className="w-full flex flex-col gap-4"
+            >
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        placeholder="Email"
+                        className="h-13 w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              ></FormField>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        className="h-13 w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              ></FormField>
+              <Button
+                className="text-muted-foreground h-0 font-semibold"
+                variant={"link"}
+                asChild
+              >
+                <Link href={"/forgot"}>Forgot password?</Link>
+              </Button>
+              <Button className="h-12 w-full" disabled={isLoading}>
                 Login
               </Button>
-            </CardFooter>
-          </form>
-        </Form>
-      </Card>
+
+              <span className="text-muted-foreground font-semibold">
+                Dont have an account?{" "}
+                <Button
+                  className="text-blue-500 p-0 h-0 font-semibold"
+                  variant={"link"}
+                  asChild
+                >
+                  <Link href={"/signup"}>Sign Up</Link>
+                </Button>
+              </span>
+            </form>
+          </Form>
+        </EmptyContent>
+      </Empty>
     </div>
   );
 }
