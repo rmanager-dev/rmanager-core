@@ -14,7 +14,6 @@ import {
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useAuth } from "@/src/hooks/useAuth";
 import { auth } from "@/src/lib/firebase/firebaseClient";
-import { revokeSessionCookie } from "@/src/lib/utils/AuthUtils";
 import { signOut } from "firebase/auth";
 import {
   LayoutDashboard,
@@ -28,17 +27,13 @@ import {
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function RightOptions() {
   const { user, loading } = useAuth();
   const { setTheme, theme } = useTheme();
-  const router = useRouter();
 
   const logoutUser = async () => {
     signOut(auth);
-    await revokeSessionCookie();
-    router.push("/home");
   };
 
   const GithubButton = () => {
