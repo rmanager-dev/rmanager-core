@@ -2,10 +2,9 @@ import { adminAuth } from "@/src/lib/firebase/firebaseAdmin";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function POST(req: Request) {
   try {
-    const response = NextResponse.json({ message: "Success!" });
-    response.cookies.delete("session");
+    const { method } = await req.json();
 
     const cookieStore = await cookies();
     const sessionCookie = await cookieStore.get("session")?.value;
@@ -16,9 +15,14 @@ export async function GET() {
       });
     }
 
-    adminAuth.verifySessionCookie(sessionCookie).then((decodedClaims) => {
-      adminAuth.revokeRefreshTokens(decodedClaims.uid);
-    });
+    if (method == "Global") {
+      adminAuth.verifySessionCookie(sessionCookie).then((decodedClaims) => {
+        adminAuth.revokeRefreshTokens(decodedClaims.uid);
+      });
+    }
+
+    const response = NextResponse.json({ message: "Success!" });
+    response.cookies.delete("session");
 
     return response;
   } catch (error) {
