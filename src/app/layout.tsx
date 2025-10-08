@@ -4,6 +4,15 @@ import ThemedToaster from "../components/ThemedToaster";
 import AuthProvider from "../components/AuthProvider";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "rManager",
+  description: "Manage your roblox deployments easily",
+  generator: "Next.js",
+  creator: "OverDsh",
+  publisher: "rmanager-dev",
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
