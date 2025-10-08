@@ -67,7 +67,7 @@ export default function SignupCard() {
       await callback();
 
       toast.success("Signed up successfully");
-      router.push("/");
+      router.push("/home");
     } catch (error: unknown) {
       // Firebase errors
       const code = (error as FirebaseError).code;

@@ -59,7 +59,7 @@ export default function LoginCard() {
       await callback();
 
       toast.success("Logged in successfully");
-      router.push("/");
+      router.push("/home");
     } catch (error: unknown) {
       // Firebase errors
       const code = (error as FirebaseError).code;
