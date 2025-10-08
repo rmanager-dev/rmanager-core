@@ -56,10 +56,24 @@ export default function LoginCard() {
   const handleLogin = async (callback: () => Promise<UserCredential>) => {
     try {
       setIsLoading(true);
-      await callback();
+      const loginPromise = callback();
 
-      toast.success("Logged in successfully");
-      router.push("/home");
+      toast.promise(loginPromise, {
+        loading: "Logging in...",
+        success: () => {
+          router.push("/home");
+          return "Logged in successfully";
+        },
+        error: (error) => {
+          const code = (error as FirebaseError).code;
+          switch (code) {
+            case "auth/invalid-credential":
+              return "Invalid credentials";
+            default:
+              return `There was an error while loggin in: ${code}`;
+          }
+        },
+      });
     } catch (error: unknown) {
       // Firebase errors
       const code = (error as FirebaseError).code;
