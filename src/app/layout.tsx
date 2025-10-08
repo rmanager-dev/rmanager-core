@@ -21,6 +21,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       suppressHydrationWarning
       className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
+      <head>
+        <meta name="apple-mobile-web-app-title" content="rManager" />
+      </head>
       <body className="font-sans">
         <AuthProvider>
           <ThemeProvider
@@ -30,7 +33,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             disableTransitionOnChange
           >
             <main className="h-screen">{children}</main>
-            <ThemedToaster position="bottom-right" closeButton />
+            <ThemedToaster position="bottom-right" closeButton richColors />
           </ThemeProvider>
         </AuthProvider>
       </body>
