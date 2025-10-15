@@ -32,7 +32,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             enableSystem
             disableTransitionOnChange
           >
-            <main className="h-screen">{children}</main>
+            <main className="min-h-dvh">{children}</main>
             <ThemedToaster position="bottom-right" closeButton richColors />
           </ThemeProvider>
         </AuthProvider>

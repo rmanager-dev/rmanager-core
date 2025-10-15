@@ -1,13 +1,11 @@
-import HomepageFeatureCards from "./components/FeatureCards";
-import HomepageHeader from "./components/HeaderText";
+import FeatureCards from "./components/FeatureCards";
+import HomepageHeader from "./components/HomepageHeader";
 
 export default function Page() {
   return (
-    <div className="bg-[radial-gradient(var(--secondary),transparent_1px)] [background-size:16px_16px] h-full w-full">
-      <div className="min-h-screen w-full p-15 flex flex-col items-center gap-20">
-        <HomepageHeader />
-        <HomepageFeatureCards />
-      </div>
+    <div className="h-full w-full my-15 px-5 sm:px-10 flex flex-col items-center gap-20 overflow-hidden">
+      <HomepageHeader />
+      <FeatureCards />
     </div>
   );
 }
