@@ -67,7 +67,6 @@ export default function SignupCard() {
       await callback();
 
       toast.success("Signed up successfully");
-      router.push("/home");
     } catch (error: unknown) {
       // Firebase errors
       const code = (error as FirebaseError).code;
@@ -89,11 +88,13 @@ export default function SignupCard() {
   };
 
   const handleEmailSignup = async (email: string, password: string) => {
-    handeSignup(() => createUserWithEmailAndPassword(auth, email, password));
+    await handeSignup(() =>
+      createUserWithEmailAndPassword(auth, email, password)
+    );
   };
 
   return (
-    <div className="size-full flex flex-col items-center">
+    <div className="min-h-dvh flex flex-col items-center">
       <Empty className="w-full p-10">
         <EmptyHeader>
           <EmptyTitle className="text-3xl font-semibold">

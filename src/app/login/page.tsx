@@ -61,7 +61,6 @@ export default function LoginCard() {
       toast.promise(loginPromise, {
         loading: "Logging in...",
         success: () => {
-          router.push("/home");
           return "Logged in successfully";
         },
         error: (error) => {
@@ -99,7 +98,7 @@ export default function LoginCard() {
   };
 
   return (
-    <div className="size-full flex flex-col items-center">
+    <div className="min-h-dvh flex flex-col items-center">
       <Empty className="w-full p-10">
         <EmptyHeader>
           <EmptyTitle className="text-3xl font-semibold">
