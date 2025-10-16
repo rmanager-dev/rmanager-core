@@ -19,7 +19,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FirebaseError } from "firebase/app";
 import { signInWithEmailAndPassword, UserCredential } from "firebase/auth";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -41,7 +40,6 @@ const formSchema = z.object({
 
 export default function LoginCard() {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   // Create form info based on rules defined above
   const form = useForm({

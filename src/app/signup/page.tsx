@@ -12,7 +12,6 @@ import { Input } from "@/src/components/ui/input";
 import { auth } from "@/src/lib/firebase/firebaseClient";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserWithEmailAndPassword, UserCredential } from "firebase/auth";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -49,7 +48,6 @@ const formSchema = z
 // Component //
 export default function SignupCard() {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   // Create form info based on rules defined above
   const form = useForm({
