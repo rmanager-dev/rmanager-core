@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export default function HomepageFooter() {
   return (
     <footer className="flex p-4 justify-between items-center text-muted-foreground text-sm font-medium">
