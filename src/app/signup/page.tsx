@@ -2,33 +2,28 @@
 // Imports //
 import { Button } from "@/src/components/ui/button";
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { auth } from "@/src/lib/firebase/firebaseClient";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserWithEmailAndPassword, UserCredential } from "firebase/auth";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { toast } from "sonner";
 import { useState } from "react";
 import { FirebaseError } from "firebase/app";
+import {
+  Empty,
+  EmptyContent,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/src/components/ui/empty";
 
 // Object used to define rules for form items //
 const formSchema = z
@@ -53,7 +48,6 @@ const formSchema = z
 // Component //
 export default function SignupCard() {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   // Create form info based on rules defined above
   const form = useForm({
@@ -71,7 +65,6 @@ export default function SignupCard() {
       await callback();
 
       toast.success("Signed up successfully");
-      router.push("/");
     } catch (error: unknown) {
       // Firebase errors
       const code = (error as FirebaseError).code;
@@ -93,89 +86,95 @@ export default function SignupCard() {
   };
 
   const handleEmailSignup = async (email: string, password: string) => {
-    handeSignup(() => createUserWithEmailAndPassword(auth, email, password));
+    await handeSignup(() =>
+      createUserWithEmailAndPassword(auth, email, password)
+    );
   };
 
   return (
-    <div className="relative min-h-full flex justify-center items-center bg-background">
-      <Card className="w-full max-w-md m-12">
-        <CardHeader>
-          <CardTitle>Create an account</CardTitle>
-          <CardDescription>
-            Enter an email and password to create an account
-          </CardDescription>
-          <CardAction>
-            <Button variant={"ghost"} asChild>
-              <Link href={"/login"}>Login</Link>
-            </Button>
-          </CardAction>
-        </CardHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit((values) =>
-              handleEmailSignup(values.email, values.password)
-            )}
-            className="space-y-6"
-          >
-            <CardContent>
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type={"password"}
-                          placeholder="Password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type={"password"}
-                          placeholder="Confirm Password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+    <div className="min-h-dvh flex flex-col items-center">
+      <Empty className="w-full p-10">
+        <EmptyHeader>
+          <EmptyTitle className="text-3xl font-semibold">
+            Sign Up to rManager
+          </EmptyTitle>
+        </EmptyHeader>
+        <EmptyContent>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit((values) =>
+                handleEmailSignup(values.email, values.password)
+              )}
+              className="w-full flex flex-col gap-4"
+            >
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        placeholder="Email"
+                        className="h-13 w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              ></FormField>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        className="h-13 w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              ></FormField>
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Confirm Password"
+                        className="h-13 w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              ></FormField>
+              <Button className="h-12 w-full" disabled={isLoading}>
                 Sign Up
               </Button>
-            </CardFooter>
-          </form>
-        </Form>
-      </Card>
+
+              <span className="text-muted-foreground font-semibold">
+                Already have an account?{" "}
+                <Button
+                  className="text-blue-500 p-0 h-0 font-semibold"
+                  variant={"link"}
+                  asChild
+                >
+                  <Link href={"/login"}>Login</Link>
+                </Button>
+              </span>
+            </form>
+          </Form>
+        </EmptyContent>
+      </Empty>
     </div>
   );
 }

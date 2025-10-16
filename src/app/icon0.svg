@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><style>
+    #light-icon {
+      display: inline;
+    }
+    #dark-icon {
+      display: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #light-icon {
+        display: none;
+      }
+      #dark-icon {
+        display: inline;
+      }
+    }
+  </style><g id="light-icon"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><g clip-path="url(#SvgjsClipPath1097)"><rect width="1000" height="1000" fill="#000000"></rect><g transform="matrix(0.46296296296296297,0,0,0.46296296296296297,0,0)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="2160" height="2160"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2160" height="2160" viewBox="0 0 2160 2160">
+  <defs>
+    <style>
+      .cls-1 {
+        filter: url(#filter);
+      }
+
+      .cls-2 {
+        fill: #fff;
+        fill-rule: evenodd;
+      }
+    </style>
+    <filter id="filter" filterUnits="userSpaceOnUse">
+      <feFlood result="flood" flood-color="#fff"></feFlood>
+      <feComposite result="composite" operator="in" in2="SourceGraphic"></feComposite>
+      <feBlend result="blend" in2="SourceGraphic"></feBlend>
+    </filter>
+  <clipPath id="SvgjsClipPath1097"><rect width="1000" height="1000" x="0" y="0" rx="500" ry="500"></rect></clipPath></defs>
+  <g class="cls-1">
+    <g>
+      <path class="cls-2" d="M929,928h137L879.387,1232.26,744,1232Z"></path>
+      <path class="cls-2" d="M1182,928h137l-186.61,304.26L997,1232Z"></path>
+      <path class="cls-2" d="M1530,748h137l-396,664H1137Z"></path>
+    </g>
+    <g>
+      <path class="cls-2" d="M786.613,747.744l99.283,59.99L629.387,1232.26,494,1232Z"></path>
+      <path class="cls-2" d="M1562,748l-84.51,116-690.509-.116,0.034-115.875Z"></path>
+      <path class="cls-2" d="M494,1296l84.284,116,688.706-.12-0.04-115.87Z"></path>
+    </g>
+  </g>
+</svg></svg></g></g></svg></g><g id="dark-icon"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><g clip-path="url(#SvgjsClipPath1098)"><rect width="1000" height="1000" fill="#000000"></rect><g transform="matrix(0.46296296296296297,0,0,0.46296296296296297,0,0)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="2160" height="2160"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2160" height="2160" viewBox="0 0 2160 2160">
+  <defs>
+    <style>
+      .cls-1 {
+        filter: url(#filter);
+      }
+
+      .cls-2 {
+        fill: #fff;
+        fill-rule: evenodd;
+      }
+    </style>
+    <filter id="filter" filterUnits="userSpaceOnUse">
+      <feFlood result="flood" flood-color="#fff"></feFlood>
+      <feComposite result="composite" operator="in" in2="SourceGraphic"></feComposite>
+      <feBlend result="blend" in2="SourceGraphic"></feBlend>
+    </filter>
+  <clipPath id="SvgjsClipPath1098"><rect width="1000" height="1000" x="0" y="0" rx="500" ry="500"></rect></clipPath></defs>
+  <g class="cls-1">
+    <g>
+      <path class="cls-2" d="M929,928h137L879.387,1232.26,744,1232Z"></path>
+      <path class="cls-2" d="M1182,928h137l-186.61,304.26L997,1232Z"></path>
+      <path class="cls-2" d="M1530,748h137l-396,664H1137Z"></path>
+    </g>
+    <g>
+      <path class="cls-2" d="M786.613,747.744l99.283,59.99L629.387,1232.26,494,1232Z"></path>
+      <path class="cls-2" d="M1562,748l-84.51,116-690.509-.116,0.034-115.875Z"></path>
+      <path class="cls-2" d="M494,1296l84.284,116,688.706-.12-0.04-115.87Z"></path>
+    </g>
+  </g>
+</svg></svg></g></g></svg></g></svg>

@@ -7,12 +7,14 @@ import {
   revokeSessionCookie,
   validateSession,
 } from "../lib/utils/AuthUtils";
+import { useRouter } from "next/navigation";
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export default function AuthProvider({ children }: AuthProviderProps) {
+  const router = useRouter();
   useEffect(() => {
     let wasLoggedIn = false;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -23,6 +25,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
           console.log("Refreshing session...");
           const success = await getSessionCookie();
           if (success) {
+            router.refresh();
             console.log("Refreshed successfully");
           }
         }
@@ -37,7 +40,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       }
     });
     return unsubscribe;
-  }, []);
+  }, [router]);
 
   return <>{children}</>;
 }
