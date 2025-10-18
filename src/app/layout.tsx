@@ -5,6 +5,8 @@ import AuthProvider from "../components/AuthProvider";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "rManager",
@@ -25,6 +27,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <meta name="apple-mobile-web-app-title" content="rManager" />
       </head>
       <body className="font-sans">
+        <Analytics />
+        <SpeedInsights />
         <AuthProvider>
           <ThemeProvider
             attribute="class"
