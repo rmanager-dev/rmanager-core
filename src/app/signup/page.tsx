@@ -74,7 +74,7 @@ export default function SignupCard() {
           const user = userCredentials.user;
           if (user) {
             await sendEmailVerification(user);
-            return "Created your account successfully! Please check your email to verify you account.";
+            return "Created your account successfully! Please check your email to verify your account.";
           } else {
             return "Created your account successfully!";
           }
