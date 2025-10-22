@@ -34,7 +34,7 @@ export default function VerifyEmailPage() {
       .finally(() => {
         router.replace("/dashboard");
       });
-  });
+  }, [oobCode, router]);
 
   return (
     <div className="h-dvh flex flex-col justify-center items-center">
