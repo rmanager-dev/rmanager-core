@@ -62,24 +62,24 @@ export default function SignupCard() {
   const handeSignup = async (callback: () => Promise<UserCredential>) => {
     try {
       setIsLoading(true);
-      await callback();
+      const signupPromise = callback();
 
-      toast.success("Signed up successfully");
-    } catch (error: unknown) {
-      // Firebase errors
-      const code = (error as FirebaseError).code;
-      switch (code) {
-        case "auth/popup-closed-by-user":
-          break;
-        case "auth/email-already-in-use":
-          toast.warning("Account already exist");
-          break;
-        default:
+      toast.promise(signupPromise, {
+        loading: "Creating your account...",
+        success: () => {
+          return "Created your account successfully!";
+        },
+        error: (error) => {
+          const code = (error as FirebaseError).code;
           console.log(error);
-          toast.error("There was an error while signing up", {
-            description: code,
-          });
-      }
+          switch (code) {
+            case "auth/email-already-in-use":
+              return "Account already exists.";
+            default:
+              return `There was an error while creating your account: ${code}`;
+          }
+        },
+      });
     } finally {
       setIsLoading(false);
     }

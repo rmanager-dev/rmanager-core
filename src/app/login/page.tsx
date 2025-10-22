@@ -62,30 +62,16 @@ export default function LoginCard() {
           return "Logged in successfully";
         },
         error: (error) => {
+          console.log(error);
           const code = (error as FirebaseError).code;
           switch (code) {
             case "auth/invalid-credential":
               return "Invalid credentials";
             default:
-              return `There was an error while loggin in: ${code}`;
+              return `There was an error while logging in: ${code}`;
           }
         },
       });
-    } catch (error: unknown) {
-      // Firebase errors
-      const code = (error as FirebaseError).code;
-      switch (code) {
-        case "auth/popup-closed-by-user":
-          break;
-        case "auth/invalid-credential":
-          form.setError("password", { message: "Invalid email/password" });
-          break;
-        default:
-          console.log(error);
-          toast.error("There was an error while loggin in", {
-            description: code,
-          });
-      }
     } finally {
       setIsLoading(false);
     }
