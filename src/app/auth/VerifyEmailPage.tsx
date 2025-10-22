@@ -36,18 +36,18 @@ export default function VerifyEmailPage() {
       });
   });
 
-  let icon = <Spinner />;
-  let title = "Verifying email...";
-  let description =
-    "Please wait while we are verifying you email. You will be redirected to the dashboard automatically.";
-
   return (
     <div className="h-dvh flex flex-col justify-center items-center">
       <Empty className="max-w-xl">
         <EmptyHeader>
-          <EmptyMedia variant={"icon"}>{icon}</EmptyMedia>
-          <EmptyTitle>{title}</EmptyTitle>
-          <EmptyDescription>{description}</EmptyDescription>
+          <EmptyMedia variant={"icon"}>
+            <Spinner />
+          </EmptyMedia>
+          <EmptyTitle>Verifying email...</EmptyTitle>
+          <EmptyDescription>
+            Please wait while we are verifying you email. You will be redirected
+            to the dashboard automatically.
+          </EmptyDescription>
         </EmptyHeader>
       </Empty>
     </div>
