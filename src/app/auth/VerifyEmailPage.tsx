@@ -45,7 +45,7 @@ export default function VerifyEmailPage() {
           </EmptyMedia>
           <EmptyTitle>Verifying email...</EmptyTitle>
           <EmptyDescription>
-            Please wait while we are verifying you email. You will be redirected
+            Please wait while we are verifying your email. You will be redirected
             to the dashboard automatically.
           </EmptyDescription>
         </EmptyHeader>
