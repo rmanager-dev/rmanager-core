@@ -11,7 +11,11 @@ import {
 import { Input } from "@/src/components/ui/input";
 import { auth } from "@/src/lib/firebase/firebaseClient";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createUserWithEmailAndPassword, UserCredential } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  UserCredential,
+} from "firebase/auth";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -64,10 +68,16 @@ export default function SignupCard() {
       setIsLoading(true);
       const signupPromise = callback();
 
-      toast.promise(signupPromise, {
+      toast.promise<UserCredential>(signupPromise, {
         loading: "Creating your account...",
-        success: () => {
-          return "Created your account successfully!";
+        success: async (userCredentials) => {
+          const user = userCredentials.user;
+          if (user) {
+            await sendEmailVerification(user);
+            return "Created your account successfully! Please check your email to verify you account.";
+          } else {
+            return "Created your account successfully!";
+          }
         },
         error: (error) => {
           const code = (error as FirebaseError).code;
