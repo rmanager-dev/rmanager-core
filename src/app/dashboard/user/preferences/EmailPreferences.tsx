@@ -21,7 +21,6 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   sendEmailVerification,
-  updateEmail,
   verifyBeforeUpdateEmail,
 } from "firebase/auth";
 import { toast } from "sonner";
@@ -111,7 +110,7 @@ export default function EmailPreferences() {
     password: string;
   }) => {
     const credentials = EmailAuthProvider.credential(
-      user?.email!,
+      user!.email!,
       data.password
     );
     const success = await reauthenticateWithCredential(user!, credentials)
