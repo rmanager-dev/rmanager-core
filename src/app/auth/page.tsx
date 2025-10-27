@@ -8,7 +8,11 @@ function AuthLogic() {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");
 
-  if (mode === "verifyEmail") {
+  if (
+    mode === "verifyEmail" ||
+    mode === "verifyAndChangeEmail" ||
+    mode === "recoverEmail"
+  ) {
     return <VerifyEmailPage />;
   } else {
     redirect("/home");
