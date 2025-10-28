@@ -90,7 +90,7 @@ export default function EmailPreferences() {
         .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { error: "Invalid email format" }),
       password: z
         .string({ error: "Password must be a string of characters" })
-        .min(6, { error: "Password must be at least 6 characters" }),
+        .min(1, { error: "Password must not be empty" }),
     })
     .refine((data) => data.email !== user?.email, {
       error: "The new email address cannot be the same as your current email.",
@@ -121,11 +121,12 @@ export default function EmailPreferences() {
       return;
     }
     toast.promise(verifyBeforeUpdateEmail(user!, data.email), {
-      loading: "Updating email address...",
-      success: "Successfully updated your email address!",
+      loading: "Sending confirmation email...",
+      success: "A link was sent to your new address to update your email!",
       error:
-        "Something went wrong when trying to update your email. Please try again later.",
+        "Something went wrong when sending a confirmation email to your new address. Please try again later.",
       finally: () => {
+        form.reset();
         setIsDialogOpen(false);
       },
     });
@@ -154,7 +155,7 @@ export default function EmailPreferences() {
   };
 
   // Fallback
-  if (loading) {
+  if (loading || !user) {
     return <SkeletonComponent />;
   }
 
@@ -186,8 +187,9 @@ export default function EmailPreferences() {
                   <DialogHeader>
                     <DialogTitle>Update Email</DialogTitle>
                     <DialogDescription>
-                      Enter your new email address and confirm it. You'll need
-                      to verify the new email.
+                      Enter your new email address and password below to update
+                      your email. A link will be sent to the new address to
+                      update your email.
                     </DialogDescription>
                   </DialogHeader>
 
