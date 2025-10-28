@@ -6,7 +6,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <UserSettingsSidebar />
-      <main className="w-full">{children}</main>
+      <main className="w-full">
+        <div className="w-full px-2 py-10  md:px-10 lg:px-15 xl:px-20 flex justify-center">
+          <div className="flex w-full flex-col items-center gap-6 max-w-5xl">
+            {children}
+          </div>
+        </div>
+      </main>
     </SidebarProvider>
   );
 }
