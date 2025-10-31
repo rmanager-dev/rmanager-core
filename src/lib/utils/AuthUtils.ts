@@ -65,11 +65,11 @@ export async function validateSession(): Promise<{
   }
 }
 
-export async function revokeSessionCookie(method?: string): Promise<boolean> {
+export async function revokeSessionCookie(global?: boolean): Promise<boolean> {
   const response = await fetch("/api/auth/revokeSessionCookie", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ method: method ?? "" }),
+    body: JSON.stringify({ global: global ?? false }),
   });
 
   if (response.ok) {
