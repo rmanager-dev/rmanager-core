@@ -102,7 +102,7 @@ export default function RightOptions() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={"/account"}>
+                <Link href={"/dashboard/user/preferences"}>
                   <Settings />
                   <span>Account Preferences</span>
                 </Link>
