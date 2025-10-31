@@ -8,6 +8,7 @@ import {
 } from "@/src/components/ui/empty";
 import { Spinner } from "@/src/components/ui/spinner";
 import { auth } from "@/src/lib/firebase/firebaseClient";
+import { revokeSessionCookie } from "@/src/lib/utils/AuthUtils";
 import { applyActionCode } from "firebase/auth";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -18,6 +19,8 @@ export default function VerifyEmailPage() {
   const router = useRouter();
 
   const oobCode = searchParams.get("oobCode");
+  const mode = searchParams.get("mode");
+
   useEffect(() => {
     if (!oobCode) {
       redirect("/home");
@@ -25,6 +28,9 @@ export default function VerifyEmailPage() {
 
     applyActionCode(auth, oobCode)
       .then(() => {
+        if (mode == "verifyAndChangeEmail" || mode == "recoverEmail") {
+          auth.signOut();
+        }
         toast.success("Successfully verified your email address!");
       })
       .catch((error) => {
@@ -34,7 +40,7 @@ export default function VerifyEmailPage() {
       .finally(() => {
         router.replace("/dashboard");
       });
-  });
+  }, [searchParams, router]);
 
   return (
     <div className="h-dvh flex flex-col justify-center items-center">
