@@ -1,19 +1,20 @@
 import { adminAuth } from "@/src/lib/firebase/firebaseAdmin";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-const cache = await import("memory-cache");
 
 export async function POST(req: Request) {
   try {
+    // 1. EXTRACT REQUEST DATA
+    // Here we get the session cookie and ID Token that must be provided by the user
     const cookieStore = await cookies();
-    const sessionCookie = await cookieStore.get("session")?.value;
+    const sessionCookie = cookieStore.get("session")?.value;
 
     const { idToken } = await req.json();
 
     // ID Token is required to validate session
     if (!idToken) {
       console.log("Missing idToken");
-      return NextResponse.json({ error: "Missing idToken" }, { status: 400 });
+      return NextResponse.json({ error: "Missing idToken" }, { status: 401 });
     }
 
     // Generate a cookie if client doesnt have one yet
@@ -21,61 +22,45 @@ export async function POST(req: Request) {
       return NextResponse.json({ isSessionValid: false });
     }
 
-    // Try to get the cookie UID in cache
-    const cookieUID_cache_key = `session:${sessionCookie}`;
-    let cookieUID = cache.get(cookieUID_cache_key);
+    // 2.SESSION COOKIE CHECK
+    // Here we check if the session cookie held by the user isn't revoked.
+    // If it was revoked due to sensitive actions (email change, password change) or by a logout of all devices, the user must generate a new one
+    const decodedCookie = await adminAuth
+      .verifySessionCookie(sessionCookie, true) // Force check if the cookie is revoked
+      .catch(() => undefined); // If cookie is not valid (throws an error), set the decoded cookie to undefined
 
-    // If cache expired refetch new UID
-    if (!cookieUID) {
-      console.log("Fetching cookie info");
-      const decodedCookie = await adminAuth
-        .verifySessionCookie(sessionCookie, true)
-        .catch(() => {
-          // If cookie is not valid (throws an error), set the decoded cookie to undefined
-          return undefined;
-        });
-
-      // If decodedCookie is undefined, it means it has expired
-      if (!decodedCookie) {
-        return NextResponse.json({
-          isSessionValid: false,
-        });
-      }
-
-      // If cookie expires in 1 hour or less, regenerate one
-      if (decodedCookie.exp - Date.now() / 1000 <= 60 * 60) {
-        return NextResponse.json({
-          isSessionValid: false,
-        });
-      }
-
-      // Cache new cookie UID
-      cookieUID = decodedCookie.uid;
-      cache.put(cookieUID_cache_key, cookieUID, 3600 * 1000);
+    // If decodedCookie is undefined, it means it was revoked
+    if (!decodedCookie) {
+      return NextResponse.json({
+        isSessionValid: false,
+      });
     }
 
-    // Try to get token UID in cache
-    const tokenUID_cache_key = `idToken:${idToken}`;
-    let tokenUID = cache.get(tokenUID_cache_key);
+    // 3. ID TOKEN CHECK
+    // Here we check if the ID Token (local session of the user) is revoked.
+    const decodedToken = await adminAuth
+      .verifyIdToken(idToken, true) // Force check if the provided ID Token is revoked
+      .catch(() => undefined); // If the ID Token is not valid then set decodedToken to undefined
 
-    // If cache expires, get new UID
-    if (!tokenUID) {
-      console.log("Fetching token info");
-      tokenUID = (await adminAuth.verifyIdToken(idToken)).uid;
-
-      // Cache new tokn UID
-      cache.put(tokenUID_cache_key, tokenUID, 3600 * 1000);
+    // If the decodedToken is undefined, it means that the provided ID Token is invalid
+    if (!decodedToken) {
+      return NextResponse.json({
+        isSessionValid: false,
+      });
     }
 
-    // User should refresh cookie if the session cookie isnt owned by local session
+    // 4. SYNCRONIZATION CHECK
+    // If we got here, that means both the cookie and ID Token are valid.
+    // We just ensure that both session and ID Token are linked to the same user.
+    // This ensures that client and server side authentication are synced.
     return NextResponse.json({
-      isSessionValid: cookieUID == tokenUID,
+      isSessionValid: decodedCookie.uid == decodedToken.uid,
     });
   } catch (error) {
     console.error("Error while verifying session: ", error);
     return NextResponse.json(
       { error: "Error while verifying session" },
-      { status: 401 }
+      { status: 500 }
     );
   }
 }
