@@ -90,7 +90,10 @@ export default function RightOptions() {
           <DropdownMenuContent className="w-56" align="end">
             <DropdownMenuLabel>
               <div className="flex gap-1 items-center">
-                <User size={16} /> {user.email}
+                <User size={16} />
+                <span className="overflow-hidden overflow-ellipsis">
+                  {user.displayName ?? user.email}
+                </span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
