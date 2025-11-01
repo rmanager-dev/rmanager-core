@@ -13,6 +13,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/src/components/ui/item";
+import { Separator } from "@/src/components/ui/separator";
 import { TriangleAlert } from "lucide-react";
 
 export default function DangerZonePreferences() {
@@ -21,6 +22,7 @@ export default function DangerZonePreferences() {
       <CardHeader>
         <CardTitle>DANGER ZONE</CardTitle>
       </CardHeader>
+      <Separator />
       <CardContent>
         <Item
           variant={"outline"}

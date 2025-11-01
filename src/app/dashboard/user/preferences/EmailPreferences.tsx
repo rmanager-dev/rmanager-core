@@ -46,6 +46,7 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
+import { Separator } from "@/src/components/ui/separator";
 
 const CardComponent = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -53,6 +54,7 @@ const CardComponent = ({ children }: { children: React.ReactNode }) => {
       <CardHeader>
         <CardTitle>Email</CardTitle>
       </CardHeader>
+      <Separator />
       <CardContent>{children}</CardContent>
     </Card>
   );
