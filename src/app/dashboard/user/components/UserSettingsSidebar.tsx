@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/src/components/ui/sidebar";
-import { ArrowLeft, Lock, Settings, UnplugIcon } from "lucide-react";
+import { ArrowLeft, Database, Lock, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -40,9 +40,9 @@ const userSettingsSidebarItems: ItemGroup[] = [
         url: "/dashboard/user/security",
       },
       {
-        title: "Connections",
-        Icon: UnplugIcon,
-        url: "/dashboard/user/connections",
+        title: "Databases",
+        Icon: Database,
+        url: "/dashboard/user/databases",
       },
     ],
   },
