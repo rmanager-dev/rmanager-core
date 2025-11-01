@@ -1,7 +1,7 @@
 export default function Page() {
   return (
-    <div>
-      <span>Security</span>
-    </div>
+    <>
+      <span className="w-full text-left text-lg font-semibold">Security</span>
+    </>
   );
 }
