@@ -34,16 +34,6 @@ const userSettingsSidebarItems: ItemGroup[] = [
         Icon: Settings,
         url: "/dashboard/user/preferences",
       },
-      {
-        title: "Security",
-        Icon: Lock,
-        url: "/dashboard/user/security",
-      },
-      {
-        title: "Databases",
-        Icon: Database,
-        url: "/dashboard/user/databases",
-      },
     ],
   },
 ];
