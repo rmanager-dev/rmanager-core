@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Only handle the root path
   if (request.nextUrl.pathname === "/") {
     // Check for the session cookie (adjust 'session' to your cookie name)
