@@ -26,8 +26,13 @@ import { useTheme } from "next-themes";
 import { signOut } from "firebase/auth";
 import { auth } from "@/src/lib/firebase/firebaseClient";
 import { Skeleton } from "../ui/skeleton";
+import React from "react";
 
-export default function UserDropdown() {
+export default function UserDropdown({
+  triggerProps,
+}: {
+  triggerProps?: React.ComponentProps<typeof Button>;
+}) {
   const { user, loading } = useAuth();
   const { setTheme, theme } = useTheme();
 
@@ -38,7 +43,7 @@ export default function UserDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"outline"} size={"icon"}>
+        <Button variant={"outline"} size={"icon"} {...triggerProps}>
           <User />
         </Button>
       </DropdownMenuTrigger>
