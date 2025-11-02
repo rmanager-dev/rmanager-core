@@ -27,16 +27,18 @@ const GithubButton = () => {
 const NavbarComponent = ({ children }: { children: React.ReactNode }) => {
   return (
     <Navbar>
-      <Link href={"/home"}>
-        <Image
-          src={"brand/logo.svg"}
-          width={80}
-          height={80}
-          alt="Logo"
-          className="invert dark:invert-0"
-        />
-      </Link>
-      {children}
+      <div className="w-full max-w-[100rem] px-5 lg:px-16 xl:px-20 flex justify-between items-center">
+        <Link href={"/home"}>
+          <Image
+            src={"brand/logo.svg"}
+            width={80}
+            height={80}
+            alt="Logo"
+            className="invert dark:invert-0"
+          />
+        </Link>
+        {children}
+      </div>
     </Navbar>
   );
 };
