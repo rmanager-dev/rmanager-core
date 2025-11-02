@@ -88,16 +88,7 @@ const SidebarGroupComponent = ({
 export default function UserSettingsSidebar() {
   const pathname = usePathname();
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <SidebarItemComponent
-          item={{
-            title: "Back to Dashboard",
-            Icon: ArrowLeft,
-            url: "/dashboard",
-          }}
-        />
-      </SidebarHeader>
+    <Sidebar collapsible="icon" className="top-14">
       <SidebarContent>
         {userSettingsSidebarItems.map((group) => {
           return (
