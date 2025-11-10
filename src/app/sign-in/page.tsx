@@ -1,6 +1,11 @@
 "use client";
-// Imports //
 import { Button } from "@/src/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/src/components/ui/empty";
 import {
   Form,
   FormControl,
@@ -9,43 +14,30 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
+import { authClient } from "@/src/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import z from "zod";
-import { toast } from "sonner";
-import { useState } from "react";
-import {
-  Empty,
-  EmptyContent,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/src/components/ui/empty";
-import { authClient } from "@/src/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import z, { any } from "zod";
+///////////////////////////////////////////////////////////////////////
 
-// Object used to define rules for form items //
-const formSchema = z
-  .object({
-    email: z
-      .string()
-      .max(254, { error: "Email must be 254 characters or less" })
-      .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { error: "Invalid email format" }),
+// Object used to define rules for form items
+const formSchema = z.object({
+  email: z
+    .string()
+    .max(254, { error: "Email must be 254 characters or less" })
+    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { error: "Invalid email format" }),
 
-    password: z
-      .string()
-      .min(6, { error: "Password must be at least 6 characters" })
-      .max(256, { error: "Password must not have more than 256 characters" }),
+  password: z
+    .string()
+    .min(6, { error: "Password must be at least 6 characters" })
+    .max(256, { error: "Password must not have more than 256 characters" }),
+});
 
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password == data.confirmPassword, {
-    error: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-// Component //
-export default function SignupCard() {
+export default function LoginCard() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -55,27 +47,28 @@ export default function SignupCard() {
     defaultValues: {
       email: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
-  const handleEmailSignup = async (email: string, password: string) => {
+  // Handlers
+  const handleLoginWithEmail = async (email: string, password: string) => {
     setIsLoading(true);
-    const toastId = toast.loading("Creating you account..."); // Create a loading toaster and store it's id
-    authClient.signUp.email({
+
+    // Create a loading toaster and store it's ID
+    const toastId = toast.loading("Logging in...");
+
+    await authClient.signIn.email({
       email,
       password,
-      name: email,
       fetchOptions: {
         onSuccess: () => {
-          toast.success("Account created successfully!", { id: toastId }); // Modify the toaster to indicate that the user was successfully signed up
+          toast.success("Successfully logged in!", { id: toastId }); // If the signIn was successfull, modify the previously created toaster
           router.push("/dashboard");
         },
         onError: (error) => {
-          toast.error(error.error.message, { id: toastId }); // If there was an error, modify the toaster to be an error toaster and indicate the error's message
+          toast.error(error.error.message, { id: toastId }); // If there was an error, indicate what went wrong
         },
       },
-      callbackURL: "/dashboard",
     });
     setIsLoading(false);
   };
@@ -85,14 +78,14 @@ export default function SignupCard() {
       <Empty className="w-full p-10">
         <EmptyHeader>
           <EmptyTitle className="text-3xl font-semibold">
-            Sign Up to rManager
+            Login to rManager
           </EmptyTitle>
         </EmptyHeader>
         <EmptyContent>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((values) =>
-                handleEmailSignup(values.email, values.password)
+                handleLoginWithEmail(values.email, values.password)
               )}
               className="w-full flex flex-col gap-4"
             >
@@ -129,35 +122,25 @@ export default function SignupCard() {
                   </FormItem>
                 )}
               ></FormField>
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Confirm Password"
-                        className="h-13 w-full"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              ></FormField>
+              <Button
+                className="text-muted-foreground h-0 font-semibold"
+                variant={"link"}
+                asChild
+              >
+                <Link href={"/forgot"}>Forgot password?</Link>
+              </Button>
               <Button className="h-12 w-full" disabled={isLoading}>
-                Sign Up
+                Login
               </Button>
 
               <span className="text-muted-foreground font-semibold">
-                Already have an account?{" "}
+                Dont have an account?{" "}
                 <Button
                   className="text-blue-500 p-0 h-0 font-semibold"
                   variant={"link"}
                   asChild
                 >
-                  <Link href={"/login"}>Login</Link>
+                  <Link href={"/sign-up"}>Sign Up</Link>
                 </Button>
               </span>
             </form>

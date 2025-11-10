@@ -64,10 +64,10 @@ export default function HomepageNavbar() {
         <div className="flex gap-4 items-center">
           <GithubButton />
           <Button asChild>
-            <Link href={"/signup"}>Sign Up</Link>
+            <Link href={"/sign-up"}>Sign Up</Link>
           </Button>
           <Button variant={"outline"} asChild>
-            <Link href={"/login"}>Login</Link>
+            <Link href={"/sign-in"}>Login</Link>
           </Button>
         </div>
       </NavbarComponent>
