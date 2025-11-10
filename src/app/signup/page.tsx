@@ -9,25 +9,19 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { auth } from "@/src/lib/firebase/firebaseClient";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  UserCredential,
-} from "firebase/auth";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { toast } from "sonner";
 import { useState } from "react";
-import { FirebaseError } from "firebase/app";
 import {
   Empty,
   EmptyContent,
   EmptyHeader,
   EmptyTitle,
 } from "@/src/components/ui/empty";
+import { authClient } from "@/src/lib/auth-client";
 
 // Object used to define rules for form items //
 const formSchema = z
@@ -63,42 +57,23 @@ export default function SignupCard() {
     },
   });
 
-  const handeSignup = async (callback: () => Promise<UserCredential>) => {
-    try {
-      setIsLoading(true);
-      const signupPromise = callback();
-
-      toast.promise<UserCredential>(signupPromise, {
-        loading: "Creating your account...",
-        success: async (userCredentials) => {
-          const user = userCredentials.user;
-          if (user) {
-            await sendEmailVerification(user);
-            return "Created your account successfully! Please check your email to verify your account.";
-          } else {
-            return "Created your account successfully!";
-          }
-        },
-        error: (error) => {
-          const code = (error as FirebaseError).code;
-          console.log(error);
-          switch (code) {
-            case "auth/email-already-in-use":
-              return "Account already exists.";
-            default:
-              return `There was an error while creating your account: ${code}`;
-          }
-        },
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleEmailSignup = async (email: string, password: string) => {
-    await handeSignup(() =>
-      createUserWithEmailAndPassword(auth, email, password)
-    );
+    setIsLoading(true);
+    const toastId = toast.loading("Creating you account..."); // Create a loading toaster and store it's id
+    authClient.signUp.email({
+      email,
+      password,
+      name: email,
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Account created successfully!", { id: toastId }); // Modify the toaster to indicate that the user was successfully signed up
+        },
+        onError: (error) => {
+          toast.error(error.error.message, { id: toastId }); // If there was an error, modify the toaster to be an error toaster and indicate the error's message
+        },
+      },
+    });
+    setIsLoading(false);
   };
 
   return (

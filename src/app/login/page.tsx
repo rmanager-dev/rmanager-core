@@ -14,15 +14,13 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { auth } from "@/src/lib/firebase/firebaseClient";
+import { authClient } from "@/src/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FirebaseError } from "firebase/app";
-import { signInWithEmailAndPassword, UserCredential } from "firebase/auth";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import z from "zod";
+import z, { any } from "zod";
 ///////////////////////////////////////////////////////////////////////
 
 // Object used to define rules for form items
@@ -51,34 +49,26 @@ export default function LoginCard() {
   });
 
   // Handlers
-  const handleLogin = async (callback: () => Promise<UserCredential>) => {
-    try {
-      setIsLoading(true);
-      const loginPromise = callback();
-
-      toast.promise(loginPromise, {
-        loading: "Logging in...",
-        success: () => {
-          return "Logged in successfully";
-        },
-        error: (error) => {
-          console.log(error);
-          const code = (error as FirebaseError).code;
-          switch (code) {
-            case "auth/invalid-credential":
-              return "Invalid credentials";
-            default:
-              return `There was an error while logging in: ${code}`;
-          }
-        },
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleLoginWithEmail = async (email: string, password: string) => {
-    handleLogin(() => signInWithEmailAndPassword(auth, email, password));
+    setIsLoading(true);
+
+    // Create a loading toaster and store it's ID
+    const toastId = toast.loading("Logging in...");
+
+    await authClient.signIn.email({
+      email,
+      password,
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Successfully logged in!", { id: toastId }); // If the signIn was successfull, modify the previously created toaster
+        },
+        onError: (error) => {
+          toast.error(error.error.message, { id: toastId }); // If there was an error, indicate what went wrong
+        },
+      },
+      callbackURL: "/dashboard",
+    });
+    setIsLoading(false);
   };
 
   return (

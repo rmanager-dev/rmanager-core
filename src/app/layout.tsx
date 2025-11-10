@@ -1,7 +1,6 @@
 import "@/src/app/globals.css";
 import { ThemeProvider } from "next-themes";
 import ThemedToaster from "../components/ThemedToaster";
-import AuthProvider from "../components/AuthProvider";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Metadata } from "next";
@@ -29,17 +28,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <body className="font-sans">
         <Analytics />
         <SpeedInsights />
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <main className="min-h-dvh">{children}</main>
-            <ThemedToaster position="bottom-right" closeButton richColors />
-          </ThemeProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <main className="min-h-dvh">{children}</main>
+          <ThemedToaster position="bottom-right" closeButton richColors />
+        </ThemeProvider>
       </body>
     </html>
   );
