@@ -17,6 +17,7 @@ import { Input } from "@/src/components/ui/input";
 import { authClient } from "@/src/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -38,6 +39,7 @@ const formSchema = z.object({
 
 export default function LoginCard() {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // Create form info based on rules defined above
   const form = useForm({
@@ -61,12 +63,12 @@ export default function LoginCard() {
       fetchOptions: {
         onSuccess: () => {
           toast.success("Successfully logged in!", { id: toastId }); // If the signIn was successfull, modify the previously created toaster
+          router.push("/dashboard");
         },
         onError: (error) => {
           toast.error(error.error.message, { id: toastId }); // If there was an error, indicate what went wrong
         },
       },
-      callbackURL: "/dashboard",
     });
     setIsLoading(false);
   };

@@ -22,6 +22,7 @@ import {
   EmptyTitle,
 } from "@/src/components/ui/empty";
 import { authClient } from "@/src/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 // Object used to define rules for form items //
 const formSchema = z
@@ -46,6 +47,7 @@ const formSchema = z
 // Component //
 export default function SignupCard() {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // Create form info based on rules defined above
   const form = useForm({
@@ -67,11 +69,13 @@ export default function SignupCard() {
       fetchOptions: {
         onSuccess: () => {
           toast.success("Account created successfully!", { id: toastId }); // Modify the toaster to indicate that the user was successfully signed up
+          router.push("/dashboard");
         },
         onError: (error) => {
           toast.error(error.error.message, { id: toastId }); // If there was an error, modify the toaster to be an error toaster and indicate the error's message
         },
       },
+      callbackURL: "/dashboard",
     });
     setIsLoading(false);
   };
