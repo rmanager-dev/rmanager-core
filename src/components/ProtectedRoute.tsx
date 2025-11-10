@@ -1,52 +1,33 @@
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import React from "react";
-import { adminAuth } from "../lib/firebase/firebaseAdmin";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
+import { auth } from "../lib/auth";
 
 // Rules //
-const ruleCallbacks: Map<
-  string,
-  (cookieStore: ReadonlyRequestCookies) => RuleResult
-> = new Map();
+const ruleCallbacks: Map<string, () => RuleResult> = new Map();
 
-ruleCallbacks.set("requireLoggedIn", async (cookieStore) => {
-  const sessionCookie = cookieStore.get("session")?.value;
+ruleCallbacks.set("requireLoggedIn", async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  if (!sessionCookie) {
-    return { success: false };
-  }
-
-  const idToken = await adminAuth
-    .verifySessionCookie(sessionCookie, true)
-    .catch(() => {
-      return undefined;
-    });
-
-  if (idToken) {
+  if (session) {
     return { success: true };
   } else {
     return { success: false };
   }
 });
 
-ruleCallbacks.set("requireLoggedOff", async (cookieStore) => {
-  const sessionCookie = cookieStore.get("session")?.value;
+ruleCallbacks.set("requireLoggedOff", async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  if (!sessionCookie) {
+  if (!session) {
     return { success: true };
-  }
-
-  const idToken = await adminAuth
-    .verifySessionCookie(sessionCookie, true)
-    .catch(() => {
-      return undefined;
-    });
-
-  if (idToken) {
-    return { success: false };
   } else {
-    return { success: true };
+    return { success: false };
   }
 });
 
@@ -66,10 +47,7 @@ interface ProtectedRouteProps {
 }
 
 // Functions //
-async function enforceRules(
-  rules: Rule[],
-  cookieStore: ReadonlyRequestCookies
-): RuleResult {
+async function enforceRules(rules: Rule[]): RuleResult {
   for (const rule of rules) {
     // Check if rule exist or skip it
     if (!ruleCallbacks.has(rule as string)) {
@@ -79,7 +57,7 @@ async function enforceRules(
 
     // Try to enforce the rule
     try {
-      const { success } = await ruleCallbacks.get(rule as string)!(cookieStore);
+      const { success } = await ruleCallbacks.get(rule as string)!();
 
       // Runs if rule didnt pass
       if (!success) {
@@ -107,9 +85,8 @@ export default async function ProtectedRoute({
   errorHandler,
   children,
 }: ProtectedRouteProps) {
-  const cookieStore = await cookies();
   // Try to enforce rules given by the user
-  const { success, error } = await enforceRules(rules, cookieStore);
+  const { success, error } = await enforceRules(rules);
 
   if (!success) {
     if (error) {

@@ -11,7 +11,7 @@ export default function Navbar({
   return (
     <div
       className={cn(
-        "flex backdrop-blur-3xl w-full z-40 h-18 justify-center border-b-1",
+        "flex backdrop-blur-3xl w-full z-40 h-18 justify-center border-b",
         className
       )}
     >

@@ -5,8 +5,8 @@ import Link from "next/link";
 import Navbar from "@/src/components/Navbar";
 import { Button } from "@/src/components/ui/button";
 import UserDropdown from "@/src/components/Navbar/UserDropdown";
-import { useAuth } from "@/src/hooks/useAuth";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { authClient } from "@/src/lib/auth-client";
 
 const GithubButton = () => {
   return (
@@ -27,7 +27,7 @@ const GithubButton = () => {
 const NavbarComponent = ({ children }: { children: React.ReactNode }) => {
   return (
     <Navbar>
-      <div className="w-full max-w-[100rem] px-5 lg:px-16 xl:px-20 flex justify-between items-center">
+      <div className="w-full max-w-400 px-5 lg:px-16 xl:px-20 flex justify-between items-center">
         <Link href={"/home"}>
           <Image
             src={"brand/logo.svg"}
@@ -44,9 +44,9 @@ const NavbarComponent = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function HomepageNavbar() {
-  const { user, loading } = useAuth();
+  const { data, isPending } = authClient.useSession();
 
-  if (loading) {
+  if (isPending) {
     return (
       <NavbarComponent>
         <div className="flex gap-4 items-center">
@@ -58,16 +58,16 @@ export default function HomepageNavbar() {
     );
   }
 
-  if (!user) {
+  if (!data) {
     return (
       <NavbarComponent>
         <div className="flex gap-4 items-center">
           <GithubButton />
           <Button asChild>
-            <Link href={"/signup"}>Sign Up</Link>
+            <Link href={"/sign-up"}>Sign Up</Link>
           </Button>
           <Button variant={"outline"} asChild>
-            <Link href={"/login"}>Login</Link>
+            <Link href={"/sign-in"}>Login</Link>
           </Button>
         </div>
       </NavbarComponent>
