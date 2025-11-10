@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { auth } from "./lib/auth";
+import { headers } from "next/headers";
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Only handle the root path
   if (request.nextUrl.pathname === "/") {
     // Check for the session cookie (adjust 'session' to your cookie name)
-    const sessionCookie = request.cookies.get("session");
+    const data = await auth.api.getSession({ headers: await headers() });
 
     const url = request.nextUrl.clone();
 
-    if (sessionCookie) {
+    if (data?.user) {
       // Redirect to /dashboard if session exists
       url.pathname = "/dashboard";
     } else {

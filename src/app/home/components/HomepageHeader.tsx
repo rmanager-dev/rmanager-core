@@ -15,7 +15,7 @@ export default function HomepageHeader() {
       </p>
       <div className="flex justify-center w-full">
         <Button size={"lg"} asChild>
-          <Link href={"/signup"}>
+          <Link href={"/sign-up"}>
             Get Started
             <ArrowRight />
           </Link>

@@ -21,22 +21,23 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import Link from "next/link";
-import { useAuth } from "@/src/hooks/useAuth";
 import { useTheme } from "next-themes";
 import { signOut } from "firebase/auth";
-import { auth } from "@/src/lib/firebase/firebaseClient";
 import { Skeleton } from "../ui/skeleton";
 import React from "react";
+import { authClient } from "@/src/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function UserDropdown({
   triggerProps,
 }: {
   triggerProps?: React.ComponentProps<typeof Button>;
 }) {
-  const { user, loading } = useAuth();
+  const { data, isPending } = authClient.useSession();
   const { setTheme, theme } = useTheme();
+  const router = useRouter();
 
-  if (loading || !user) {
+  if (isPending || !data) {
     return <Skeleton className="size-8" />;
   }
 
@@ -50,7 +51,7 @@ export default function UserDropdown({
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>
           <div className="flex gap-1 items-center">
-            <User size={16} /> {user!.displayName ?? user!.email}
+            <User size={16} /> {data.user.email}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -84,7 +85,13 @@ export default function UserDropdown({
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut(auth)}>
+        <DropdownMenuItem
+          onClick={() =>
+            authClient.signOut({
+              fetchOptions: { onSuccess: () => router.push("/home") },
+            })
+          }
+        >
           <LogOut />
           <span>Logout</span>
         </DropdownMenuItem>
