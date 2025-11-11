@@ -34,13 +34,8 @@ import {
 } from "@/src/components/ui/item";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { useAuth } from "@/src/hooks/useAuth";
+import { authClient } from "@/src/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  deleteUser,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-} from "firebase/auth";
 import { TriangleAlert } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -79,8 +74,8 @@ const SkeletonComponent = () => (
 );
 
 export default function DangerZonePreferences() {
-  const { user, loading } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { data, isPending } = authClient.useSession();
 
   const formSchema = z.object({
     password: z
@@ -96,26 +91,27 @@ export default function DangerZonePreferences() {
   });
 
   const handleAccountDeletion = async (password: string) => {
-    const credentials = EmailAuthProvider.credential(user!.email!, password);
-    const success = await reauthenticateWithCredential(user!, credentials)
-      .then(() => true)
-      .catch(() => false);
-
-    if (!success) {
-      form.setError("password", { message: "Invalid password" });
-      return;
-    }
-    toast.promise(deleteUser(user!), {
-      loading: "Deleting your account...",
-      success: "Successfully deleted your account!",
-      error: "There was an error while deleting your account",
-      finally: () => {
-        setIsDialogOpen(false);
+    const toasterId = toast.loading("Deleting your account...");
+    await authClient.deleteUser({
+      password,
+      callbackURL: "/home",
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success(
+            "An email was sent to your current address to confirm account deletion.",
+            {
+              id: toasterId,
+            }
+          );
+        },
+        onError: (error) => {
+          toast.error(error.error.message, { id: toasterId });
+        },
       },
     });
   };
 
-  if (loading || !user) {
+  if (isPending || !data?.user) {
     return <SkeletonComponent />;
   }
 
@@ -129,8 +125,8 @@ export default function DangerZonePreferences() {
           <ItemTitle>Delete account</ItemTitle>
           <ItemDescription>
             Your account will be instantly deleted with all of it's data. This
-            action is irreversible. You will be prompted to enter your password
-            before deletion.
+            action is irreversible. A confirmation will be sent to your current
+            email address to finish the process.
           </ItemDescription>
         </ItemContent>
         <ItemActions>
@@ -150,7 +146,8 @@ export default function DangerZonePreferences() {
                     <DialogTitle>Delete Account</DialogTitle>
                     <DialogDescription>
                       Type your password below to permanently delete your
-                      account. This action is irreversible.
+                      account. An email will be sent to your current address to
+                      finish the process.
                     </DialogDescription>
                   </DialogHeader>
                   <FormField
