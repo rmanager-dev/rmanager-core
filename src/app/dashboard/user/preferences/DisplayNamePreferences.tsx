@@ -17,9 +17,8 @@ import {
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { useAuth } from "@/src/hooks/useAuth";
+import { authClient } from "@/src/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { updateProfile } from "firebase/auth";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -48,7 +47,7 @@ const SkeletonComponent = () => (
 );
 
 export default function DisplayNamePreferences() {
-  const { user, loading } = useAuth();
+  const { data, isPending } = authClient.useSession();
 
   const formSchema = z
     .object({
@@ -57,7 +56,7 @@ export default function DisplayNamePreferences() {
         .max(32, { error: "Display name must be 32 characters at maximum" }),
     })
     .refine((data) => data.displayName.length > 0) // Ensure given display name isn't empty (without trigerring message)
-    .refine((data) => data.displayName !== user?.displayName, {
+    .refine((values) => values.displayName !== data?.user.name, {
       error:
         "Given display name must be different than your current display name",
     }); // Ensure given display name isn't equal to current display name
@@ -65,28 +64,37 @@ export default function DisplayNamePreferences() {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      displayName: user?.displayName ?? "",
+      displayName: "",
     },
   });
 
   const currentDisplayName = form.watch("displayName");
   const isDisabled =
-    currentDisplayName == user?.displayName || // Check if the given display name is equal to the past display name
+    currentDisplayName == data?.user?.name || // Check if the given display name is equal to the past display name
     currentDisplayName.length < 1 || // Check if given display name is empty
     Object.keys(form.formState.errors).length > 0; // Check if form contains errors
 
-  const handleDisplayNameChange = (displayName: string) => {
-    toast.promise(updateProfile(user!, { displayName }), {
-      loading: "Updating your display name...",
-      success: "Successfully updated your display name!",
-      error: "There was an error while updating your display name.",
-      finally: () => {
-        form.reset({ displayName: "" });
+  const handleDisplayNameChange = async (displayName: string) => {
+    const toasterId = toast.loading("Updating display name...");
+
+    await authClient.updateUser({
+      name: displayName,
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Successfully updated your display name!", {
+            id: toasterId,
+          });
+        },
+        onError: (error) => {
+          toast.error(error.error.message, { id: toasterId });
+        },
       },
     });
+
+    form.reset();
   };
 
-  if (loading || !user) {
+  if (isPending || !data?.user) {
     return <SkeletonComponent />;
   }
 
@@ -105,7 +113,7 @@ export default function DisplayNamePreferences() {
             render={({ field }) => (
               <FormItem className="w-full max-w-lg">
                 <FormControl>
-                  <Input {...field} placeholder={user.displayName ?? ""} />
+                  <Input {...field} placeholder={data.user.name ?? ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
