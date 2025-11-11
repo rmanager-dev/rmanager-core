@@ -12,7 +12,6 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/src/components/ui/item";
-import { useAuth } from "@/src/hooks/useAuth";
 import { Button } from "@/src/components/ui/button";
 import { Edit, Mail, MailCheck } from "lucide-react";
 import React, { useState } from "react";
@@ -47,6 +46,7 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
+import { authClient } from "@/src/lib/auth-client";
 
 const CardComponent = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -79,7 +79,9 @@ const SkeletonComponent = () => {
 };
 
 export default function EmailPreferences() {
-  const { user, loading } = useAuth();
+  const { data, isPending, refetch } = authClient.useSession();
+  const user = data?.user;
+
   const [isSending, setIsSending] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -87,14 +89,10 @@ export default function EmailPreferences() {
   const formSchema = z
     .object({
       email: z
-        .string({ error: "Email must be a string of characters" })
-        .max(254, { error: "Email must be 254 characters or less" })
-        .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { error: "Invalid email format" }),
-      password: z
-        .string({ error: "Password must be a string of characters" })
-        .min(1, { error: "Password must not be empty" }),
+        .email({ error: "Please enter a valid email address" })
+        .max(254, { error: "Email must be 254 characters or less" }),
     })
-    .refine((data) => data.email !== user?.email, {
+    .refine((values) => values.email !== data?.user?.email, {
       error: "The new email address cannot be the same as your current email.",
       path: ["email"],
     });
@@ -103,61 +101,62 @@ export default function EmailPreferences() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
-  const handleEmailChange = async (data: {
-    email: string;
-    password: string;
-  }) => {
-    const credentials = EmailAuthProvider.credential(
-      user!.email!,
-      data.password
-    );
-    const success = await reauthenticateWithCredential(user!, credentials)
-      .then(() => true)
-      .catch(() => false);
-    if (!success) {
-      form.setError("password", { message: "Invalid password" });
-      return;
-    }
-    toast.promise(verifyBeforeUpdateEmail(user!, data.email), {
-      loading: "Sending confirmation email...",
-      success: "A link was sent to your new address to update your email!",
-      error:
-        "Something went wrong when sending a confirmation email to your new address. Please try again later.",
-      finally: () => {
-        form.reset();
-        setIsDialogOpen(false);
+  const handleEmailChange = async (values: { email: string }) => {
+    const toasterId = toast.loading("Changing email address...");
+    const isVerified = user?.emailVerified;
+
+    await authClient.changeEmail({
+      newEmail: values.email,
+      callbackURL: "/dashboard/user/preferences",
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success(
+            isVerified
+              ? `A link was sent to ${user.email} to update your email!`
+              : "Successfully changed your email address!",
+            {
+              id: toasterId,
+            }
+          );
+          setIsDialogOpen(false);
+          form.reset();
+        },
+        onError: (error) => {
+          toast.error(error.error.message, { id: toasterId });
+        },
       },
     });
+    refetch(); // Refetch data to display email change
   };
 
   // Verify email logic
-  const handleVerify = () => {
-    setIsSending(true);
-    toast.promise(sendEmailVerification(user!), {
-      loading: "Sending verification email...",
-      success: "Sent verification email! Please check your inbox.",
-      error: (error) => {
-        console.log(error);
-        const code = (error as FirebaseError).code;
-        switch (code) {
-          case "auth/too-many-requests":
-            return "Please wait before sending another verification email.";
-          default:
-            return "Something went wrong when trying to send verification email. Please try again later.";
-        }
-      },
-      finally: () => {
-        setIsSending(false);
+  const handleVerify = async () => {
+    const toasterId = toast.loading("Sending verification email...");
+
+    await authClient.sendVerificationEmail({
+      email: user!.email,
+      callbackURL: "/dashboard/user/preferences",
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success(
+            `Sent verification email to ${
+              user!.email
+            }! Please check your inbox.`,
+            { id: toasterId }
+          );
+        },
+        onError: (error) => {
+          toast.error(error.error.message, { id: toasterId });
+        },
       },
     });
   };
 
   // Fallback
-  if (loading || !user) {
+  if (isPending || !user) {
     return <SkeletonComponent />;
   }
 
@@ -169,7 +168,7 @@ export default function EmailPreferences() {
           <Mail />
         </ItemMedia>
         <ItemContent className="flex-row">
-          <ItemTitle>{user?.email}</ItemTitle>
+          <ItemTitle>{data.user?.email}</ItemTitle>
           {/* Dialog form */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Form {...form}>
@@ -208,23 +207,6 @@ export default function EmailPreferences() {
                       </FormItem>
                     )}
                   ></FormField>
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            placeholder="Password"
-                            {...field}
-                            type="password"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  ></FormField>
-
                   {/* Dialog Buttons */}
                   <DialogFooter>
                     <DialogClose asChild>
@@ -241,10 +223,10 @@ export default function EmailPreferences() {
           {/* Verify button */}
           <Button
             variant={"outline"}
-            disabled={isSending || user?.emailVerified}
+            disabled={isSending || data.user?.emailVerified}
             onClick={handleVerify}
           >
-            {user?.emailVerified ? (
+            {data.user?.emailVerified ? (
               <>
                 <MailCheck /> <span>Verified</span>{" "}
               </>
