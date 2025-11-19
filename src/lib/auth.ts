@@ -1,6 +1,7 @@
 import { db } from "@/src/db";
 import * as schema from "@/src/db/schema";
 import { betterAuth } from "better-auth";
+import { twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailTransporter } from "./email";
 
@@ -9,6 +10,7 @@ export const auth = betterAuth({
     provider: "sqlite",
     schema,
   }),
+  appName: "rManager",
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
@@ -52,4 +54,5 @@ export const auth = betterAuth({
     max: 60,
     window: 60,
   },
+  plugins: [twoFactor()],
 });
