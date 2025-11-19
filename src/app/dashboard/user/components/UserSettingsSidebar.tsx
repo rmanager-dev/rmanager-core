@@ -5,12 +5,11 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/src/components/ui/sidebar";
-import { ArrowLeft, Database, Lock, Settings } from "lucide-react";
+import { Settings, ShieldUser } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -33,6 +32,11 @@ const userSettingsSidebarItems: ItemGroup[] = [
         title: "Preferences",
         Icon: Settings,
         url: "/dashboard/user/preferences",
+      },
+      {
+        title: "Security",
+        Icon: ShieldUser,
+        url: "/dashboard/user/security",
       },
     ],
   },
