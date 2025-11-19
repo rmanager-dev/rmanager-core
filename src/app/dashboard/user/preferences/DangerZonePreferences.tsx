@@ -1,4 +1,5 @@
 "use client";
+import { PasswordConfirmationDialog } from "@/src/components/Dialogs/PasswordConfirmationDialog";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,
@@ -6,24 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/src/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/src/components/ui/form";
-import { Input } from "@/src/components/ui/input";
 import {
   Item,
   ItemActions,
@@ -130,55 +113,16 @@ export default function DangerZonePreferences() {
           </ItemDescription>
         </ItemContent>
         <ItemActions>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant={"destructive"}>Delete my account</Button>
-            </DialogTrigger>
-            <Form {...form}>
-              <DialogContent>
-                <form
-                  onSubmit={form.handleSubmit((data) =>
-                    handleAccountDeletion(data.password)
-                  )}
-                  className="flex flex-col gap-4"
-                >
-                  <DialogHeader>
-                    <DialogTitle>Delete Account</DialogTitle>
-                    <DialogDescription>
-                      Type your password below to permanently delete your
-                      account. An email will be sent to your current address to
-                      finish the process.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            placeholder="Password"
-                            type="password"
-                            className="focus-visible:ring-destructive/40 focus-visible:border-destructive"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant={"outline"}>Cancel</Button>
-                    </DialogClose>
-                    <Button variant={"destructive"} type="submit">
-                      Delete my account
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Form>
-          </Dialog>
+          <PasswordConfirmationDialog
+            title="Delete Account"
+            description="Type your password below to permanently delete your account. An email will be sent to your current address to finish the process."
+            callback={handleAccountDeletion}
+            submitButtonText="Delete my account"
+            submitButtonVariant={"destructive"}
+            inputClassName="focus-visible:ring-destructive/40 focus-visible:border-destructive"
+          >
+            <Button variant={"destructive"}>Delete my account</Button>
+          </PasswordConfirmationDialog>
         </ItemActions>
       </Item>
     </CardComponent>
