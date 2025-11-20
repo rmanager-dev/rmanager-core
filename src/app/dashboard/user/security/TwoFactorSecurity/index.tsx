@@ -9,13 +9,10 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { Separator } from "@/src/components/ui/separator";
-import { authClient } from "@/src/lib/auth-client";
 import TotpItemSecurity from "./TotpItem";
 import BackupCodesItemSecurity from "./BackupCodesItem";
 
 export default function TwoFactorSecurity() {
-  const { data } = authClient.useSession();
-
   return (
     <Card className="w-full">
       <CardHeader>
