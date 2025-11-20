@@ -61,7 +61,7 @@ export default function SignupCard() {
 
   const handleEmailSignup = async (email: string, password: string) => {
     setIsLoading(true);
-    const toastId = toast.loading("Creating you account..."); // Create a loading toaster and store it's id
+    const toastId = toast.loading("Creating your account..."); // Create a loading toaster and store it's id
     authClient.signUp.email({
       email,
       password,
