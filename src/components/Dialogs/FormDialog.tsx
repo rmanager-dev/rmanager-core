@@ -80,19 +80,20 @@ export default function FormDialog<TFormData extends FieldValues>({
               <DialogDescription>{description}</DialogDescription>
             </DialogHeader>
             {children}
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant={cancelButtonVariant}>
-                  {cancelButtonText}
-                </Button>
-              </DialogClose>
+            <DialogFooter className="flex sm:flex-col gap-4">
               <Button
                 type="submit"
                 variant={submitButtonVariant}
                 disabled={isLoading}
+                className="w-full"
               >
                 {submitButtonText}
               </Button>
+              <DialogClose asChild className="w-full">
+                <Button variant={cancelButtonVariant}>
+                  {cancelButtonText}
+                </Button>
+              </DialogClose>
             </DialogFooter>
           </form>
         </DialogContent>

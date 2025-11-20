@@ -1,5 +1,6 @@
 "use client";
-import TwoFactorTotpDialog from "@/src/components/Dialogs/TwoFactorTotpDialog";
+import TwoFactorDialog from "@/src/components/Dialogs/TwoFactor/TwoFactorDialog";
+("@/src/components/Dialogs/TwoFactor/TwoFactorDialog");
 import { Button } from "@/src/components/ui/button";
 import {
   Empty,
@@ -82,7 +83,7 @@ export default function LoginCard() {
 
   return (
     <>
-      <TwoFactorTotpDialog
+      <TwoFactorDialog
         open={is2FADialogOpen}
         onOpenChanged={setIs2FADialogOpen}
       />
