@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -13,18 +12,10 @@ import { Input } from "../../ui/input";
 import { authClient } from "@/src/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../../ui/dialog";
-import { Button } from "../../ui/button";
 import { useState } from "react";
 import FormDialog from "../FormDialog";
+import { Checkbox } from "../../ui/checkbox";
+import { Label } from "../../ui/label";
 
 interface TotpTwoFactorDialogProps {
   open: boolean;
@@ -43,6 +34,7 @@ export default function TotpTwoFactorDialog({
       .string()
       .length(6, { error: "Your TOTP code must be 6 digits" })
       .regex(/^\d{6}$/, "TOTP code must contain only digits"),
+    trustDevice: z.boolean(),
   });
 
   type FormData = z.infer<typeof formSchema>;
@@ -51,12 +43,16 @@ export default function TotpTwoFactorDialog({
     resolver: zodResolver(formSchema),
     defaultValues: {
       code: "",
+      trustDevice: false,
     },
   });
 
-  const handle2FAVerify = async (code: string) => {
+  const handle2FAVerify = async (code: string, trustDevice: boolean) => {
     const toasterId = toast.loading("Verifying your one-time passcode...");
-    const { error } = await authClient.twoFactor.verifyTotp({ code });
+    const { error } = await authClient.twoFactor.verifyTotp({
+      code,
+      trustDevice,
+    });
 
     if (error) {
       toast.error(error.message, { id: toasterId });
@@ -70,7 +66,7 @@ export default function TotpTwoFactorDialog({
   return (
     <FormDialog
       form={form}
-      callback={(data) => handle2FAVerify(data.code)}
+      callback={(data) => handle2FAVerify(data.code, data.trustDevice)}
       title="One-time Passcode Authentication"
       description="Enter a one-time passcode provided by your authenticator app to verify your identity."
       open={open}
@@ -87,6 +83,23 @@ export default function TotpTwoFactorDialog({
               <Input placeholder="XXXXXX" maxLength={6} {...field} />
             </FormControl>
             <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="trustDevice"
+        render={({ field }) => (
+          <FormItem>
+            <FormControl>
+              <div className="flex gap-3">
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+                <Label>Trust my device for 30 days</Label>
+              </div>
+            </FormControl>
           </FormItem>
         )}
       />
