@@ -16,6 +16,7 @@ import { useState } from "react";
 import FormDialog from "../FormDialog";
 import { Checkbox } from "../../ui/checkbox";
 import { Label } from "../../ui/label";
+import { Button } from "../../ui/button";
 
 interface TotpTwoFactorDialogProps {
   open: boolean;
@@ -27,7 +28,6 @@ export default function TotpTwoFactorDialog({
   onOpenChanged,
 }: TotpTwoFactorDialogProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
 
   const formSchema = z.object({
     code: z
@@ -72,6 +72,7 @@ export default function TotpTwoFactorDialog({
       open={open}
       onOpenChange={onOpenChanged}
       submitButtonText="Login"
+      cancelButtonText="Use another way"
     >
       <FormField
         control={form.control}
