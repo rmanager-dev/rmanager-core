@@ -93,10 +93,11 @@ export default function TotpTwoFactorDialog({
             <FormControl>
               <div className="flex gap-3">
                 <Checkbox
+                  id="trust-device-checkbox"
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
-                <Label>Trust my device for 30 days</Label>
+                <Label htmlFor="trust-device-checkbox">Trust my device for 30 days</Label>
               </div>
             </FormControl>
           </FormItem>

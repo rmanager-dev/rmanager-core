@@ -69,7 +69,7 @@ export default function LoginCard() {
             setIs2FADialogOpen(true);
             return;
           }
-          toast.success("Successfully logged in!", { id: toastId }); // If the signIn was successfull, modify the previously created toaster
+          toast.success("Successfully logged in!", { id: toastId }); // If the signIn was successful, modify the previously created toaster
           router.replace("/dashboard");
         },
         onError: (error) => {

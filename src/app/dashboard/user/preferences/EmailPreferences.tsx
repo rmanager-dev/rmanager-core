@@ -17,16 +17,7 @@ import { Edit, Mail, MailCheck } from "lucide-react";
 import React, { useState } from "react";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/src/components/ui/dialog";
+// Removed unused dialog imports
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

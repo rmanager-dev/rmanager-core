@@ -97,11 +97,11 @@ const Enroll2FADialog = ({
           <InputGroupInput placeholder={secret ?? "No secret found"} readOnly />
           <InputGroupAddon align={"inline-end"}>
             <InputGroupButton
-              onClick={() => copyToClipboard(secret!)}
+              onClick={() => { if (secret) copyToClipboard(secret); }}
               size={"icon-xs"}
+              disabled={!secret}
             >
               {copiedText ? <Check /> : <Copy />}
-            </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
       </div>
@@ -157,7 +157,7 @@ export default function TotpItemSecurity() {
     const { error } = await authClient.twoFactor.verifyTotp({ code });
     if (error) {
       toast.error(
-        error.code == "INVALID_TWO_FACTOR_COOKIE"
+        error.code === "INVALID_TWO_FACTOR_COOKIE"
           ? "Invalid authentication code."
           : error.message,
         { id: toasterId }
@@ -203,7 +203,7 @@ export default function TotpItemSecurity() {
       {!totpQrCode && !user.twoFactorEnabled && (
         <PasswordConfirmationDialog
           title="Enable 2FA for your account"
-          description="Please enter your password to enable 2FA. You will be prompted to scan a QR code using your thrid party TOTP app."
+          description="Please enter your password to enable 2FA. You will be prompted to scan a QR code using your third party TOTP app."
           submitButtonText="Enable 2FA"
           callback={handle2FAEnable}
         >

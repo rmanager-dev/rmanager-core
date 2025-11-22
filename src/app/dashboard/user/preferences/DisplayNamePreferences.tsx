@@ -55,7 +55,7 @@ export default function DisplayNamePreferences() {
         .string()
         .max(32, { error: "Display name must be 32 characters at maximum" }),
     })
-    .refine((data) => data.displayName.length > 0) // Ensure given display name isn't empty (without trigerring message)
+    .refine((data) => data.displayName.length > 0) // Ensure given display name isn't empty (without triggering message)
     .refine((values) => values.displayName !== data?.user.name, {
       error:
         "Given display name must be different than your current display name",
