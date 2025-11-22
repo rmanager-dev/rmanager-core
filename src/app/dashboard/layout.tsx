@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 flex shrink-0">
           <DashboardNavbar />
         </header>
-        <main className="flex-1 overflow-auto">{children}</main>
+        <div className="flex-1 flex overflow-hidden">{children}</div>
       </SidebarProvider>
     </ProtectedRoute>
   );

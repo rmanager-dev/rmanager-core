@@ -51,7 +51,7 @@ export default function UserDropdown({
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>
           <div className="flex gap-1 items-center">
-            <User size={16} /> {data.user.email}
+            <User size={16} /> {data.user.name || data.user.email}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -63,7 +63,7 @@ export default function UserDropdown({
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href={"/account"}>
+            <Link href={"/dashboard/user/preferences"}>
               <Settings />
               <span>Account Preferences</span>
             </Link>

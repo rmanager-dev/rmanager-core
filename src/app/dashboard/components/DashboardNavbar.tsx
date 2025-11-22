@@ -12,7 +12,7 @@ export default function DashboardNavbar() {
           <SidebarTrigger className="md:hidden" />
           <Link href={"/dashboard"}>
             <Image
-              src={"brand/logo.svg"}
+              src={"/brand/logo.svg"}
               width={60}
               height={60}
               alt="Logo"

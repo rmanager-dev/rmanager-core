@@ -1,4 +1,5 @@
 "use client";
+import TwoFactorDialog from "@/src/components/Dialogs/TwoFactor/TwoFactorDialog";
 import { Button } from "@/src/components/ui/button";
 import {
   Empty,
@@ -39,6 +40,7 @@ const formSchema = z.object({
 
 export default function LoginCard() {
   const [isLoading, setIsLoading] = useState(false);
+  const [is2FADialogOpen, setIs2FADialogOpen] = useState(false);
   const router = useRouter();
 
   // Create form info based on rules defined above
@@ -61,9 +63,14 @@ export default function LoginCard() {
       email,
       password,
       fetchOptions: {
-        onSuccess: () => {
-          toast.success("Successfully logged in!", { id: toastId }); // If the signIn was successfull, modify the previously created toaster
-          router.push("/dashboard");
+        onSuccess: (ctx) => {
+          if (ctx.data.twoFactorRedirect) {
+            toast.dismiss(toastId);
+            setIs2FADialogOpen(true);
+            return;
+          }
+          toast.success("Successfully logged in!", { id: toastId }); // If the signIn was successful, modify the previously created toaster
+          router.replace("/dashboard");
         },
         onError: (error) => {
           toast.error(error.error.message, { id: toastId }); // If there was an error, indicate what went wrong
@@ -74,79 +81,85 @@ export default function LoginCard() {
   };
 
   return (
-    <div className="min-h-dvh flex flex-col items-center">
-      <Empty className="w-full p-10">
-        <EmptyHeader>
-          <EmptyTitle className="text-3xl font-semibold">
-            Login to rManager
-          </EmptyTitle>
-        </EmptyHeader>
-        <EmptyContent>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit((values) =>
-                handleLoginWithEmail(values.email, values.password)
-              )}
-              className="w-full flex flex-col gap-4"
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        placeholder="Email"
-                        className="h-13 w-full"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+    <>
+      <TwoFactorDialog
+        open={is2FADialogOpen}
+        onOpenChanged={setIs2FADialogOpen}
+      />
+      <div className="min-h-dvh flex flex-col items-center">
+        <Empty className="w-full p-10">
+          <EmptyHeader>
+            <EmptyTitle className="text-3xl font-semibold">
+              Login to rManager
+            </EmptyTitle>
+          </EmptyHeader>
+          <EmptyContent>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit((values) =>
+                  handleLoginWithEmail(values.email, values.password)
                 )}
-              ></FormField>
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        className="h-13 w-full"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              ></FormField>
-              <Button
-                className="text-muted-foreground h-0 font-semibold"
-                variant={"link"}
-                asChild
+                className="w-full flex flex-col gap-4"
               >
-                <Link href={"/forgot"}>Forgot password?</Link>
-              </Button>
-              <Button className="h-12 w-full" disabled={isLoading}>
-                Login
-              </Button>
-
-              <span className="text-muted-foreground font-semibold">
-                Dont have an account?{" "}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="Email"
+                          className="h-13 w-full"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                ></FormField>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          className="h-13 w-full"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                ></FormField>
                 <Button
-                  className="text-blue-500 p-0 h-0 font-semibold"
+                  className="text-muted-foreground h-0 font-semibold"
                   variant={"link"}
                   asChild
                 >
-                  <Link href={"/sign-up"}>Sign Up</Link>
+                  <Link href={"/forgot"}>Forgot password?</Link>
                 </Button>
-              </span>
-            </form>
-          </Form>
-        </EmptyContent>
-      </Empty>
-    </div>
+                <Button className="h-12 w-full" disabled={isLoading}>
+                  Login
+                </Button>
+
+                <span className="text-muted-foreground font-semibold">
+                  Dont have an account?{" "}
+                  <Button
+                    className="text-blue-500 p-0 h-0 font-semibold"
+                    variant={"link"}
+                    asChild
+                  >
+                    <Link href={"/sign-up"}>Sign Up</Link>
+                  </Button>
+                </span>
+              </form>
+            </Form>
+          </EmptyContent>
+        </Empty>
+      </div>
+    </>
   );
 }
