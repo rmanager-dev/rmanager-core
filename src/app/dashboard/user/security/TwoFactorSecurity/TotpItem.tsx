@@ -97,11 +97,14 @@ const Enroll2FADialog = ({
           <InputGroupInput placeholder={secret ?? "No secret found"} readOnly />
           <InputGroupAddon align={"inline-end"}>
             <InputGroupButton
-              onClick={() => { if (secret) copyToClipboard(secret); }}
+              onClick={() => {
+                if (secret) copyToClipboard(secret);
+              }}
               size={"icon-xs"}
               disabled={!secret}
             >
               {copiedText ? <Check /> : <Copy />}
+            </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
       </div>
