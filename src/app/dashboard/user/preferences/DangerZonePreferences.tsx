@@ -18,12 +18,9 @@ import {
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { authClient } from "@/src/lib/auth-client";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { TriangleAlert } from "lucide-react";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React from "react";
 import { toast } from "sonner";
-import z from "zod";
 
 const CardComponent = ({ children }: { children: React.ReactNode }) => (
   <Card className="w-full">
@@ -44,7 +41,7 @@ const SkeletonComponent = () => (
       <ItemContent>
         <ItemTitle>Delete account</ItemTitle>
         <ItemDescription>
-          Your account will be instantly deleted with all of it's data. This
+          Your account will be instantly deleted with all of its data. This
           action is irreversible. You will be prompted to enter your password
           before deletion.
         </ItemDescription>
@@ -57,21 +54,7 @@ const SkeletonComponent = () => (
 );
 
 export default function DangerZonePreferences() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { data, isPending } = authClient.useSession();
-
-  const formSchema = z.object({
-    password: z
-      .string({ error: "Password must be a string of characters" })
-      .min(1, { error: "Password must not be empty" }),
-  });
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      password: "",
-    },
-  });
 
   const handleAccountDeletion = async (password: string) => {
     const toasterId = toast.loading("Deleting your account...");

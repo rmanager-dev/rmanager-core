@@ -1,7 +1,6 @@
 "use client";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -18,7 +17,7 @@ export default function TwoFactorSecurity() {
       <CardHeader>
         <CardTitle>Two-Factor Authentication</CardTitle>
         <CardDescription>
-          Two Factor Authentication adds an aditional layer of security by
+          Two Factor Authentication adds an additional layer of security by
           requiring a second authentication method.
         </CardDescription>
       </CardHeader>

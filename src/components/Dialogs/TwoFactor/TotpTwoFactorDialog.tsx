@@ -12,11 +12,9 @@ import { Input } from "../../ui/input";
 import { authClient } from "@/src/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import FormDialog from "../FormDialog";
 import { Checkbox } from "../../ui/checkbox";
 import { Label } from "../../ui/label";
-import { Button } from "../../ui/button";
 
 interface TotpTwoFactorDialogProps {
   open: boolean;

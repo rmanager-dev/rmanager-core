@@ -43,7 +43,7 @@ const ItemComponent = ({ children }: React.PropsWithChildren) => {
       <ItemContent>
         <ItemTitle>Authenticator App (TOTP)</ItemTitle>
         <ItemDescription>
-          Authenticate using a thrid party TOTP app like Google Authenticator
+          Authenticate using a third-party TOTP app like Google Authenticator
         </ItemDescription>
       </ItemContent>
       <ItemActions>{children}</ItemActions>
@@ -61,6 +61,7 @@ const Enroll2FADialog = ({
   callback: (password: string) => void;
 }) => {
   const [copiedText, copyToClipboard] = useCopyToClipboard();
+  const [isOpen, setIsOpen] = useState(true);
   const formSchema = z.object({
     code: z
       .string()
@@ -84,7 +85,8 @@ const Enroll2FADialog = ({
       title="Verify TOTP"
       description="Scan the QR code with an authenticator app and provide the given code to confirm enrolment"
       trigger={children}
-      open={true}
+      open={isOpen}
+      onOpenChange={setIsOpen}
     >
       <div className="w-full flex flex-col items-center mb-4 gap-4">
         <QRCode

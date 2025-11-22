@@ -29,7 +29,7 @@ const CardComponent = ({ children }: { children: React.ReactNode }) => (
     <CardHeader>
       <CardTitle>Display Name</CardTitle>
       <CardDescription>
-        This display name will be used arround the site
+        This display name will be used around the site
       </CardDescription>
     </CardHeader>
     <Separator />

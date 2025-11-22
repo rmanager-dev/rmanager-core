@@ -16,14 +16,7 @@ import { Button } from "@/src/components/ui/button";
 import { Edit, Mail, MailCheck } from "lucide-react";
 import React, { useState } from "react";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import {
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  sendEmailVerification,
-  verifyBeforeUpdateEmail,
-} from "firebase/auth";
 import { toast } from "sonner";
-import { FirebaseError } from "firebase/app";
 import {
   Dialog,
   DialogClose,
@@ -47,6 +40,7 @@ import {
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { authClient } from "@/src/lib/auth-client";
+import FormDialog from "@/src/components/Dialogs/FormDialog";
 
 const CardComponent = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -83,7 +77,6 @@ export default function EmailPreferences() {
   const user = data?.user;
 
   const [isSending, setIsSending] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Change email form
   const formSchema = z
@@ -121,7 +114,6 @@ export default function EmailPreferences() {
               id: toasterId,
             }
           );
-          setIsDialogOpen(false);
           form.reset();
         },
         onError: (error) => {
@@ -134,6 +126,7 @@ export default function EmailPreferences() {
 
   // Verify email logic
   const handleVerify = async () => {
+    setIsSending(true);
     const toasterId = toast.loading("Sending verification email...");
 
     await authClient.sendVerificationEmail({
@@ -153,6 +146,7 @@ export default function EmailPreferences() {
         },
       },
     });
+    setIsSending(false);
   };
 
   // Fallback
@@ -170,54 +164,31 @@ export default function EmailPreferences() {
         <ItemContent className="flex-row">
           <ItemTitle>{data.user?.email}</ItemTitle>
           {/* Dialog form */}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <Form {...form}>
-              {/* Edit button */}
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon-sm" type="button">
-                  <Edit />
-                </Button>
-              </DialogTrigger>
-
-              {/* Dialog content */}
-              <DialogContent>
-                <form
-                  onSubmit={form.handleSubmit(handleEmailChange)}
-                  className="flex flex-col gap-4"
-                >
-                  <DialogHeader>
-                    <DialogTitle>Update Email</DialogTitle>
-                    <DialogDescription>
-                      Enter your new email address and password below to update
-                      your email. A link will be sent to the new address to
-                      update your email.
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  {/* Email Form Input */}
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input placeholder="new@email.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  ></FormField>
-                  {/* Dialog Buttons */}
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant={"outline"}>Cancel</Button>
-                    </DialogClose>
-                    <Button type="submit">Save</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Form>
-          </Dialog>
+          <FormDialog
+            title="Update Email"
+            description="Enter your new email address and password below to update your email. A link will be sent to the new address to update your email."
+            trigger={
+              <Button variant="ghost" size="icon-sm" type="button">
+                <Edit />
+              </Button>
+            }
+            submitButtonText="Save"
+            form={form}
+            callback={handleEmailChange}
+          >
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="new@email.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            ></FormField>
+          </FormDialog>
         </ItemContent>
         <ItemActions>
           {/* Verify button */}

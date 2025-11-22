@@ -1,6 +1,5 @@
 "use client";
 import TwoFactorDialog from "@/src/components/Dialogs/TwoFactor/TwoFactorDialog";
-("@/src/components/Dialogs/TwoFactor/TwoFactorDialog");
 import { Button } from "@/src/components/ui/button";
 import {
   Empty,

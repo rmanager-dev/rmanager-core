@@ -3,7 +3,7 @@ import { createTransport } from "nodemailer";
 export const emailTransporter = createTransport({
   service: "gmail",
   auth: {
-    user: "noreply.rmanager@gmail.com",
+    user: process.env.GMAIL_EMAIL_ADDRESS,
     pass: process.env.GMAIL_APP_PASSWORD,
   },
 });
