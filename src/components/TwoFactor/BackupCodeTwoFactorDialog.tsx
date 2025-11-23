@@ -12,8 +12,6 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
 import TrustDeviceCheckbox from "./TrustDeviceCheckbox";
 import { Input } from "../ui/input";
 
@@ -29,7 +27,7 @@ export default function BackupCodeTwoFactorDialog({
   const router = useRouter();
 
   const formSchema = z.object({
-    code: z.string().length(6, "Your backup code must be 6 characters."),
+    code: z.string().length(11, "Your backup code must be 10 characters."), // Account for the dash
     trustDevice: z.boolean(),
   });
 
@@ -77,7 +75,7 @@ export default function BackupCodeTwoFactorDialog({
           <FormItem>
             <FormLabel>Backup Code</FormLabel>
             <FormControl>
-              <Input placeholder="XXXXXX" maxLength={6} {...field} />
+              <Input placeholder="XXXXXX" maxLength={11} {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
