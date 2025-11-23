@@ -1,11 +1,11 @@
-import { ChevronRightIcon, KeyRound } from "lucide-react";
+import { ChevronRightIcon, KeyRound, RotateCcwKey } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
+} from "../ui/dialog";
 import React from "react";
 import {
   Item,
@@ -13,19 +13,19 @@ import {
   ItemContent,
   ItemMedia,
   ItemTitle,
-} from "../../ui/item";
-import { Button } from "../../ui/button";
+} from "../ui/item";
+import { Button } from "../ui/button";
 
 interface TwoFactorSwitcherDialogProps {
   open: boolean;
   onOpenChanged: (open: boolean) => void;
-  setCurrentDialog: (dialog: "switch" | "totp") => any;
+  setCurrentDialog: (dialog: "switch" | "totp" | "backup") => any;
 }
 
 interface AuthenticationMethodType {
   name: string;
   description: string;
-  dialogName: "switch" | "totp";
+  dialogName: "switch" | "totp" | "backup";
   Icon: typeof KeyRound;
 }
 
@@ -36,6 +36,12 @@ const AuthenticationMethods: AuthenticationMethodType[] = [
       "Authenticate using a one time passcode from your authenticator app",
     dialogName: "totp",
     Icon: KeyRound,
+  },
+  {
+    name: "Backup Code",
+    description: "Authenticate using a backup code",
+    dialogName: "backup",
+    Icon: RotateCcwKey,
   },
 ];
 
@@ -66,7 +72,7 @@ export default function TwoFactorSwitcherDialog({
               <Button
                 type="button"
                 variant={"outline"}
-                className="size-full"
+                className="h-16"
                 onClick={() => setCurrentDialog(method.dialogName)}
               >
                 <ItemMedia variant={"icon"}>

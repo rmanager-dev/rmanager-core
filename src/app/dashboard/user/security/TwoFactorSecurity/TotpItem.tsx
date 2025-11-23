@@ -1,5 +1,5 @@
-import FormDialog from "@/src/components/Dialogs/FormDialog";
-import { PasswordConfirmationDialog } from "@/src/components/Dialogs/PasswordConfirmationDialog";
+import FormDialog from "@/src/components/FormDialog";
+import { PasswordConfirmationDialog } from "@/src/components/PasswordConfirmationDialog";
 import { Button } from "@/src/components/ui/button";
 import {
   FormControl,
@@ -163,7 +163,7 @@ export default function TotpItemSecurity() {
         error.code === "INVALID_TWO_FACTOR_COOKIE"
           ? "Invalid authentication code."
           : error.message,
-        { id: toasterId }
+        { id: toasterId },
       );
       return;
     }

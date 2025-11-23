@@ -1,5 +1,5 @@
 "use client";
-import TwoFactorDialog from "@/src/components/Dialogs/TwoFactor/TwoFactorDialog";
+import TwoFactorDialog from "@/src/components/TwoFactor/TwoFactorDialog";
 import { Button } from "@/src/components/ui/button";
 import {
   Empty,
@@ -97,7 +97,7 @@ export default function LoginCard() {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit((values) =>
-                  handleLoginWithEmail(values.email, values.password)
+                  handleLoginWithEmail(values.email, values.password),
                 )}
                 className="w-full flex flex-col gap-4"
               >

@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import FormDialog from "@/src/components/Dialogs/FormDialog";
+import FormDialog from "@/src/components/FormDialog";
 
 // Schema for password validation (customize as needed)
 const formSchema = z.object({

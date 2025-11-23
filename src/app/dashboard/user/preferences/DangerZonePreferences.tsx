@@ -1,5 +1,5 @@
 "use client";
-import { PasswordConfirmationDialog } from "@/src/components/Dialogs/PasswordConfirmationDialog";
+import { PasswordConfirmationDialog } from "@/src/components/PasswordConfirmationDialog";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,
@@ -67,7 +67,7 @@ export default function DangerZonePreferences() {
             "An email was sent to your current address to confirm account deletion.",
             {
               id: toasterId,
-            }
+            },
           );
         },
         onError: (error) => {

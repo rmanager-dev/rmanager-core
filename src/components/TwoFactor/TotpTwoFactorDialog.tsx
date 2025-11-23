@@ -7,14 +7,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../../ui/form";
-import { Input } from "../../ui/input";
+} from "../ui/form";
+import { Input } from "../ui/input";
 import { authClient } from "@/src/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FormDialog from "../FormDialog";
-import { Checkbox } from "../../ui/checkbox";
-import { Label } from "../../ui/label";
+import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
+import TrustDeviceCheckbox from "./TrustDeviceCheckbox";
 
 interface TotpTwoFactorDialogProps {
   open: boolean;
@@ -70,7 +71,7 @@ export default function TotpTwoFactorDialog({
       open={open}
       onOpenChange={onOpenChanged}
       submitButtonText="Login"
-      cancelButtonText="Use another way"
+      cancelButtonText="Use another method"
     >
       <FormField
         control={form.control}
@@ -85,24 +86,7 @@ export default function TotpTwoFactorDialog({
           </FormItem>
         )}
       />
-      <FormField
-        control={form.control}
-        name="trustDevice"
-        render={({ field }) => (
-          <FormItem>
-            <FormControl>
-              <div className="flex gap-3">
-                <Checkbox
-                  id="trust-device-checkbox"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-                <Label htmlFor="trust-device-checkbox">Trust my device for 30 days</Label>
-              </div>
-            </FormControl>
-          </FormItem>
-        )}
-      />
+      <TrustDeviceCheckbox form={form} />
     </FormDialog>
   );
 }
