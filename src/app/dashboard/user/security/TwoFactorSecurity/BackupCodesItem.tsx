@@ -45,7 +45,7 @@ export default function BackupCodesItemSecurity() {
   return (
     <ItemComponent>
       <Button variant={"outline"} disabled={!user.twoFactorEnabled}>
-        Regenerate
+        Manage
       </Button>
     </ItemComponent>
   );
