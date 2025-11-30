@@ -31,7 +31,7 @@ import {
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { authClient } from "@/src/lib/auth-client";
-import FormDialog from "@/src/components/Dialogs/FormDialog";
+import FormDialog from "@/src/components/FormDialog";
 
 const CardComponent = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -103,7 +103,7 @@ export default function EmailPreferences() {
               : "Successfully changed your email address!",
             {
               id: toasterId,
-            }
+            },
           );
           form.reset();
         },
@@ -129,7 +129,7 @@ export default function EmailPreferences() {
             `Sent verification email to ${
               user!.email
             }! Please check your inbox.`,
-            { id: toasterId }
+            { id: toasterId },
           );
         },
         onError: (error) => {

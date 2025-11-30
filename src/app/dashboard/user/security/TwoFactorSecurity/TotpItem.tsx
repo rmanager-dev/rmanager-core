@@ -1,5 +1,6 @@
-import FormDialog from "@/src/components/Dialogs/FormDialog";
-import { PasswordConfirmationDialog } from "@/src/components/Dialogs/PasswordConfirmationDialog";
+import FormDialog from "@/src/components/FormDialog";
+import { PasswordConfirmationDialog } from "@/src/components/PasswordConfirmationDialog";
+import ViewBackupCodeDialog from "@/src/components/TwoFactor/ViewBackupCodeDialog";
 import { Button } from "@/src/components/ui/button";
 import {
   FormControl,
@@ -128,6 +129,7 @@ const Enroll2FADialog = ({
 export default function TotpItemSecurity() {
   const { data, isPending } = authClient.useSession();
   const [totpQrCode, setTotpQrCode] = useState<URL>();
+  const [backupCodes, setBackupCodes] = useState<string[]>();
 
   const user = data?.user;
 
@@ -151,7 +153,7 @@ export default function TotpItemSecurity() {
         id: toasterId,
       });
     }
-
+    setBackupCodes(data.backupCodes);
     toast.dismiss(toasterId);
   };
 
@@ -163,7 +165,7 @@ export default function TotpItemSecurity() {
         error.code === "INVALID_TWO_FACTOR_COOKIE"
           ? "Invalid authentication code."
           : error.message,
-        { id: toasterId }
+        { id: toasterId },
       );
       return;
     }
@@ -225,6 +227,18 @@ export default function TotpItemSecurity() {
         >
           <Button variant={"outline"}>Disable</Button>
         </PasswordConfirmationDialog>
+      )}
+
+      {backupCodes && !totpQrCode && (
+        <ViewBackupCodeDialog
+          backupCodes={backupCodes}
+          open={backupCodes !== undefined}
+          onOpenChange={(newVal) => {
+            if (!newVal) {
+              setBackupCodes(undefined);
+            }
+          }}
+        ></ViewBackupCodeDialog>
       )}
     </ItemComponent>
   );

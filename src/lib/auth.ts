@@ -54,5 +54,11 @@ export const auth = betterAuth({
     max: 60,
     window: 60,
   },
-  plugins: [twoFactor()],
+  plugins: [
+    twoFactor({
+      backupCodeOptions: {
+        storeBackupCodes: "encrypted",
+      },
+    }),
+  ],
 });

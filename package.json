@@ -37,6 +37,7 @@
     "qrcode": "^1.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-downloadfile-hook": "^1.0.3",
     "react-firebase-hooks": "^5.1.1",
     "react-hook-form": "^7.63.0",
     "react-icons": "^5.5.0",

@@ -10,8 +10,12 @@ import {
 import { Separator } from "@/src/components/ui/separator";
 import TotpItemSecurity from "./TotpItem";
 import BackupCodesItemSecurity from "./BackupCodesItem";
+import { authClient } from "@/src/lib/auth-client";
 
 export default function TwoFactorSecurity() {
+  const { data } = authClient.useSession();
+  const user = data?.user;
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -25,9 +29,11 @@ export default function TwoFactorSecurity() {
       <CardContent>
         <TotpItemSecurity />
       </CardContent>
-      <CardFooter>
-        <BackupCodesItemSecurity />
-      </CardFooter>
+      {user?.twoFactorEnabled && (
+        <CardFooter>
+          <BackupCodesItemSecurity />
+        </CardFooter>
+      )}
     </Card>
   );
 }
