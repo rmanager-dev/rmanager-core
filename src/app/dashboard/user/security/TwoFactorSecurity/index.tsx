@@ -13,7 +13,7 @@ import BackupCodesItemSecurity from "./BackupCodesItem";
 import { authClient } from "@/src/lib/auth-client";
 
 export default function TwoFactorSecurity() {
-  const { data, isPending } = authClient.useSession();
+  const { data } = authClient.useSession();
   const user = data?.user;
 
   return (

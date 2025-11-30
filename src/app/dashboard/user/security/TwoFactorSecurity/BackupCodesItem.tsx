@@ -53,7 +53,6 @@ export default function BackupCodesItemSecurity() {
     }
 
     toast.dismiss(toasterId);
-    console.log(data);
     setBackupCodes(data.backupCodes);
   };
 

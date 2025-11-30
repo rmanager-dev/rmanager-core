@@ -13,8 +13,6 @@ import { authClient } from "@/src/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FormDialog from "../FormDialog";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
 import TrustDeviceCheckbox from "./TrustDeviceCheckbox";
 
 interface TotpTwoFactorDialogProps {
