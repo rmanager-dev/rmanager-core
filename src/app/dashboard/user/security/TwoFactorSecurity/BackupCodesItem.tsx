@@ -1,3 +1,5 @@
+import { PasswordConfirmationDialog } from "@/src/components/PasswordConfirmationDialog";
+import ViewBackupCodeDialog from "@/src/components/TwoFactor/ViewBackupCodeDialog";
 import { Button } from "@/src/components/ui/button";
 import {
   Item,
@@ -10,7 +12,8 @@ import {
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { authClient } from "@/src/lib/auth-client";
 import { RotateCcwKey } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
+import { toast } from "sonner";
 
 const ItemComponent = ({ children }: React.PropsWithChildren) => {
   return (
@@ -32,7 +35,27 @@ const ItemComponent = ({ children }: React.PropsWithChildren) => {
 
 export default function BackupCodesItemSecurity() {
   const { data, isPending } = authClient.useSession();
+  const [backupCodes, setBackupCodes] = useState<string[]>();
   const user = data?.user;
+
+  const handleRegenerateBackupCodes = async (password: string) => {
+    const toasterId = toast.loading("Regenerating backup codes...");
+    const { data, error } = await authClient.twoFactor.generateBackupCodes({
+      password,
+    });
+
+    if (error) {
+      toast.error(
+        error.message ?? "There was an error while regenerating backup codes.",
+        { id: toasterId },
+      );
+      return;
+    }
+
+    toast.dismiss(toasterId);
+    console.log(data);
+    setBackupCodes(data.backupCodes);
+  };
 
   if (!user || isPending) {
     return (
@@ -44,9 +67,31 @@ export default function BackupCodesItemSecurity() {
 
   return (
     <ItemComponent>
-      <Button variant={"outline"} disabled={!user.twoFactorEnabled}>
-        Manage
-      </Button>
+      {backupCodes && (
+        <ViewBackupCodeDialog
+          backupCodes={backupCodes}
+          open={backupCodes !== undefined}
+          onOpenChange={(newVal) => {
+            if (!newVal) {
+              setBackupCodes(undefined);
+            }
+          }}
+        >
+          <Button variant={"outline"}>View</Button>
+        </ViewBackupCodeDialog>
+      )}
+      {!backupCodes && (
+        <PasswordConfirmationDialog
+          title="Regenerate backup codes"
+          description="Enter your password below to regenerate your 2FA backup codes. This action will invalidate any previous backup codes."
+          submitButtonText="Regenerate"
+          callback={handleRegenerateBackupCodes}
+        >
+          <Button variant={"outline"} disabled={!user.twoFactorEnabled}>
+            Regenerate
+          </Button>
+        </PasswordConfirmationDialog>
+      )}
     </ItemComponent>
   );
 }
