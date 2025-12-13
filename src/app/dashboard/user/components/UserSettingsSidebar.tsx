@@ -9,7 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/src/components/ui/sidebar";
-import { Settings, ShieldUser } from "lucide-react";
+import { Database, Settings, ShieldUser } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -37,6 +37,16 @@ const userSettingsSidebarItems: ItemGroup[] = [
         title: "Security",
         Icon: ShieldUser,
         url: "/dashboard/user/security",
+      },
+    ],
+  },
+  {
+    groupTitle: "Connections",
+    items: [
+      {
+        title: "Databases",
+        Icon: Database,
+        url: "/dashboard/user/databases",
       },
     ],
   },
