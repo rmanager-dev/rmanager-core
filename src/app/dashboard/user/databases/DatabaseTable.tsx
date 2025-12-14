@@ -1,4 +1,6 @@
 "use client";
+import { Button } from "@/src/components/ui/button";
+import { ButtonGroup } from "@/src/components/ui/button-group";
 import { Input } from "@/src/components/ui/input";
 import {
   Table,
@@ -9,6 +11,11 @@ import {
   TableRow,
 } from "@/src/components/ui/table";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
+import {
   ColumnDef,
   ColumnFiltersState,
   flexRender,
@@ -16,18 +23,24 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 
 interface DatabaseTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  loading: boolean;
+  refreshFn: () => Promise<any>;
 }
 
 export function DatabaseTable<TData, TValue>({
   columns,
   data,
+  loading,
+  refreshFn,
 }: DatabaseTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [isFetching, setIsFetching] = useState(false);
 
   const table = useReactTable({
     data,
@@ -40,6 +53,16 @@ export function DatabaseTable<TData, TValue>({
     },
   });
 
+  const handleRefresh = async () => {
+    if (isFetching) {
+      return;
+    }
+    setIsFetching(true);
+    refreshFn();
+
+    setTimeout(() => setIsFetching(false), 1000);
+  };
+
   return (
     <div className="w-full">
       <div className="flex justify-between py-4 gap-4">
@@ -51,6 +74,22 @@ export function DatabaseTable<TData, TValue>({
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
         />
+        <ButtonGroup>
+          <Button variant={"outline"} onClick={handleRefresh}>
+            <RefreshCwIcon className={isFetching ? "animate-spin" : ""} />
+            <span>Refresh</span>
+          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant={"outline"} size={"icon"}>
+                <PlusIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Link a new database</p>
+            </TooltipContent>
+          </Tooltip>
+        </ButtonGroup>
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -71,7 +110,16 @@ export function DatabaseTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} className="h-14">
                   {row.getVisibleCells().map((cell) => (

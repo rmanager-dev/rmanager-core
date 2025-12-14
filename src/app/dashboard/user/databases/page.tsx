@@ -1,25 +1,13 @@
 "use client";
+import { ListDatabases } from "@/src/controllers/ExternalDatabaseController";
 import { columns, Database } from "./DatabaseColumn";
 import { DatabaseTable } from "./DatabaseTable";
-
-const mockData: Database[] = [
-  {
-    id: "uuid-1",
-    name: "Backblaze B2 DB",
-    endpoint: "s3.eu-central-003.backblazeb2.com",
-    region: "eu-central-003",
-    type: "S3",
-  },
-  {
-    id: "uuid-2",
-    name: "Amazon S3 DB",
-    endpoint: "s3.eu-west-3.amazonaws.com",
-    region: "eu-west-3",
-    type: "S3",
-  },
-];
+import { useQuery } from "react-query";
 
 export default function Page() {
+  const { data, refetch, isLoading } = useQuery("databases", ListDatabases, {
+    staleTime: 1 * 60 * 1000,
+  });
   return (
     <>
       <div className="flex flex-col w-full">
@@ -31,7 +19,12 @@ export default function Page() {
         </span>
       </div>
       <div className="container mx-auto">
-        <DatabaseTable columns={columns} data={mockData} />
+        <DatabaseTable
+          columns={columns}
+          data={data ?? []}
+          loading={isLoading}
+          refreshFn={refetch}
+        />
       </div>
     </>
   );
