@@ -1,4 +1,5 @@
 "use client";
+import FormDialog from "@/src/components/FormDialog";
 import { queryClient } from "@/src/components/QueryClientWrapper";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -18,11 +19,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import { DeleteDatabase } from "@/src/controllers/ExternalDatabaseController";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
+import {
+  DeleteDatabase,
+  RenameDatabase,
+} from "@/src/controllers/ExternalDatabaseController";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import z from "zod";
 
 export type Database = {
   id: string;
@@ -92,6 +106,79 @@ const handleDatabaseDeletion = async (id: string) => {
   }
 };
 
+const handleDatabaseRename = async (id: string, name: string) => {
+  const toastId = toast.loading("Renaming database...");
+  try {
+    await RenameDatabase(id, name);
+    queryClient.setQueryData("databases", (oldData) => {
+      if (!oldData) return oldData;
+      return (oldData as Database[]).map((db) =>
+        db.id === id ? { ...db, name } : db,
+      );
+    });
+    toast.success("Database renamed successfully", { id: toastId });
+  } catch (error) {
+    if (error instanceof Error) {
+      toast.error(error.message, { id: toastId });
+    } else {
+      toast.error("An unexpected error occurred", { id: toastId });
+    }
+  }
+};
+
+const DatabaseRenameDialog = ({
+  id,
+  trigger,
+}: {
+  id: string;
+  trigger: React.ReactNode;
+}) => {
+  const [open, onOpenChange] = useState(false);
+  const formSchema = z.object({
+    name: z.string().min(1).max(64),
+  });
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+    },
+  });
+
+  return (
+    <FormDialog
+      title="Rename Database"
+      description="Enter a new name for this database. This action will not affect the database's data or configuration"
+      form={form}
+      callback={async (data) => {
+        await handleDatabaseRename(id, data.name);
+        onOpenChange(false);
+      }}
+      trigger={trigger}
+      submitButtonText="Rename"
+      open={open}
+      onOpenChange={onOpenChange}
+    >
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormControl>Name</FormControl>
+            <FormControl>
+              <Input
+                placeholder="New Database Name"
+                maxLength={64}
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </FormDialog>
+  );
+};
+
 export const columns: ColumnDef<Database>[] = [
   {
     accessorKey: "name",
@@ -138,7 +225,18 @@ export const columns: ColumnDef<Database>[] = [
               >
                 Copy Database ID
               </DropdownMenuItem>
-              <DropdownMenuItem>Rename Database</DropdownMenuItem>
+              <DatabaseRenameDialog
+                id={db.id}
+                trigger={
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault();
+                    }}
+                  >
+                    Rename Database
+                  </DropdownMenuItem>
+                }
+              />
               <DropdownMenuSeparator />
               <DatabaseDeletionDialog
                 id={db.id}
