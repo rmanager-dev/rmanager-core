@@ -1,5 +1,16 @@
 "use client";
+import { queryClient } from "@/src/components/QueryClientWrapper";
 import { Button } from "@/src/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/src/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,8 +18,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
+import { DeleteDatabase } from "@/src/controllers/ExternalDatabaseController";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export type Database = {
   id: string;
@@ -16,6 +30,66 @@ export type Database = {
   endpoint: string;
   region: string;
   type: string;
+};
+
+const DatabaseDeletionDialog = ({
+  id,
+  trigger,
+}: {
+  id: string;
+  trigger: React.ReactNode;
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  return (
+    <Dialog>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Database</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this database? All deployments
+            associated with this database will be removed. This action cannot be
+            undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex sm:flex-col gap-4">
+          <Button
+            className="w-full"
+            variant={"destructive"}
+            disabled={isLoading}
+            onClick={async () => {
+              setIsLoading(true);
+              await handleDatabaseDeletion(id);
+              setIsLoading(false);
+            }}
+          >
+            Delete
+          </Button>
+          <DialogClose className="w-full" asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const handleDatabaseDeletion = async (id: string) => {
+  const toastId = toast.loading("Deleting database...");
+  try {
+    await DeleteDatabase(id);
+    queryClient.setQueryData("databases", (oldData) => {
+      if (!oldData) return oldData;
+      return (oldData as Database[]).filter((db) => db.id !== id);
+    });
+    toast.success("Database deleted successfully", { id: toastId });
+  } catch (error) {
+    if (error instanceof Error) {
+      toast.error(error.message, { id: toastId });
+    } else {
+      toast.error("An unexpected error occurred", { id: toastId });
+    }
+  }
 };
 
 export const columns: ColumnDef<Database>[] = [
@@ -66,9 +140,19 @@ export const columns: ColumnDef<Database>[] = [
               </DropdownMenuItem>
               <DropdownMenuItem>Rename Database</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">
-                Delete Database
-              </DropdownMenuItem>
+              <DatabaseDeletionDialog
+                id={db.id}
+                trigger={
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={(e) => {
+                      e.preventDefault();
+                    }}
+                  >
+                    Delete Database
+                  </DropdownMenuItem>
+                }
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
