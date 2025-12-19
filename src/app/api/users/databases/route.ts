@@ -27,7 +27,7 @@ export async function GET(req: Request) {
 const PostSchema = z.object({
   type: z.enum(["S3"]).default("S3"),
   name: z.string().min(1).max(64),
-  endpoint: z.url("Invalid URL").max(2048, "Max URL lenght exceeded"),
+  endpoint: z.url("Invalid URL").max(2048, "Max URL length exceeded"),
   region: z.string().min(1).max(50),
   bucketName: z.string().min(1).max(100),
   accessKey: z.string().min(1).max(256),

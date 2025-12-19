@@ -1,6 +1,6 @@
 "use client";
 import { ListDatabases } from "@/src/controllers/ExternalDatabaseController";
-import { columns, Database } from "./DatabaseColumn";
+import { columns } from "./DatabaseColumn";
 import { DatabaseTable } from "./DatabaseTable";
 import { useQuery } from "react-query";
 

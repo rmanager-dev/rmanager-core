@@ -35,7 +35,6 @@ import FormDialog from "@/src/components/FormDialog";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
 

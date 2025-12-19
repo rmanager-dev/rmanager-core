@@ -31,7 +31,7 @@ const DatabaseError = new ApiError(
 const AccessDenied = new ApiError(
   403,
   "AccessDenied",
-  "You don't have access to this ressource",
+  "You don't have access to this resource",
 );
 const InvalidS3Credentials = new ApiError(
   401,
@@ -190,7 +190,7 @@ export const ExternalDatabaseService = {
 
     if (!result) {
       console.warn(
-        `User attempted to delete a database they don't own: DB=${DatabaseId} User=${UserId}`,
+        `User attempted to rename a database they don't own: DB=${DatabaseId} User=${UserId}`,
       );
       throw AccessDenied;
     }
