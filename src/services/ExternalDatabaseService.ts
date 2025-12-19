@@ -15,7 +15,7 @@ export interface DatabaseCredentials {
 }
 
 async function CheckUserExist(UserId: string): Promise<boolean> {
-  const userProfile = db.query.user.findFirst({
+  const userProfile = await db.query.user.findFirst({
     where: eq(user.id, UserId),
     columns: { id: true },
   });
