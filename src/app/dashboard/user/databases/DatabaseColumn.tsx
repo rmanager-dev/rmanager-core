@@ -23,6 +23,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
@@ -163,7 +164,7 @@ const DatabaseRenameDialog = ({
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormControl>Name</FormControl>
+            <FormLabel>Name</FormLabel>
             <FormControl>
               <Input
                 placeholder="New Database Name"
