@@ -136,7 +136,10 @@ const DatabaseRenameDialog = ({
 }) => {
   const [open, onOpenChange] = useState(false);
   const formSchema = z.object({
-    name: z.string().min(1).max(64),
+    name: z
+      .string()
+      .min(1, { message: "Name is required" })
+      .max(64, { message: "Name must be less than 64 characters" }),
   });
   const form = useForm({
     resolver: zodResolver(formSchema),
