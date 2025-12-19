@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/libsql";
+import * as schema from "./schema";
 
 export const db = drizzle({
   connection: {
@@ -7,4 +8,5 @@ export const db = drizzle({
     authToken: process.env.TURSO_AUTH_TOKEN!,
   },
   casing: "snake_case",
+  schema,
 });

@@ -32,6 +32,11 @@ import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { authClient } from "@/src/lib/auth-client";
 import FormDialog from "@/src/components/FormDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
 
 const CardComponent = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -155,31 +160,38 @@ export default function EmailPreferences() {
         <ItemContent className="flex-row">
           <ItemTitle>{data.user?.email}</ItemTitle>
           {/* Dialog form */}
-          <FormDialog
-            title="Update Email"
-            description="Enter your new email address and password below to update your email. A link will be sent to the new address to update your email."
-            trigger={
-              <Button variant="ghost" size="icon-sm" type="button">
-                <Edit />
-              </Button>
-            }
-            submitButtonText="Save"
-            form={form}
-            callback={handleEmailChange}
-          >
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input placeholder="new@email.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            ></FormField>
-          </FormDialog>
+          <Tooltip>
+            <FormDialog
+              title="Update Email"
+              description="Enter your new email address and password below to update your email. A link will be sent to the new address to update your email."
+              trigger={
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" type="button">
+                    <Edit />
+                  </Button>
+                </TooltipTrigger>
+              }
+              submitButtonText="Save"
+              form={form}
+              callback={handleEmailChange}
+            >
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input placeholder="new@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              ></FormField>
+            </FormDialog>
+            <TooltipContent>
+              <p>Change email address</p>
+            </TooltipContent>
+          </Tooltip>
         </ItemContent>
         <ItemActions>
           {/* Verify button */}
