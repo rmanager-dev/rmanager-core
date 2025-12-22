@@ -18,8 +18,8 @@ jobs:
 
       - name: Install Turso CLI
         run: |
-          curl -sSL tur.so/install | sh
-          echo "$HOME/.turso/bin" >> $GITHUB_PATH
+          curl -sSfL https://get.tur.so/install.sh | bash
+          echo "$HOME/.turso" >> $GITHUB_PATH
 
       - name: Generate Safe DB Name
         run: |
