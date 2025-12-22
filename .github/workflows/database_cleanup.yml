@@ -4,6 +4,7 @@ on:
     branches-ignore:
       - main
       - dev
+  workflow_dispatch:
 
 jobs:
   cleanup_database:
