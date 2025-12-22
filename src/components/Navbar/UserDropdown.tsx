@@ -22,7 +22,6 @@ import {
 } from "../ui/dropdown-menu";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { signOut } from "firebase/auth";
 import { Skeleton } from "../ui/skeleton";
 import React from "react";
 import { authClient } from "@/src/lib/auth-client";
