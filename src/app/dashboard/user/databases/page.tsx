@@ -2,11 +2,13 @@
 import { ListDatabases } from "@/src/controllers/ExternalDatabaseController";
 import { columns } from "./DatabaseColumn";
 import { DatabaseTable } from "./DatabaseTable";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Page() {
-  const { data, refetch, isLoading } = useQuery("databases", ListDatabases, {
-    staleTime: 1 * 60 * 1000,
+  const { data, refetch, isLoading } = useQuery({
+    queryKey: ["databases"],
+    queryFn: ListDatabases,
+    staleTime: 5 * 60 * 1000,
   });
   return (
     <>

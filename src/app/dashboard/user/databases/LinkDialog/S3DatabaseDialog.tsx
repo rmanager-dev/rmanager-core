@@ -79,7 +79,7 @@ export default function S3DatabaseDialog({
         secretKey: data.secretKey,
       });
 
-      queryClient.setQueryData("databases", (prevData) => {
+      queryClient.setQueryData(["databases"], (prevData) => {
         if (!prevData) return [newDb];
         return [...(prevData as []), newDb];
       });
