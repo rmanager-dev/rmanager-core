@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1766417651350,
+      "tag": "0000_chemical_the_santerians",
+      "breakpoints": true
+    }
+  ]
+}
