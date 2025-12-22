@@ -45,9 +45,15 @@ jobs:
           turso db create ${{ env.SAFE_BRANCH_NAME }} --from-db dev || true
 
       - name: Get Database Credentials
+        env:
+          TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
         run: |
           DB_URL=$(turso db show ${{ env.SAFE_BRANCH_NAME }} --url)
           DB_TOKEN=$(turso db tokens create ${{ env.SAFE_BRANCH_NAME }})
+
+          # Mask database credentials
+          echo "::add-mask::$DB_URL"
+          echo "::add-mask::$DB_TOKEN"
 
           # Add the database credentials to the environment variables
           echo "DB_URL=$DB_URL" >> $GITHUB_ENV
@@ -68,7 +74,7 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           # Make a preview deployment with the created database
-          npx vercel deploy --target preview \
+          npx vercel deploy --target preview --token ${{ secrets.VERCEL_TOKEN }} \
           --build-env TURSO_DATABASE_URL=${{ env.DB_URL }} \
           --build-env TURSO_AUTH_TOKEN=${{ env.DB_TOKEN }} \
           --env TURSO_DATABASE_URL=${{ env.DB_URL }} \
