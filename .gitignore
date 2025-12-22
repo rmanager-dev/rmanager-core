@@ -43,8 +43,7 @@ next-env.d.ts
 #webstorm IDE
 /.idea
 
-# Drizzle ORM
-/drizzle
-
 # VSCode
 /.vscode
+
+*.db
