@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - dev
+    paths-ignore:
+      - .gitignore
+      - .github/**
   workflow_dispatch:
 
 concurrency:
