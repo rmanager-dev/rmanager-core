@@ -6,6 +6,11 @@ on:
       - reopened
       - synchronize
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull Request Number"
+        required: false
+        type: number
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -35,9 +40,15 @@ jobs:
           curl -sSfL https://get.tur.so/install.sh | bash
           echo "$HOME/.turso" >> $GITHUB_PATH
 
-      - name: Set DB Name
+      - name: Generate DB Name
         run: |
-          echo "SAFE_BRANCH_NAME=pr-${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          PR_NUM="${{ github.event.inputs.pr_number || github.event.pull_request.number }}"
+          if [ -z "$PR_NUM" ]; then
+            echo "Error: No PR number found. If running manually, please provide the PR number input."
+            exit 1
+          fi
+          echo "PR_NUM=$PR_NUM" >> $GITHUB_ENV
+          echo "SAFE_BRANCH_NAME=pr-${PR_NUM}" >> $GITHUB_ENV
 
       - name: Provision Turso Database
         env:
@@ -93,6 +104,7 @@ jobs:
           DEPLOYMENT_URL: ${{ env.DEPLOYMENT_URL }}
           DEPLOY_STATUS: ${{ steps.vercel-deployment.outcome }}
           RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PR_NUM: ${{ env.PR_NUM }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -107,7 +119,7 @@ jobs:
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: Number(PR_NUM),
             });
 
             const existingComment = comments.find(comment => comment.body.includes('### 🚀 Preview Deployment'));
@@ -120,5 +132,5 @@ jobs:
             if (existingComment) {
               await github.rest.issues.updateComment({...payload, comment_id: existingComment.id})
             } else {
-              await github.rest.issues.createComment({...payload, issue_number: context.issue.number})
+              await github.rest.issues.createComment({...payload, issue_number: Number(PR_NUM)})
             }
