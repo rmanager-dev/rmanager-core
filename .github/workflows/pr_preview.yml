@@ -112,7 +112,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const {DEPLOYMENT_URL, DEPLOY_STATUS, RUN_URL} = process.env;
+            const {DEPLOYMENT_URL, DEPLOY_STATUS, RUN_URL, PR_NUM} = process.env;
             const status = DEPLOY_STATUS === "success" ? "✅ Ready" : "❌ Failed to deploy";
 
             const body = `### 🚀 Preview Deployment:
