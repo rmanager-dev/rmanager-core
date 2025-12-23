@@ -111,7 +111,7 @@ const handleDatabaseRename = async (id: string, name: string) => {
   const toastId = toast.loading("Renaming database...");
   try {
     await RenameDatabase(id, name);
-    queryClient.setQueryData(["databases"], (oldData) => {
+    queryClient.setQueryData(["databases"], (oldData: Database[]) => {
       if (!oldData) return oldData;
       return (oldData as Database[]).map((db) =>
         db.id === id ? { ...db, name } : db,

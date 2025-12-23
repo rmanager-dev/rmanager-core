@@ -1,20 +1,27 @@
-name: Deploy to Production
+name: Make Development Deployment
 
 on:
   push:
     branches:
-      - main
+      - dev
     paths-ignore:
       - .gitignore
       - .github/**
       - README.md
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deployment-dev
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -24,17 +31,17 @@ jobs:
 
       - run: npm ci
 
-      - name: Push changes to database
+      - name: Push schema changes to database
         env:
-          TURSO_DATABASE_URL: ${{ secrets.PRODUCTION_DB_URL }}
-          TURSO_AUTH_TOKEN: ${{ secrets.PRODUCTION_DB_TOKEN }}
+          TURSO_DATABASE_URL: ${{ secrets.DEV_DB_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.DEV_DB_TOKEN }}
         run: |
-          npx drizzle-kit migrate
+          npx drizzle-kit push
 
-      - name: Make Production Deployment
+      - name: Make Development Deployment
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          npx vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+          npx vercel deploy --target preview --yes --token ${{ secrets.VERCEL_TOKEN }}
