@@ -10,6 +10,9 @@ on:
       - README.md
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: deployment-dev
   cancel-in-progress: true
