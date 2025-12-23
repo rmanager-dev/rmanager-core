@@ -1,42 +1,22 @@
 name: Cleanup Database Branch
 on:
-  delete:
-    branches-ignore:
-      - main
-      - dev
+  pull_request:
+    types:
+      - closed
   workflow_dispatch:
 
 jobs:
   cleanup_database:
-    if: ${{ github.event.ref_type == 'branch' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          # Checkout the main branch to retrieve the scripts
-          ref: main
-
       - name: Install Turso CLI
         run: |
           curl -sSfL https://get.tur.so/install.sh | bash
           echo "$HOME/.turso" >> $GITHUB_PATH
 
-      - name: Generate Safe DB Name
-        run: |
-          # Make the script executable, might not be necessary
-          chmod +x .github/scripts/generate_db_name.sh
-
-          # Get the deleted branch name
-          RAW_REF="${{ github.event.ref }}"
-          CLEAN_REF="${RAW_REF#refs/heads/}"
-
-          # Generate the safe branch name and store it in an environment variable
-          BRANCH_NAME=$(.github/scripts/generate_db_name.sh "$CLEAN_REF")
-          echo "SAFE_BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-
       - name: Destroy Turso Database
         env:
           TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
         run: |
-          turso db destroy ${{env.SAFE_BRANCH_NAME}} --yes || echo "Database already gone"
+          DB_NAME="pr-${{ github.event.pull_request.number }}"
+          turso db destroy "$DB_NAME" --yes || echo "Database already gone or never existed"

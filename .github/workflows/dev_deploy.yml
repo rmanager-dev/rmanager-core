@@ -1,0 +1,39 @@
+name: Make Development Deployment
+
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: deployment-dev
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Push changes to database
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.DEV_DB_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.DEV_DB_TOKEN }}
+        run: |
+          npx drizzle-kit push
+
+      - name: Make Development Deployment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npx vercel deploy --target preview --yes --token ${{ secrets.VERCEL_TOKEN }}
