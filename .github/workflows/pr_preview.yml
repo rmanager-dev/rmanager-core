@@ -97,7 +97,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const {DEPLOYMENT_URL, DEPLOY_STATUS, RUN_URL} = process.env;
-            const status = DEPLOY_STATUS == "success" ? "✅ Ready" : "❌ Failed to deploy";
+            const status = DEPLOY_STATUS === "success" ? "✅ Ready" : "❌ Failed to deploy";
 
             const body = `### 🚀 Preview Deployment:
             - **Vercel Deployment:** ${DEPLOYMENT_URL ? `[View Deployment](${DEPLOYMENT_URL})` : "N/A"}

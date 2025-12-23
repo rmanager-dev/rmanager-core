@@ -23,7 +23,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Push changes to database
+      - name: Push schema changes to database
         env:
           TURSO_DATABASE_URL: ${{ secrets.DEV_DB_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.DEV_DB_TOKEN }}
