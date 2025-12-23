@@ -1,0 +1,136 @@
+name: Make Pull Request Preview Deployment
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull Request Number"
+        required: false
+        type: number
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  deploy:
+    environment: Preview
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Install Turso CLI
+        run: |
+          curl -sSfL https://get.tur.so/install.sh | bash
+          echo "$HOME/.turso" >> $GITHUB_PATH
+
+      - name: Generate DB Name
+        run: |
+          PR_NUM="${{ github.event.inputs.pr_number || github.event.pull_request.number }}"
+          if [ -z "$PR_NUM" ]; then
+            echo "Error: No PR number found. If running manually, please provide the PR number input."
+            exit 1
+          fi
+          echo "PR_NUM=$PR_NUM" >> $GITHUB_ENV
+          echo "SAFE_BRANCH_NAME=pr-${PR_NUM}" >> $GITHUB_ENV
+
+      - name: Provision Turso Database
+        env:
+          TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
+        run: |
+          # Create a branch from the dev database with the generated safe name
+          turso db create ${{ env.SAFE_BRANCH_NAME }} --from-db dev || true
+
+      - name: Get Database Credentials
+        env:
+          TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
+        run: |
+          DB_URL=$(turso db show ${{ env.SAFE_BRANCH_NAME }} --url)
+          DB_TOKEN=$(turso db tokens create ${{ env.SAFE_BRANCH_NAME }})
+
+          # Mask database credentials
+          echo "::add-mask::$DB_URL"
+          echo "::add-mask::$DB_TOKEN"
+
+          # Add the database credentials to the environment variables
+          echo "DB_URL=$DB_URL" >> $GITHUB_ENV
+          echo "DB_TOKEN=$DB_TOKEN" >> $GITHUB_ENV
+
+      - name: Sync schema to database
+        env:
+          TURSO_DATABASE_URL: ${{ env.DB_URL }}
+          TURSO_AUTH_TOKEN: ${{ env.DB_TOKEN }}
+        run: |
+          # Push changes to the created database
+          npx drizzle-kit push
+
+      - name: Make Preview Deployment
+        id: vercel-deployment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          # Make a preview deployment with the created database
+          DEPLOYMENT_URL=$(npx vercel deploy --target preview --token ${{ secrets.VERCEL_TOKEN }} \
+          --build-env TURSO_DATABASE_URL=${{ env.DB_URL }} \
+          --build-env TURSO_AUTH_TOKEN=${{ env.DB_TOKEN }} \
+          --env TURSO_DATABASE_URL=${{ env.DB_URL }} \
+          --env TURSO_AUTH_TOKEN=${{ env.DB_TOKEN }} \
+          --yes --logs)
+
+          echo "DEPLOYMENT_URL=$DEPLOYMENT_URL" >> $GITHUB_ENV
+
+      - name: Comment on PR
+        if: always()
+        uses: actions/github-script@v8
+        env:
+          DEPLOYMENT_URL: ${{ env.DEPLOYMENT_URL }}
+          DEPLOY_STATUS: ${{ steps.vercel-deployment.outcome }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PR_NUM: ${{ env.PR_NUM }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const {DEPLOYMENT_URL, DEPLOY_STATUS, RUN_URL} = process.env;
+            const status = DEPLOY_STATUS === "success" ? "✅ Ready" : "❌ Failed to deploy";
+
+            const body = `### 🚀 Preview Deployment:
+            - **Vercel Deployment:** ${DEPLOYMENT_URL ? `[View Deployment](${DEPLOYMENT_URL})` : "N/A"}
+            - **Status:** ${status}
+            - **Workflow Logs:** [View Run](${RUN_URL})`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(PR_NUM),
+            });
+
+            const existingComment = comments.find(comment => comment.body.includes('### 🚀 Preview Deployment'));
+            const payload = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            };
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({...payload, comment_id: existingComment.id})
+            } else {
+              await github.rest.issues.createComment({...payload, issue_number: Number(PR_NUM)})
+            }
