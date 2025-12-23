@@ -5,6 +5,10 @@ on:
       - opened
       - reopened
       - synchronize
+    paths-ignore:
+      - .gitignore
+      - .github/**
+      - README.md
   workflow_dispatch:
     inputs:
       pr_number:
