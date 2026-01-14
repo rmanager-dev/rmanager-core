@@ -19,7 +19,7 @@ export default function Page() {
         router.replace("/reset-password");
       }, 100);
     }
-  }, [error]);
+  }, [error, router]);
 
   if (token) {
     return <SetNewPassword token={token} />;

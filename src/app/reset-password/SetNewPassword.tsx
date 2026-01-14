@@ -38,7 +38,7 @@ export default function SetNewPassword({ token }: SetNewPasswordProps) {
 
       confirmPassword: z.string(),
     })
-    .refine((data) => data.newPassword == data.confirmPassword, {
+    .refine((data) => data.newPassword === data.confirmPassword, {
       error: "Passwords do not match",
       path: ["confirmPassword"],
     });
@@ -75,7 +75,7 @@ export default function SetNewPassword({ token }: SetNewPasswordProps) {
         <EmptyHeader>
           <EmptyTitle>Reset your password</EmptyTitle>
           <EmptyDescription>
-            We will send you a link to reset your password
+            Enter your new password below
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
