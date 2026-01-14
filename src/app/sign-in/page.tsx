@@ -137,9 +137,10 @@ export default function LoginCard() {
                 <Button
                   className="text-muted-foreground h-0 font-semibold"
                   variant={"link"}
+                  type="button"
                   asChild
                 >
-                  <Link href={"/forgot"}>Forgot password?</Link>
+                  <Link href={"/reset-password"}>Forgot password?</Link>
                 </Button>
                 <Button className="h-12 w-full" disabled={isLoading}>
                   Login
@@ -150,6 +151,7 @@ export default function LoginCard() {
                   <Button
                     className="text-blue-500 p-0 h-0 font-semibold"
                     variant={"link"}
+                    type="button"
                     asChild
                   >
                     <Link href={"/sign-up"}>Sign Up</Link>
