@@ -84,7 +84,7 @@ export default function FormDialog<TFormData extends FieldValues>({
               <Button
                 type="submit"
                 variant={submitButtonVariant}
-                disabled={isLoading}
+                disabled={isLoading || !form.formState.isValid}
                 className="w-full"
               >
                 {submitButtonText}

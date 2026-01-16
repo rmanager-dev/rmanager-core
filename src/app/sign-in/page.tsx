@@ -142,7 +142,10 @@ export default function LoginCard() {
                 >
                   <Link href={"/reset-password"}>Forgot password?</Link>
                 </Button>
-                <Button className="h-12 w-full" disabled={isLoading}>
+                <Button
+                  className="h-12 w-full"
+                  disabled={isLoading || !form.formState.isValid}
+                >
                   Login
                 </Button>
 

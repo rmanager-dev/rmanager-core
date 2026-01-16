@@ -92,7 +92,7 @@ export default function SignupCard() {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((values) =>
-                handleEmailSignup(values.email, values.password)
+                handleEmailSignup(values.email, values.password),
               )}
               className="w-full flex flex-col gap-4"
             >
@@ -146,7 +146,10 @@ export default function SignupCard() {
                   </FormItem>
                 )}
               ></FormField>
-              <Button className="h-12 w-full" disabled={isLoading}>
+              <Button
+                className="h-12 w-full"
+                disabled={isLoading || !form.formState.isValid}
+              >
                 Sign Up
               </Button>
 
