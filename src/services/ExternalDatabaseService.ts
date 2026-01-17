@@ -4,7 +4,13 @@ import { database, user } from "../db/schema";
 import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
 import { EncryptString256 } from "../lib/crypto/aes";
 import { randomUUID } from "crypto";
-import { ApiError } from "../lib/utils/errors";
+import {
+  AccessDenied,
+  ApiError,
+  DatabaseError,
+  UserNotFound,
+} from "../lib/utils/errors";
+import { CheckUserExist } from "../lib/utils/auth-utils";
 
 export interface DatabaseCredentials {
   AccessKeyID: string;
@@ -14,25 +20,6 @@ export interface DatabaseCredentials {
   BucketName: string;
 }
 
-async function CheckUserExist(UserId: string): Promise<boolean> {
-  const userProfile = await db.query.user.findFirst({
-    where: eq(user.id, UserId),
-    columns: { id: true },
-  });
-  return !!userProfile;
-}
-
-const UserNotFound = new ApiError(401, "UserNotFound", "Unauthorized");
-const DatabaseError = new ApiError(
-  502,
-  "DatabaseError",
-  "Couldn't reach database, please try again later.",
-);
-const AccessDenied = new ApiError(
-  403,
-  "AccessDenied",
-  "You don't have access to this resource",
-);
 const InvalidS3Credentials = new ApiError(
   401,
   "InvalidS3Credentials",
@@ -67,11 +54,7 @@ export const ExternalDatabaseService = {
     }
 
     // Check if credentials are valid
-    try {
-      await this.CreateS3Client(Creds); // Will throw an error if credentials are invalid
-    } catch (error) {
-      throw InvalidS3Credentials;
-    }
+    await this.CreateS3Client(Creds); // Will throw an error if credentials are invalid
 
     // Encrypt sensitive data
     const encodedAkData = EncryptString256(Creds.AccessKeyID);

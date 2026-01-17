@@ -29,3 +29,15 @@ export function ErrorToNextResponse(error: unknown): NextResponse {
     { status: 500 },
   );
 }
+
+export const UserNotFound = new ApiError(401, "UserNotFound", "Unauthorized");
+export const DatabaseError = new ApiError(
+  502,
+  "DatabaseError",
+  "Couldn't reach database, please try again later.",
+);
+export const AccessDenied = new ApiError(
+  403,
+  "AccessDenied",
+  "You don't have access to this resource",
+);
