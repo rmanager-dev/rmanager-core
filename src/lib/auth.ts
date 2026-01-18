@@ -1,9 +1,10 @@
 import { db } from "@/src/db";
 import * as schema from "@/src/db/schema";
-import { betterAuth } from "better-auth";
+import { APIError, betterAuth } from "better-auth";
 import { twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailTransporter } from "./email";
+import { and, eq } from "drizzle-orm";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -47,11 +48,37 @@ export const auth = betterAuth({
     },
     deleteUser: {
       enabled: true,
-      sendDeleteAccountVerification: async ({ user, url }) => {
+      beforeDelete: async (user) => {
+        let ownedTeams;
+        try {
+          ownedTeams = await db
+            .select()
+            .from(schema.team_member)
+            .where(
+              and(
+                eq(schema.team_member.userId, user.id),
+                eq(schema.team_member.role, "owner"),
+              ),
+            );
+        } catch {
+          throw new APIError("INTERNAL_SERVER_ERROR", {
+            message:
+              "An unexpected error occurred while checking your account status. Please try again later.",
+          });
+        }
+        if (ownedTeams.length > 0) {
+          throw new APIError("BAD_REQUEST", {
+            message:
+              "Cannot delete account while owning teams. Please transfer ownership or delete your teams beforehand.",
+          });
+        }
+      },
+      sendDeleteAccountVerification: async ({ user, url, token }) => {
+        const baseUrl = new URL(url).origin;
         await emailTransporter.sendMail({
           to: user.email,
           subject: "Account deletion",
-          text: `A request was made to delete your account. This action is permanent and cannot be undone. To continue with account deletion, please click the following link: ${url}`,
+          text: `A request was made to delete your account. This action is permanent and cannot be undone. To continue with account deletion, please click the following link: ${baseUrl}/auth/delete-status?token=${token}`,
         });
       },
     },
