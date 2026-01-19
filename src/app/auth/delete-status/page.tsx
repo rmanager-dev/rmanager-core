@@ -2,19 +2,46 @@
 import { useSearchParams } from "next/navigation";
 import DeleteSuccess from "./DeleteSuccess";
 import TransferOwnership from "./TransferOwnership";
-import DeletePending from "./DeletePending";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { authClient } from "@/src/lib/auth-client";
+import DeleteLoading from "./DeleteLoading";
+import DeleteError from "./DeleteError";
 
 export default function Page() {
+  const [status, setStatus] = useState<
+    "loading" | "require-transfer" | "error" | "success"
+  >("loading");
   const searchParams = useSearchParams();
-
-  const status = searchParams.get("status");
   const token = searchParams.get("token");
 
-  if (token) {
-    return <DeletePending />;
-  } else if (status === "success") {
-    return <DeleteSuccess />;
-  } else if (status === "require-transfer") {
-    return <TransferOwnership />;
+  useEffect(() => {
+    setStatus("loading");
+    if (!token) {
+      toast.error("Invalid account deletion URL.");
+      return;
+    }
+    authClient.deleteUser({ token }).then(({ error }) => {
+      if (error) {
+        if (error.code?.includes("CANNOT_DELETE_ACCOUNT_WHILE_OWNING_TEAMS")) {
+          setStatus("require-transfer");
+        } else {
+          setStatus("error");
+        }
+      } else {
+        setStatus("success");
+      }
+    });
+  }, [token]);
+
+  switch (status) {
+    case "loading":
+      return <DeleteLoading />;
+    case "success":
+      return <DeleteSuccess />;
+    case "require-transfer":
+      return <TransferOwnership />;
+    case "error":
+      return <DeleteError />;
   }
 }

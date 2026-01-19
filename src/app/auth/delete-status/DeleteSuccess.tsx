@@ -28,7 +28,7 @@ export default function DeleteSuccess() {
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button className="w-3/4 h-12" asChild>
+          <Button className="w-3/4 h-12" variant={"outline"} asChild>
             <Link href={"/home"}>Back to the homepage</Link>
           </Button>
         </EmptyContent>
