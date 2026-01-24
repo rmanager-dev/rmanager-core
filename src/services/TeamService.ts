@@ -354,12 +354,14 @@ export const TeamService = {
     }
 
     try {
-      await db
+      const [newMember] = await db
         .update(team_member)
         .set({ role: newRole })
+        .returning()
         .where(
           and(eq(team_member.teamId, teamId), eq(team_member.userId, targetId)),
         );
+      return newMember;
     } catch {
       throw DatabaseError;
     }
