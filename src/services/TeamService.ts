@@ -26,7 +26,7 @@ const InvalidSlug = new ApiError(
 const InvalidName = new ApiError(
   400,
   "InvalidTeamName",
-  "The given team name is invalid. Make sure it includes at least 3 characters",
+  "The given team name is invalid. Make sure it includes at least 3 characters and at most 32 characters",
 );
 const MemberNotFound = new ApiError(
   404,
@@ -54,6 +54,11 @@ const UseTransferOwnership = new ApiError(
   "UseTransferOwnership",
   "To make a member the new owner of the team, please use the dedicated transfer ownership tool.",
 );
+const InvalidRole = new ApiError(
+  409,
+  "InvalidRole",
+  "The given role is invalid. Please provide a valid team role",
+);
 
 export const TeamService = {
   // Private Methods
@@ -64,7 +69,7 @@ export const TeamService = {
       .split(/\s+/) // Remove white spaces
       .join("-"); // Join the words with a dash
 
-    if (cleanName.length < 3) {
+    if (cleanName.length < 3 || cleanName.length > 32) {
       throw InvalidName;
     }
 
@@ -331,6 +336,10 @@ export const TeamService = {
       throw CantSelfUpdateRole;
     }
 
+    if (!team_member.role.enumValues.includes(newRole)) {
+      throw InvalidRole;
+    }
+
     if (newRole === "owner") {
       throw UseTransferOwnership;
     }
@@ -350,7 +359,7 @@ export const TeamService = {
         .set({ role: newRole })
         .where(
           and(eq(team_member.teamId, teamId), eq(team_member.userId, targetId)),
-        );  
+        );
     } catch {
       throw DatabaseError;
     }

@@ -402,6 +402,25 @@ describe("TeamService", async () => {
         TeamService.UpdateTeamMemberRole(user1, user1, team.id, "admin"),
       ).rejects.toThrow();
     });
+
+    it("should fail if trying to set an invalid role", async () => {
+      const user1 = "user-123";
+      await createUser(user1);
+      const user2 = "user-2";
+      await createUser(user2);
+
+      const team = await TeamService.CreateTeam(user1, "Acme Corp");
+      addUserToTeam(user2, team.id, "admin");
+
+      await expect(
+        TeamService.UpdateTeamMemberRole(
+          user1,
+          user2,
+          team.id,
+          "InvalidRole" as TeamRole,
+        ),
+      ).rejects.toThrow();
+    });
   });
 
   describe("ListUserTeams", async () => {
