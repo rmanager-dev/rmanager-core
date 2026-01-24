@@ -41,3 +41,8 @@ export const AccessDenied = new ApiError(
   "AccessDenied",
   "You don't have access to this resource",
 );
+export const AuthenticationRequired = new ApiError(
+  403,
+  "AuthenticationRequired",
+  "You must reauthenticate to perform this action",
+);
