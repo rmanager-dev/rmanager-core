@@ -9,7 +9,7 @@ import { user } from "./user";
 import { sql } from "drizzle-orm";
 
 export const team_member = sqliteTable(
-  "team_members",
+  "team_member",
   {
     userId: text("user_id")
       .notNull()
