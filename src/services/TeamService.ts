@@ -12,6 +12,11 @@ import { randomUUID } from "crypto";
 import { team_member } from "../db/schema/team_member";
 import { CheckUserExist } from "../lib/utils/auth-utils";
 import { user } from "../db/schema";
+import {
+  canManageTarget,
+  hasPermission,
+  TeamRole,
+} from "../lib/utils/team-utils";
 
 const InvalidSlug = new ApiError(
   409,
@@ -50,8 +55,6 @@ const UseTransferOwnership = new ApiError(
   "To make a member the new owner of the team, please use the dedicated transfer ownership tool.",
 );
 
-type TeamRole = typeof team_member.$inferSelect.role;
-
 export const TeamService = {
   // Private Methods
   CreateSlugFromName(name: string) {
@@ -80,7 +83,7 @@ export const TeamService = {
         )
         .limit(1);
 
-      return result ? result.role : null;
+      return result ? result.role : undefined;
     } catch {
       throw DatabaseError;
     }
@@ -142,7 +145,8 @@ export const TeamService = {
 
   async DeleteTeam(actorId: string, teamId: string) {
     const role = await this.GetTeamUserRole(actorId, teamId);
-    if (role !== "owner") {
+
+    if (!hasPermission(role, "DeleteTeam")) {
       throw AccessDenied;
     }
 
@@ -155,7 +159,8 @@ export const TeamService = {
 
   async TransferOwnership(actorId: string, targetId: string, teamId: string) {
     const actorRole = await this.GetTeamUserRole(actorId, teamId);
-    if (actorRole !== "owner") {
+
+    if (!hasPermission(actorRole, "TransferOwnership")) {
       throw AccessDenied;
     }
 
@@ -205,7 +210,7 @@ export const TeamService = {
   ) {
     const role = await this.GetTeamUserRole(actorId, teamId);
 
-    if (role !== "owner" && role !== "admin") {
+    if (!hasPermission(role, "ChangeTeamName")) {
       throw AccessDenied;
     }
 
@@ -253,7 +258,8 @@ export const TeamService = {
 
   async ListTeamMembers(actorId: string, teamId: string) {
     const role = await this.GetTeamUserRole(actorId, teamId);
-    if (!role) {
+
+    if (!hasPermission(role, "ListTeamMembers")) {
       throw AccessDenied;
     }
 
@@ -276,33 +282,33 @@ export const TeamService = {
   },
 
   async RemoveTeamMember(actorId: string, targetId: string, teamId: string) {
-    const actorRole = await this.GetTeamUserRole(actorId, teamId);
-    const targetRole = await this.GetTeamUserRole(targetId, teamId);
+    const [actorRole, targetRole] = await Promise.all([
+      this.GetTeamUserRole(actorId, teamId),
+      this.GetTeamUserRole(targetId, teamId),
+    ]);
 
     if (!actorRole) throw AccessDenied;
     if (!targetRole) throw MemberNotFound;
 
     const isSelf = actorId === targetId;
-    const isOwner = actorRole === "owner";
-    const isAdminKickingLower = actorRole === "admin" && targetRole !== "admin";
 
-    if (isSelf || isOwner || isAdminKickingLower) {
+    if (isSelf) {
       if (targetRole === "owner") throw OwnerRemovalRestricted;
-      try {
-        await db
-          .delete(team_member)
-          .where(
-            and(
-              eq(team_member.userId, targetId),
-              eq(team_member.teamId, teamId),
-            ),
-          );
-        return;
-      } catch {
-        throw DatabaseError;
-      }
     } else {
-      throw AccessDenied;
+      const hasRank = hasPermission(actorRole, "RemoveTeamMember");
+      const outranksTarget = canManageTarget(actorRole, targetRole);
+      if (!hasRank || !outranksTarget) throw AccessDenied;
+    }
+
+    try {
+      await db
+        .delete(team_member)
+        .where(
+          and(eq(team_member.userId, targetId), eq(team_member.teamId, teamId)),
+        );
+      return;
+    } catch {
+      throw DatabaseError;
     }
   },
 
@@ -312,8 +318,10 @@ export const TeamService = {
     teamId: string,
     newRole: TeamRole,
   ) {
-    const actorRole = await this.GetTeamUserRole(actorId, teamId);
-    const targetRole = await this.GetTeamUserRole(targetId, teamId);
+    const [actorRole, targetRole] = await Promise.all([
+      this.GetTeamUserRole(actorId, teamId),
+      this.GetTeamUserRole(targetId, teamId),
+    ]);
 
     if (!targetRole) {
       throw MemberNotFound;
@@ -327,29 +335,24 @@ export const TeamService = {
       throw UseTransferOwnership;
     }
 
-    const isOwner = actorRole === "owner";
-    const isAdminEditingLower =
-      actorRole === "admin" && // Is Admin
-      targetRole !== "admin" && // Acting on lower role
-      targetRole !== "owner" && // Acting on lower role
-      newRole !== "admin"; // Not making new admins
+    const isAllowed =
+      hasPermission(actorRole, "UpdateTeamMemberRole") &&
+      canManageTarget(actorRole, targetRole) &&
+      canManageTarget(actorRole, newRole);
 
-    if (isOwner || isAdminEditingLower) {
-      try {
-        await db
-          .update(team_member)
-          .set({ role: newRole })
-          .where(
-            and(
-              eq(team_member.teamId, teamId),
-              eq(team_member.userId, targetId),
-            ),
-          );
-      } catch {
-        throw DatabaseError;
-      }
-    } else {
+    if (!isAllowed) {
       throw AccessDenied;
+    }
+
+    try {
+      await db
+        .update(team_member)
+        .set({ role: newRole })
+        .where(
+          and(eq(team_member.teamId, teamId), eq(team_member.userId, targetId)),
+        );  
+    } catch {
+      throw DatabaseError;
     }
   },
 
