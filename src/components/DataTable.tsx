@@ -1,6 +1,4 @@
 "use client";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
 import {
   Table,
   TableBody,
@@ -15,23 +13,36 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  Row,
   useReactTable,
 } from "@tanstack/react-table";
-import { PlusIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
+import { Input } from "./ui/input";
 
-interface TeamTableProps<TData, TValue> {
+interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  loading?: boolean;
+  loadingString?: string;
+  emptyString: string;
+  onRowClick?: (row: Row<TData>) => void;
+  searchBoxPlaceholder?: string;
+  searchBoxTarget?: string;
+  actionComponent?: React.ReactNode;
 }
 
-export function TeamTable<TData, TValue>({
+export function DataTable<TData, TValue>({
   columns,
   data,
-}: TeamTableProps<TData, TValue>) {
+  loading,
+  loadingString,
+  emptyString,
+  onRowClick,
+  searchBoxPlaceholder,
+  searchBoxTarget,
+  actionComponent,
+}: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const router = useRouter();
 
   const table = useReactTable({
     data,
@@ -47,20 +58,22 @@ export function TeamTable<TData, TValue>({
   return (
     <div className="w-full">
       <div className="flex justify-between py-4 gap-4">
-        <Input
-          className="max-w-sm w-1/2"
-          placeholder="Search teams"
-          value={
-            (table.getColumn("displayName")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("displayName")?.setFilterValue(event.target.value)
-          }
-        />
-        <Button variant={"outline"}>
-          <PlusIcon />
-          <span>Create a Team</span>
-        </Button>
+        {searchBoxTarget ? (
+          <Input
+            className="max-w-sm w-1/2"
+            placeholder={searchBoxPlaceholder ?? ""}
+            value={
+              (table.getColumn(searchBoxTarget)?.getFilterValue() as string) ??
+              ""
+            }
+            onChange={(event) =>
+              table
+                .getColumn(searchBoxTarget)
+                ?.setFilterValue(event.target.value)
+            }
+          />
+        ) : null}
+        {actionComponent}
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -81,14 +94,21 @@ export function TeamTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {loadingString}
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="h-16 bg-card cursor-pointer"
-                  onClick={() =>
-                    router.push(`/dashboard/${(row.original as any).slug}`)
-                  }
+                  className={`h-16 bg-card ${onRowClick ? "cursor-pointer" : ""}`}
+                  onClick={() => onRowClick?.(row)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="p-4">
@@ -106,7 +126,7 @@ export function TeamTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No Teams
+                  {emptyString}
                 </TableCell>
               </TableRow>
             )}

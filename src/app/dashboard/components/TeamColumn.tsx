@@ -36,7 +36,7 @@ export const teamColumns: ColumnDef<Team>[] = [
     accessorKey: "joinedAt",
     header: "Joined",
     cell: ({ getValue }) => {
-      const date = getValue<Date>();
+      const date = new Date(getValue<string>());
       const [isMounted, setIsMounted] = useState(false);
 
       useEffect(() => {

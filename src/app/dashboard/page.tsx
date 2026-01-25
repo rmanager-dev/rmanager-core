@@ -1,32 +1,53 @@
-import { Team, teamColumns } from "./components/TeamColumn";
-import { TeamTable } from "./components/TeamTable";
+"use client";
+import { useQuery } from "@tanstack/react-query";
+import { teamColumns } from "./components/TeamColumn";
+import { ListTeams } from "@/src/controllers/TeamController";
+import { DataTable } from "@/src/components/DataTable";
+import { Button } from "@/src/components/ui/button";
+import { PlusIcon } from "lucide-react";
+import CreateTeamDialog from "./components/CreateTeamDialog";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-const mockData: Team[] = [
-  {
-    id: "1",
-    name: "DSH Studio",
-    slug: "dsh-studio-12345678",
-    displayName: "DSH Studio!",
-    role: "owner",
-    joinedAt: new Date(1769350220000),
-  },
-  {
-    id: "2",
-    name: "Acme Corp",
-    slug: "acme-corp-45fab23d",
-    displayName: "Acme Corp",
-    role: "developer",
-    joinedAt: new Date(1769350220000),
-  },
-];
+const CreateTeamButton = () => {
+  const [open, setIsOpen] = useState(false);
+  return (
+    <>
+      <CreateTeamDialog open={open} setIsOpen={setIsOpen} />
+      <Button variant={"outline"} onClick={() => setIsOpen(true)}>
+        <PlusIcon />
+        <span>Create a Team</span>
+      </Button>
+    </>
+  );
+};
 
 export default function Page() {
+  const router = useRouter();
+  const { data, isLoading } = useQuery({
+    queryKey: ["teams"],
+    queryFn: ListTeams,
+    staleTime: 5 * 60 * 1000,
+  });
   return (
     <main className="w-full overflow-auto">
       <div className="w-full px-2 py-10 md:px-10 lg:px-15 xl:px-20 flex justify-center">
         <div className="container mx-auto max-w-5xl">
           <span className="w-full text-left text-lg font-semibold">Teams</span>
-          <TeamTable columns={teamColumns} data={mockData} />
+          <DataTable
+            data={data ?? []}
+            columns={teamColumns}
+            emptyString="No Teams"
+            searchBoxPlaceholder="Search teams"
+            searchBoxTarget="displayName"
+            loading={isLoading}
+            loadingString="Loading..."
+            actionComponent={<CreateTeamButton />}
+            onRowClick={(row) => {
+              const slug = row.original.slug;
+              router.push(`/dashboard/${slug}`);
+            }}
+          />
         </div>
       </div>
     </main>

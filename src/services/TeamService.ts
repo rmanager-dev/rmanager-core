@@ -121,17 +121,23 @@ export const TeamService = {
             .returning({
               id: team.id,
               name: team.name,
+              displayName: team.displayName,
               slug: team.slug,
-              createdAt: team.createdAt,
             });
 
-          await tx.insert(team_member).values({
-            userId: actorId,
-            teamId,
-            role: "owner",
-          });
+          const [newMember] = await tx
+            .insert(team_member)
+            .values({
+              userId: actorId,
+              teamId,
+              role: "owner",
+            })
+            .returning({
+              role: team_member.role,
+              joinedAt: team_member.joinedAt,
+            });
 
-          return newTeam;
+          return { ...newTeam, ...newMember };
         });
 
         return result;
