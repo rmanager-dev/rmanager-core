@@ -378,9 +378,11 @@ export const TeamService = {
       const result = await db
         .select({
           id: team.id,
+          displayName: team.displayName,
           name: team.name,
           slug: team.slug,
-          createdAt: team.createdAt,
+          joinedAt: team_member.joinedAt,
+          role: team_member.role,
         })
         .from(team_member)
         .innerJoin(team, eq(team_member.teamId, team.id))

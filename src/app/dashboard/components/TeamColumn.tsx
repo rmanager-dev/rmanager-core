@@ -1,0 +1,101 @@
+"use client";
+import CallbackDialog from "@/src/components/CallbackDialog";
+import { Button } from "@/src/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/src/components/ui/dropdown-menu";
+import { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
+
+export type Team = {
+  id: string;
+  slug: string;
+  displayName: string;
+  name: string;
+  role: string;
+  joinedAt: Date;
+};
+
+export const teamColumns: ColumnDef<Team>[] = [
+  {
+    accessorKey: "displayName",
+    header: "Team",
+  },
+  {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ getValue }) => {
+      return <span className="capitalize">{getValue<string>()}</span>;
+    },
+  },
+  {
+    accessorKey: "joinedAt",
+    header: "Joined",
+    cell: ({ getValue }) => {
+      const date = getValue<Date>();
+      const [isMounted, setIsMounted] = useState(false);
+
+      useEffect(() => {
+        setIsMounted(true);
+      }, []);
+
+      if (!isMounted) {
+        return <span className="invisible">Loading...</span>;
+      }
+
+      return new Intl.DateTimeFormat(undefined, {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const team = row.original;
+
+      return (
+        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="align-end">
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(team.id)}
+              >
+                Copy Team ID
+              </DropdownMenuItem>
+              <CallbackDialog
+                title="Leave Team"
+                description={`Are you sure you want to leave the team "${team.displayName}" ?`}
+                callback={() => console.log("Leaving...")}
+                cancelButtonText="Cancel"
+                submitButtonText="Leave"
+                submitButtonVariant={"destructive"}
+                cancelButtonVariant={"outline"}
+              >
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  Leave Team
+                </DropdownMenuItem>
+              </CallbackDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      );
+    },
+  },
+];
