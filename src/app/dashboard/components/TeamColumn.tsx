@@ -1,5 +1,6 @@
 "use client";
 import CallbackDialog from "@/src/components/CallbackDialog";
+import { queryClient } from "@/src/components/QueryClientWrapper";
 import { Button } from "@/src/components/ui/button";
 import {
   DropdownMenu,
@@ -7,9 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
+import { Skeleton } from "@/src/components/ui/skeleton";
+import { DeleteTeam, RemoveTeamMember } from "@/src/controllers/TeamController";
+import { authClient } from "@/src/lib/auth-client";
+import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export type Team = {
   id: string;
@@ -59,7 +65,23 @@ export const teamColumns: ColumnDef<Team>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
+      const { data, isPending } = authClient.useSession();
+      const { mutateAsync: leaveTeam } = useMutation({
+        mutationFn: RemoveTeamMember,
+        onSuccess: (_, { teamId }) => {
+          queryClient.setQueryData(["teams"], (prevData) =>
+            prevData
+              ? (prevData as Team[]).filter((team) => team.id !== teamId)
+              : [],
+          );
+        },
+      });
+
       const team = row.original;
+
+      if (isPending || !data) {
+        return <Skeleton className="h-8 w-8" />;
+      }
 
       return (
         <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
@@ -79,7 +101,27 @@ export const teamColumns: ColumnDef<Team>[] = [
               <CallbackDialog
                 title="Leave Team"
                 description={`Are you sure you want to leave the team "${team.displayName}" ?`}
-                callback={() => console.log("Leaving...")}
+                callback={async () => {
+                  const toastId = toast.loading("Leaving team...");
+                  try {
+                    await leaveTeam({
+                      memberId: data.user.id,
+                      teamId: team.id,
+                    });
+                    toast.success("Successully left the team!", {
+                      id: toastId,
+                    });
+                  } catch (error) {
+                    if (error instanceof Error) {
+                      toast.error(error.message, { id: toastId });
+                    } else {
+                      toast.error(
+                        "An unknown error happened while leaving the team. Please try again later.",
+                        { id: toastId },
+                      );
+                    }
+                  }
+                }}
                 cancelButtonText="Cancel"
                 submitButtonText="Leave"
                 submitButtonVariant={"destructive"}

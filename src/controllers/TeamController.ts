@@ -33,3 +33,20 @@ export async function ListTeams() {
 
   return responseData as Team[];
 }
+
+export async function RemoveTeamMember({
+  memberId,
+  teamId,
+}: {
+  memberId: string;
+  teamId: string;
+}) {
+  const response = await fetch(`/api/teams/${teamId}/members/${memberId}`, {
+    method: "DELETE",
+  });
+
+  const responseData = await response.json();
+  if (!response.ok) {
+    throw new Error(responseData.error);
+  }
+}
