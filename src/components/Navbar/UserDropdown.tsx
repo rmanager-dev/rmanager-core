@@ -26,6 +26,7 @@ import { Skeleton } from "../ui/skeleton";
 import React from "react";
 import { authClient } from "@/src/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { queryClient } from "../QueryClientWrapper";
 
 export default function UserDropdown({
   triggerProps,
@@ -87,7 +88,12 @@ export default function UserDropdown({
         <DropdownMenuItem
           onClick={() =>
             authClient.signOut({
-              fetchOptions: { onSuccess: () => router.push("/home") },
+              fetchOptions: {
+                onSuccess: () => {
+                  router.push("/home");
+                  queryClient.clear();
+                },
+              },
             })
           }
         >
