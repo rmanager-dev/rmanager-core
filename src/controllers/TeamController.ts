@@ -50,3 +50,13 @@ export async function RemoveTeamMember({
     throw new Error(responseData.error);
   }
 }
+
+export async function ResolveTeamBySlug(slug: string) {
+  const response = await fetch(`/api/teams/resolve-slug/${slug}`);
+
+  const responseData = await response.json();
+  if (!response.ok) {
+    throw new Error(responseData.error);
+  }
+  return responseData as Team;
+}

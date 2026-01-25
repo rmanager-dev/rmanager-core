@@ -439,4 +439,30 @@ describe("TeamService", async () => {
       await expect(TeamService.ListUserTeams("unknown-user")).rejects.toThrow();
     });
   });
+
+  describe("GetTeamBySlug", async () => {
+    it("should fail if the user is not in the team", async () => {
+      const user1 = "user-123";
+      await createUser(user1);
+      const user2 = "user-2";
+      await createUser(user2);
+
+      const team = await TeamService.CreateTeam(user1, "Acme Corp");
+
+      await expect(
+        TeamService.GetTeamBySlug(user2, team.slug),
+      ).rejects.toThrow();
+    });
+
+    it("should return the team correctly", async () => {
+      const user1 = "user-123";
+      await createUser(user1);
+
+      const team = await TeamService.CreateTeam(user1, "Acme Corp");
+
+      expect(await TeamService.GetTeamBySlug(user1, team.slug)).toEqual(
+        expect.objectContaining({ id: team.id }),
+      );
+    });
+  });
 });

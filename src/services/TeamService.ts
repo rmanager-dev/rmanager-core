@@ -265,6 +265,32 @@ export const TeamService = {
     }
   },
 
+  async GetTeamBySlug(actorId: string, slug: string) {
+    let result;
+    try {
+      [result] = await db
+        .select({
+          id: team.id,
+          displayName: team.displayName,
+          name: team.name,
+          slug: team.slug,
+          joinedAt: team_member.joinedAt,
+          role: team_member.role,
+        })
+        .from(team)
+        .innerJoin(team_member, eq(team.id, team_member.teamId))
+        .where(and(eq(team.slug, slug), eq(team_member.userId, actorId)));
+    } catch {
+      throw DatabaseError;
+    }
+
+    if (!result) {
+      throw AccessDenied;
+    }
+
+    return result;
+  },
+
   // Members
 
   async ListTeamMembers(actorId: string, teamId: string) {
