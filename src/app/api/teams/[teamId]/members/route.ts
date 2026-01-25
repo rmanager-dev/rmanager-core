@@ -6,13 +6,13 @@ import { NextResponse } from "next/server";
 
 interface Context {
   params: Promise<{
-    teamId: string[];
+    teamId: string;
   }>;
 }
 
 export async function GET(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId?.[0];
+  const teamId = params.teamId;
 
   if (!teamId) {
     return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
