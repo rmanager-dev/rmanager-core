@@ -9,13 +9,14 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { CreateTeam } from "@/src/controllers/TeamController";
+import { useTeamMutations } from "@/src/hooks/useTeam";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
-interface CreateTeamDialogPros {
+interface CreateTeamDialogProps {
   open: boolean;
   setIsOpen: (open: boolean) => void;
 }
@@ -23,27 +24,27 @@ interface CreateTeamDialogPros {
 export default function CreateTeamDialog({
   open,
   setIsOpen,
-}: CreateTeamDialogPros) {
+}: CreateTeamDialogProps) {
+  const { createTeam } = useTeamMutations();
+
   const handleTeamCreation = async (name: string) => {
     const toastId = toast.loading("Creating team...");
-    try {
-      const newTeam = await CreateTeam(name);
-      queryClient.setQueryData(["teams"], (prevData) => {
-        if (!prevData) return [newTeam];
-        return [...(prevData as []), newTeam];
+    createTeam
+      .mutateAsync(name)
+      .then(() => {
+        toast.success("Successfully created your team!", { id: toastId });
+        setIsOpen(false);
+      })
+      .catch((error) => {
+        if (error instanceof Error) {
+          toast.error(error.message, { id: toastId });
+        } else {
+          toast.error(
+            "An unknown error occured while creating your team. Please try again later.",
+            { id: toastId },
+          );
+        }
       });
-      toast.success("Successfully created your team!", { id: toastId });
-      setIsOpen(false);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message, { id: toastId });
-      } else {
-        toast.error(
-          "An unknown error occured while creating your team. Please try again later.",
-          { id: toastId },
-        );
-      }
-    }
   };
 
   const CreateTeamSchema = z.object({

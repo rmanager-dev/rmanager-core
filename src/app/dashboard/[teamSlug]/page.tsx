@@ -6,6 +6,6 @@ export default function Page() {
   if (isLoading) {
     return <span>Loading...</span>;
   }
-  
+
   return <span>{data?.name}</span>;
 }

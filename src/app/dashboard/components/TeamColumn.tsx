@@ -11,20 +11,12 @@ import {
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { DeleteTeam, RemoveTeamMember } from "@/src/controllers/TeamController";
 import { authClient } from "@/src/lib/auth-client";
+import { Team } from "@/src/lib/types/team-types";
 import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-export type Team = {
-  id: string;
-  slug: string;
-  displayName: string;
-  name: string;
-  role: string;
-  joinedAt: Date;
-};
 
 export const teamColumns: ColumnDef<Team>[] = [
   {
@@ -69,10 +61,8 @@ export const teamColumns: ColumnDef<Team>[] = [
       const { mutateAsync: leaveTeam } = useMutation({
         mutationFn: RemoveTeamMember,
         onSuccess: (_, { teamId }) => {
-          queryClient.setQueryData(["teams"], (prevData) =>
-            prevData
-              ? (prevData as Team[]).filter((team) => team.id !== teamId)
-              : [],
+          queryClient.setQueryData<Team[]>(["teams"], (prevData) =>
+            prevData ? prevData.filter((team) => team.id !== teamId) : [],
           );
         },
       });

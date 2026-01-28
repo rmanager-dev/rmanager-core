@@ -8,6 +8,7 @@ import { PlusIcon } from "lucide-react";
 import CreateTeamDialog from "./components/CreateTeamDialog";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTeams } from "@/src/hooks/useTeam";
 
 const CreateTeamButton = () => {
   const [open, setIsOpen] = useState(false);
@@ -24,11 +25,7 @@ const CreateTeamButton = () => {
 
 export default function Page() {
   const router = useRouter();
-  const { data, isLoading } = useQuery({
-    queryKey: ["teams"],
-    queryFn: ListTeams,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data, isLoading } = useTeams();
   return (
     <main className="w-full overflow-auto">
       <div className="w-full px-2 py-10 md:px-10 lg:px-15 xl:px-20 flex justify-center">
