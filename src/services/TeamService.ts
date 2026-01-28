@@ -12,11 +12,16 @@ import { randomUUID } from "crypto";
 import { team_member } from "../db/schema/team_member";
 import { CheckUserExist } from "../lib/utils/auth-utils";
 import { user } from "../db/schema";
+import { canManageTarget, hasPermission } from "../lib/utils/team-utils";
 import {
-  canManageTarget,
-  hasPermission,
+  Team,
+  TeamMember,
+  TeamMemberSelect,
   TeamRole,
-} from "../lib/utils/team-utils";
+  TeamSelect,
+  UserTeam,
+  UserTeamSelect,
+} from "../lib/types/team-types";
 
 const InvalidSlug = new ApiError(
   409,
@@ -76,7 +81,10 @@ export const TeamService = {
     return cleanName + "-" + GetUUID(8);
   },
 
-  async GetTeamUserRole(targetId: string, teamId: string) {
+  async GetTeamUserRole(
+    targetId: string,
+    teamId: string,
+  ): Promise<TeamRole | undefined> {
     try {
       const [result] = await db
         .select({
@@ -98,7 +106,10 @@ export const TeamService = {
 
   // Team
 
-  async CreateTeam(actorId: string, teamName: string) {
+  async CreateTeam(
+    actorId: string,
+    teamName: string,
+  ): Promise<UserTeam | undefined> {
     if (!(await CheckUserExist(actorId))) {
       throw UserNotFound;
     }
@@ -108,7 +119,7 @@ export const TeamService = {
       const teamId = randomUUID();
 
       try {
-        const result = await db.transaction(async (tx) => {
+        return await db.transaction(async (tx) => {
           const [newTeam] = await tx
             .insert(team)
             .values({
@@ -118,12 +129,7 @@ export const TeamService = {
               slug,
               ownerId: actorId,
             })
-            .returning({
-              id: team.id,
-              name: team.name,
-              displayName: team.displayName,
-              slug: team.slug,
-            });
+            .returning(TeamSelect);
 
           const [newMember] = await tx
             .insert(team_member)
@@ -139,8 +145,6 @@ export const TeamService = {
 
           return { ...newTeam, ...newMember };
         });
-
-        return result;
       } catch (error) {
         if (error instanceof Error) {
           if (error.message.includes("SQLITE_CONSTRAINT_UNIQUE")) {
@@ -154,7 +158,7 @@ export const TeamService = {
     throw InvalidSlug;
   },
 
-  async DeleteTeam(actorId: string, teamId: string) {
+  async DeleteTeam(actorId: string, teamId: string): Promise<Team | undefined> {
     const role = await this.GetTeamUserRole(actorId, teamId);
 
     if (!hasPermission(role, "DeleteTeam")) {
@@ -162,13 +166,21 @@ export const TeamService = {
     }
 
     try {
-      await db.delete(team).where(eq(team.id, teamId));
+      const [result] = await db
+        .delete(team)
+        .where(eq(team.id, teamId))
+        .returning(TeamSelect);
+      return result;
     } catch {
       throw DatabaseError;
     }
   },
 
-  async TransferOwnership(actorId: string, targetId: string, teamId: string) {
+  async TransferOwnership(
+    actorId: string,
+    targetId: string,
+    teamId: string,
+  ): Promise<Team | undefined> {
     const actorRole = await this.GetTeamUserRole(actorId, teamId);
 
     if (!hasPermission(actorRole, "TransferOwnership")) {
@@ -185,10 +197,11 @@ export const TeamService = {
     }
 
     try {
-      await db.transaction(async (tx) => {
-        await tx
+      return await db.transaction(async (tx) => {
+        const [updatedTeam] = await tx
           .update(team)
           .set({ ownerId: targetId })
+          .returning(TeamSelect)
           .where(eq(team.id, teamId));
         await tx
           .update(team_member)
@@ -208,6 +221,7 @@ export const TeamService = {
               eq(team_member.userId, targetId),
             ),
           );
+        return updatedTeam;
       });
     } catch {
       throw DatabaseError;
@@ -218,7 +232,7 @@ export const TeamService = {
     actorId: string,
     teamId: string,
     newName: { displayName?: string; name?: string },
-  ) {
+  ): Promise<Team | undefined> {
     const role = await this.GetTeamUserRole(actorId, teamId);
 
     if (!hasPermission(role, "ChangeTeamName")) {
@@ -248,11 +262,7 @@ export const TeamService = {
           .update(team)
           .set(updatePayload)
           .where(eq(team.id, teamId))
-          .returning({
-            name: team.name,
-            displayName: team.displayName,
-            slug: team.slug,
-          });
+          .returning(TeamSelect);
         return result;
       } catch (error) {
         if (error instanceof Error) {
@@ -265,18 +275,14 @@ export const TeamService = {
     }
   },
 
-  async GetTeamBySlug(actorId: string, slug: string) {
+  async GetTeamBySlug(
+    actorId: string,
+    slug: string,
+  ): Promise<UserTeam | undefined> {
     let result;
     try {
       [result] = await db
-        .select({
-          id: team.id,
-          displayName: team.displayName,
-          name: team.name,
-          slug: team.slug,
-          joinedAt: team_member.joinedAt,
-          role: team_member.role,
-        })
+        .select(UserTeamSelect)
         .from(team)
         .innerJoin(team_member, eq(team.id, team_member.teamId))
         .where(and(eq(team.slug, slug), eq(team_member.userId, actorId)));
@@ -292,8 +298,10 @@ export const TeamService = {
   },
 
   // Members
-
-  async ListTeamMembers(actorId: string, teamId: string) {
+  async ListTeamMembers(
+    actorId: string,
+    teamId: string,
+  ): Promise<TeamMember[] | undefined> {
     const role = await this.GetTeamUserRole(actorId, teamId);
 
     if (!hasPermission(role, "ListTeamMembers")) {
@@ -302,16 +310,10 @@ export const TeamService = {
 
     try {
       const result = await db
-        .select({
-          email: user.email,
-          twoFactorEnabled: user.twoFactorEnabled,
-          role: team_member.role,
-          joinedAt: team_member.joinedAt,
-        })
+        .select(TeamMemberSelect)
         .from(team_member)
         .innerJoin(user, eq(user.id, team_member.userId))
         .where(eq(team_member.teamId, teamId));
-
       return result;
     } catch {
       throw DatabaseError;
@@ -354,7 +356,7 @@ export const TeamService = {
     targetId: string,
     teamId: string,
     newRole: TeamRole,
-  ) {
+  ): Promise<TeamMember | undefined> {
     const [actorRole, targetRole] = await Promise.all([
       this.GetTeamUserRole(actorId, teamId),
       this.GetTeamUserRole(targetId, teamId),
@@ -386,14 +388,22 @@ export const TeamService = {
     }
 
     try {
-      const [newMember] = await db
+      await db
         .update(team_member)
         .set({ role: newRole })
-        .returning()
         .where(
           and(eq(team_member.teamId, teamId), eq(team_member.userId, targetId)),
         );
-      return newMember;
+
+      const [updatedMember] = await db
+        .select(TeamMemberSelect)
+        .from(team_member)
+        .where(
+          and(eq(team_member.teamId, teamId), eq(team_member.userId, targetId)),
+        )
+        .innerJoin(user, eq(user.id, team_member.userId));
+
+      return updatedMember;
     } catch {
       throw DatabaseError;
     }
@@ -401,21 +411,14 @@ export const TeamService = {
 
   // User
 
-  async ListUserTeams(actorId: string) {
+  async ListUserTeams(actorId: string): Promise<UserTeam[] | undefined> {
     if (!(await CheckUserExist(actorId))) {
       throw UserNotFound;
     }
 
     try {
       const result = await db
-        .select({
-          id: team.id,
-          displayName: team.displayName,
-          name: team.name,
-          slug: team.slug,
-          joinedAt: team_member.joinedAt,
-          role: team_member.role,
-        })
+        .select(UserTeamSelect)
         .from(team_member)
         .innerJoin(team, eq(team_member.teamId, team.id))
         .where(eq(team_member.userId, actorId));

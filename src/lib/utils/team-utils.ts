@@ -1,6 +1,4 @@
-import { team_member } from "@/src/db/schema";
-
-export type TeamRole = typeof team_member.$inferSelect.role;
+import { TeamRole } from "../types/team-types";
 
 export const ROLES_RANK: Record<TeamRole, number> = {
   viewer: 100,
