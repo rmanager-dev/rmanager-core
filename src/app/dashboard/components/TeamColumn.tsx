@@ -1,5 +1,6 @@
 "use client";
 import CallbackDialog from "@/src/components/CallbackDialog";
+import LocalTime from "@/src/components/LocalTime";
 import { queryClient } from "@/src/components/QueryClientWrapper";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -35,23 +36,7 @@ export const teamColumns: ColumnDef<Team>[] = [
     header: "Joined",
     cell: ({ getValue }) => {
       const date = new Date(getValue<string>());
-      const [isMounted, setIsMounted] = useState(false);
-
-      useEffect(() => {
-        setIsMounted(true);
-      }, []);
-
-      if (!isMounted) {
-        return <span className="invisible">Loading...</span>;
-      }
-
-      return new Intl.DateTimeFormat(undefined, {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(date);
+      return <LocalTime time={date} />;
     },
   },
   {
