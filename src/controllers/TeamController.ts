@@ -1,5 +1,4 @@
-import { TeamMember } from "better-auth/plugins";
-import { Team, UserTeam } from "../lib/types/team-types";
+import { Team, TeamMember, UserTeam } from "../lib/types/team-types";
 
 export async function CreateTeam(name: string): Promise<UserTeam> {
   const response = await fetch("/api/teams", {
@@ -81,4 +80,15 @@ export async function ChangeTeamName(
   }
 
   return responseData as Team;
+}
+
+export async function ListTeamMembers(teamId: string): Promise<TeamMember[]> {
+  const response = await fetch(`/api/teams/${teamId}/members`);
+
+  const responseData = await response.json();
+  if (!response.ok) {
+    throw new Error(responseData.error);
+  }
+
+  return responseData as TeamMember[];
 }
