@@ -30,8 +30,8 @@ export async function DELETE(req: Request, context: Context) {
 
   try {
     await validateSudoMode(req, SUDO_MODES.STRICT);
-    await TeamService.DeleteTeam(session.user.id, teamId);
-    return NextResponse.json({ teamId });
+    const team = await TeamService.DeleteTeam(session.user.id, teamId);
+    return NextResponse.json(team);
   } catch (error) {
     return ErrorToNextResponse(error);
   }
