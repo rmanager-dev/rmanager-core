@@ -1,5 +1,4 @@
 import { auth } from "@/src/lib/auth";
-import { SUDO_MODES, validateSudoMode } from "@/src/lib/utils/auth-utils";
 import { ErrorToNextResponse } from "@/src/lib/utils/errors";
 import { TeamService } from "@/src/services/TeamService";
 import { headers } from "next/headers";
@@ -42,7 +41,6 @@ export async function POST(req: Request, context: Context) {
   }
 
   try {
-    await validateSudoMode(req, SUDO_MODES.STRICT);
     const validatedData = PostSchema.parse(body);
     await TeamService.TransferOwnership(
       session.user.id,

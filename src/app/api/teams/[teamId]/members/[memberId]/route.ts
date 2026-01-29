@@ -1,6 +1,5 @@
 import { team_member } from "@/src/db/schema";
 import { auth } from "@/src/lib/auth";
-import { SUDO_MODES, validateSudoMode } from "@/src/lib/utils/auth-utils";
 import { ErrorToNextResponse } from "@/src/lib/utils/errors";
 import { TeamService } from "@/src/services/TeamService";
 import { headers } from "next/headers";
@@ -83,7 +82,6 @@ export async function PATCH(req: Request, context: Context) {
   }
 
   try {
-    await validateSudoMode(req, SUDO_MODES.STANDARD);
     const validatedData = PatchSchema.parse(body);
     const newMember = await TeamService.UpdateTeamMemberRole(
       session.user.id,
