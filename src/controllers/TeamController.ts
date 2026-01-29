@@ -1,4 +1,5 @@
 import { Team, TeamMember, UserTeam } from "../lib/types/team-types";
+import { ErrorResponse, ResponseToError } from "../lib/utils/errors";
 
 export async function CreateTeam(name: string): Promise<UserTeam> {
   const response = await fetch("/api/teams", {
@@ -8,7 +9,7 @@ export async function CreateTeam(name: string): Promise<UserTeam> {
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    throw ResponseToError(responseData);
   }
 
   return responseData as UserTeam;
@@ -19,7 +20,9 @@ export async function DeleteTeam(teamId: string): Promise<Team> {
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    const error = ResponseToError(responseData);
+    console.log(error);
+    throw error;
   }
 
   return responseData as Team;
@@ -30,7 +33,7 @@ export async function ListTeams(): Promise<UserTeam[]> {
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    throw ResponseToError(responseData);
   }
 
   return responseData as UserTeam[];
@@ -49,7 +52,7 @@ export async function RemoveTeamMember({
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    throw ResponseToError(responseData);
   }
 
   return responseData as TeamMember;
@@ -60,7 +63,7 @@ export async function ResolveTeamBySlug(slug: string): Promise<UserTeam> {
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    throw ResponseToError(responseData);
   }
   return responseData as UserTeam;
 }
@@ -76,7 +79,7 @@ export async function ChangeTeamName(
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw Error(responseData.error);
+    throw ResponseToError(responseData);
   }
 
   return responseData as Team;
@@ -87,7 +90,7 @@ export async function ListTeamMembers(teamId: string): Promise<TeamMember[]> {
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    throw ResponseToError(responseData);
   }
 
   return responseData as TeamMember[];

@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 
+export type ErrorResponse = {
+  code: string;
+  message: string;
+};
+
 export class ApiError extends Error {
   public status: number;
   public clientMessage: string;
@@ -17,8 +22,8 @@ export class ApiError extends Error {
 
 export function ErrorToNextResponse(error: unknown): NextResponse {
   if (error instanceof ApiError) {
-    return NextResponse.json(
-      { error: error.clientMessage },
+    return NextResponse.json<ErrorResponse>(
+      { code: error.message, message: error.clientMessage },
       { status: error.status },
     );
   }
@@ -28,6 +33,11 @@ export function ErrorToNextResponse(error: unknown): NextResponse {
     { error: "Unknown server error. Please try again later." },
     { status: 500 },
   );
+}
+
+export function ResponseToError(response: ErrorResponse) {
+  const { code, message } = response;
+  return Error(message, { cause: code });
 }
 
 export const UserNotFound = new ApiError(401, "UserNotFound", "Unauthorized");
