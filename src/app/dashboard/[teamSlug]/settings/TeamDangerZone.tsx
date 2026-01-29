@@ -16,6 +16,7 @@ import {
   ItemTitle,
 } from "@/src/components/ui/item";
 import { Separator } from "@/src/components/ui/separator";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import { useTeam, useTeamMutations } from "@/src/hooks/useTeam";
 import { hasPermission } from "@/src/lib/utils/team-utils";
 import { Trash } from "lucide-react";
@@ -29,7 +30,24 @@ const CardComponent = ({ children }: React.PropsWithChildren) => {
         <CardTitle>DANGER ZONE</CardTitle>
       </CardHeader>
       <Separator />
-      <CardContent>{children}</CardContent>
+      <CardContent>
+        <Item
+          variant={"outline"}
+          className="border-destructive bg-destructive/5"
+        >
+          <ItemMedia variant={"icon"} className="border-none bg-destructive">
+            <Trash className="stroke-destructive-foreground" />
+          </ItemMedia>
+          <ItemContent>
+            <ItemTitle>Delete Team</ItemTitle>
+            <ItemDescription>
+              Your team will be permanently deleted including all of it's
+              projects. This action is irreversible.
+            </ItemDescription>
+          </ItemContent>
+          <ItemActions>{children}</ItemActions>
+        </Item>
+      </CardContent>
     </Card>
   );
 };
@@ -37,10 +55,6 @@ const CardComponent = ({ children }: React.PropsWithChildren) => {
 export default function TeamDangerZone() {
   const { data: team, isLoading } = useTeam();
   const { deleteTeam } = useTeamMutations();
-
-  if (isLoading) {
-    return <span>Loading...</span>;
-  }
 
   const handleTeamDeletion = async () => {
     const id = toast.loading("Deleting team...");
@@ -60,40 +74,34 @@ export default function TeamDangerZone() {
       });
   };
 
+  if (isLoading) {
+    return (
+      <CardComponent>
+        <Skeleton className="h-9 w-30" />
+      </CardComponent>
+    );
+  }
+
   return (
     <CardComponent>
-      <Item variant={"outline"} className="border-destructive bg-destructive/5">
-        <ItemMedia variant={"icon"} className="border-none bg-destructive">
-          <Trash className="stroke-destructive-foreground" />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle>Delete Team</ItemTitle>
-          <ItemDescription>
-            Your team will be permanently deleted including all of it's
-            projects. This action is irreversible.
-          </ItemDescription>
-        </ItemContent>
-        <ItemActions>
-          <CallbackDialog
-            title="Delete Team"
-            description="Are you sure you want to delete this team? This action is irreversible"
-            cancelButtonText="Cancel"
-            submitButtonText="Delete"
-            submitButtonVariant={"destructive"}
-            cancelButtonVariant={"outline"}
-            callback={handleTeamDeletion}
-            confirmationText={team?.name}
-            trigger={
-              <Button
-                variant={"destructive"}
-                disabled={!hasPermission(team?.role, "DeleteTeam")}
-              >
-                Delete Team
-              </Button>
-            }
-          />
-        </ItemActions>
-      </Item>
+      <CallbackDialog
+        title="Delete Team"
+        description="Are you sure you want to delete this team? This action is irreversible"
+        cancelButtonText="Cancel"
+        submitButtonText="Delete"
+        submitButtonVariant={"destructive"}
+        cancelButtonVariant={"outline"}
+        callback={handleTeamDeletion}
+        confirmationText={team?.name}
+        trigger={
+          <Button
+            variant={"destructive"}
+            disabled={!hasPermission(team?.role, "DeleteTeam")}
+          >
+            Delete Team
+          </Button>
+        }
+      />
     </CardComponent>
   );
 }
