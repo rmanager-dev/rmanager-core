@@ -1,5 +1,4 @@
 import { auth } from "@/src/lib/auth";
-import { SUDO_MODES, validateSudoMode } from "@/src/lib/utils/auth-utils";
 import { ErrorToNextResponse } from "@/src/lib/utils/errors";
 import { TeamService } from "@/src/services/TeamService";
 import { headers } from "next/headers";
@@ -29,7 +28,6 @@ export async function DELETE(req: Request, context: Context) {
   }
 
   try {
-    await validateSudoMode(req, SUDO_MODES.STRICT);
     const team = await TeamService.DeleteTeam(session.user.id, teamId);
     return NextResponse.json(team);
   } catch (error) {
@@ -70,7 +68,6 @@ export async function PATCH(req: Request, context: Context) {
   try {
     const validatedData = PatchSchema.parse(body);
     if (validatedData.name) {
-      await validateSudoMode(req, SUDO_MODES.STANDARD);
     }
     const result = await TeamService.ChangeTeamName(
       session.user.id,
