@@ -40,7 +40,7 @@ const MemberNotFound = new ApiError(
 );
 const OwnerRemovalRestricted = new ApiError(
   409,
-  "OwnerRemovalRestrictedc",
+  "OwnerRemovalRestricted",
   "You are the sole owner of this team. You must transfer ownership to another member or delete the team entirely before leaving",
 );
 const CantSelfTransferOwnership = new ApiError(
@@ -106,10 +106,7 @@ export const TeamService = {
 
   // Team
 
-  async CreateTeam(
-    actorId: string,
-    teamName: string,
-  ): Promise<UserTeam | undefined> {
+  async CreateTeam(actorId: string, teamName: string): Promise<UserTeam> {
     if (!(await CheckUserExist(actorId))) {
       throw UserNotFound;
     }
