@@ -36,8 +36,8 @@ export async function DELETE(req: Request, context: Context) {
 }
 
 const PatchSchema = z.object({
-  name: z.string().min(3).max(32),
-  displayName: z.string().min(3).max(32),
+  name: z.string().min(3).max(32).optional(),
+  displayName: z.string().min(3).max(32).optional(),
 });
 export async function PATCH(req: Request, context: Context) {
   const params = await context.params;

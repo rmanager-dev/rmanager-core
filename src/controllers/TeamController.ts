@@ -70,7 +70,7 @@ export async function ResolveTeamBySlug(slug: string): Promise<UserTeam> {
 
 export async function ChangeTeamName(
   teamId: string,
-  newName: { name?: string; displayName: string },
+  newName: { name?: string; displayName?: string },
 ): Promise<Team> {
   const response = await fetch(`/api/teams/${teamId}`, {
     method: "PATCH",

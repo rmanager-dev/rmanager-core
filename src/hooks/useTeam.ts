@@ -73,7 +73,7 @@ export function useTeamMutations() {
       payload,
     }: {
       teamId: string;
-      payload: { name: string; displayName: string };
+      payload: { name?: string; displayName?: string };
     }) => ChangeTeamName(teamId, payload),
     onSuccess: (newTeam, variables) => {
       const cachedTeam = queryClient.getQueryData<UserTeam[]>(["teams"]);
