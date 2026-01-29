@@ -101,14 +101,15 @@ export const teamColumns: ColumnDef<Team>[] = [
                 submitButtonText="Leave"
                 submitButtonVariant={"destructive"}
                 cancelButtonVariant={"outline"}
-              >
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  Leave Team
-                </DropdownMenuItem>
-              </CallbackDialog>
+                trigger={
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    Leave Team
+                  </DropdownMenuItem>
+                }
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
