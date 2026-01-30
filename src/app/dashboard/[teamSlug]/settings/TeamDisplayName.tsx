@@ -43,9 +43,9 @@ export default function TeamDisplayName() {
     .object({
       displayName: z
         .string()
+        .min(3, { error: "Display name must be at least 3 characters" })
         .max(32, { error: "Display name must be 32 characters at maximum" }),
     })
-    .refine((data) => data.displayName.length > 0) // Ensure given display name isn't empty (without triggering message)
     .refine((values) => values.displayName !== team?.displayName, {
       error:
         "Given display name must be different than your current display name",
@@ -73,9 +73,12 @@ export default function TeamDisplayName() {
         if (error instanceof Error) {
           toast.error(error.message, { id });
         } else {
-          toast.error("An unexpected error happened while deleting team", {
-            id,
-          });
+          toast.error(
+            "An unexpected error happened while updating team display name",
+            {
+              id,
+            },
+          );
         }
       });
   };
