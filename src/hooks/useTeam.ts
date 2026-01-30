@@ -88,14 +88,20 @@ export function useTeamMutations() {
         );
       });
 
+      const pathname = window.location.pathname;
+      const relativePath = pathname
+        .split("/dashboard/")[1]
+        .split("/")
+        .slice(1)
+        .join("/");
+      router.replace(`/dashboard/${newTeam.slug}/${relativePath}`);
+
       if (oldSlug && oldTeam && oldSlug !== newTeam.slug) {
         queryClient.removeQueries({ queryKey: ["team", oldSlug] });
         queryClient.setQueryData(["team", newTeam.slug], {
           ...oldTeam,
           ...newTeam,
         });
-
-        router.push(`/dashboard/${newTeam.slug}`);
       } else if (oldSlug) {
         queryClient.setQueryData<UserTeam>(["team", oldSlug], (oldTeam) => {
           if (!oldTeam) return oldTeam;
