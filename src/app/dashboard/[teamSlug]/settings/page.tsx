@@ -1,6 +1,7 @@
 "use client";
 import TeamDangerZone from "./TeamDangerZone";
 import TeamDisplayName from "./TeamDisplayName";
+import TeamName from "./TeamName";
 
 export default function Page() {
   return (
@@ -9,6 +10,7 @@ export default function Page() {
         Team Settings
       </span>
       <TeamDisplayName />
+      <TeamName />
       <TeamDangerZone />
     </>
   );
