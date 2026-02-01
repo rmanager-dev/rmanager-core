@@ -21,8 +21,19 @@ import { toast } from "sonner";
 
 export const teamColumns: ColumnDef<Team>[] = [
   {
-    accessorKey: "displayName",
+    id: "team_details",
     header: "Team",
+    accessorFn: (row) => `${row.displayName} ${row.name}`,
+    cell: (info) => (
+      <div className="flex flex-col w-full">
+        <span className="font-semibold text-sm text-foreground truncate">
+          {info.row.original.displayName}
+        </span>
+        <span className="text-[11px] text-muted-foreground italic">
+          @{info.row.original.name}
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "role",
