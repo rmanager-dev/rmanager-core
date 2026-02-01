@@ -1,16 +1,7 @@
 import { user, team_member, team } from "@/src/db/schema";
+import { InferDrizzleSelect } from "../utils";
 
 export type TeamRole = typeof team_member.$inferSelect.role;
-
-type InferDrizzleSelect<T> = {
-  [K in keyof T]: T[K] extends {
-    _: { data: infer TData; notNull: infer TNotNull };
-  }
-    ? TNotNull extends true
-      ? TData
-      : TData | null
-    : never;
-};
 
 export const TeamMemberSelect = {
   id: user.id,
