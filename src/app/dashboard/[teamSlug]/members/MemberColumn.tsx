@@ -25,7 +25,7 @@ export const memberColumn: ColumnDef<TeamMember>[] = [
       return (
         <div className="flex items-center gap-2">
           <span className="text">{email}</span>
-          <span className="border rounded-full px-2 py-0.5 text-xs">You</span>
+          <span className="border rounded-md px-2 py-0.5 text-xs">You</span>
         </div>
       );
     },
