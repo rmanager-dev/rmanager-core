@@ -15,7 +15,9 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import { useTeam, useTeamMutations } from "@/src/hooks/useTeam";
+import { hasPermission } from "@/src/lib/utils/team-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -83,6 +85,19 @@ export default function TeamDisplayName() {
       });
   };
 
+  if (isLoading) {
+    return (
+      <CardComponent>
+        <div className="flex justify-between gap-2">
+          <Skeleton className="h-9 w-full max-w-lg" />
+          <Skeleton className="h-9 w-16" />
+        </div>
+      </CardComponent>
+    );
+  }
+
+  const disabled = !hasPermission(team?.role, "ChangeTeamName");
+
   return (
     <CardComponent>
       <Form {...form}>
@@ -98,13 +113,19 @@ export default function TeamDisplayName() {
             render={({ field }) => (
               <FormItem className="w-full max-w-lg">
                 <FormControl>
-                  <Input placeholder={team?.displayName} {...field} />
+                  <Input
+                    placeholder={team?.displayName}
+                    disabled={disabled}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit">Save</Button>
+          <Button type="submit" disabled={disabled}>
+            Save
+          </Button>
         </form>
       </Form>
     </CardComponent>
