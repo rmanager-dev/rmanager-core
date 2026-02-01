@@ -1,62 +1,69 @@
-import { Database } from "../app/dashboard/user/databases/DatabaseColumn";
+import { Database, DatabaseInfo } from "../lib/types/database-types";
+import { ResponseToError } from "../lib/utils/errors";
 
-export interface DatabaseInfo {
-  type: "S3";
-  name: string;
-  endpoint: string;
-  region: string;
-  bucketName: string;
-  accessKey: string;
-  secretKey: string;
-}
-
-export async function LinkDatabase(data: DatabaseInfo): Promise<Database> {
-  const response = await fetch("/api/users/databases", {
+export async function LinkDatabase(
+  teamId: string,
+  data: DatabaseInfo,
+): Promise<Database> {
+  const response = await fetch(`/api/teams/${teamId}/databases`, {
     method: "POST",
     body: JSON.stringify(data),
   });
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    console.log(responseData);
+    throw ResponseToError(responseData);
   }
 
   return responseData as Database;
 }
 
-export async function ListDatabases(): Promise<Database[]> {
-  const response = await fetch("/api/users/databases", {
+export async function ListDatabases(teamId: string): Promise<Database[]> {
+  const response = await fetch(`/api/teams/${teamId}/databases`, {
     method: "GET",
   });
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    throw ResponseToError(responseData);
   }
 
   return responseData as Database[];
 }
 
-export async function DeleteDatabase(databaseId: string): Promise<void> {
-  const response = await fetch(`/api/users/databases/${databaseId}`, {
-    method: "DELETE",
-  });
+export async function DeleteDatabase(
+  teamdId: string,
+  databaseId: string,
+): Promise<Database> {
+  const response = await fetch(
+    `/api/teams/${teamdId}/databases/${databaseId}`,
+    {
+      method: "DELETE",
+    },
+  );
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    throw ResponseToError(responseData);
   }
+
+  return responseData as Database;
 }
 
-export async function RenameDatabase(databaseId: string, newName: string) {
-  const response = await fetch(`/api/users/databases/${databaseId}`, {
+export async function RenameDatabase(
+  teamId: string,
+  databaseId: string,
+  newName: string,
+): Promise<Database> {
+  const response = await fetch(`/api/teams/${teamId}/databases/${databaseId}`, {
     method: "PATCH",
     body: JSON.stringify({ name: newName }),
   });
 
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData.error);
+    throw ResponseToError(responseData);
   }
 
   return responseData as Database;

@@ -15,6 +15,11 @@ export const TEAM_PERMISSIONS = {
   ListTeamMembers: ROLES_RANK.viewer,
   RemoveTeamMember: ROLES_RANK.admin,
   UpdateTeamMemberRole: ROLES_RANK.admin,
+
+  ListDatabases: ROLES_RANK.viewer,
+  LinkDatabase: ROLES_RANK.admin,
+  DeleteDatabase: ROLES_RANK.admin,
+  RenameDatabase: ROLES_RANK.admin,
 } as const satisfies Record<string, number>;
 
 export type TeamAction = keyof typeof TEAM_PERMISSIONS;

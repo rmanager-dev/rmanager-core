@@ -1,13 +1,13 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 import { sql } from "drizzle-orm";
+import { team } from "./team";
 
 export const database = sqliteTable("database", {
   id: text("id").primaryKey(),
-  userId: text("user_id")
+  teamId: text("team_id")
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-
+    .references(() => team.id, { onDelete: "cascade" }),
   type: text("type", { enum: ["S3"] })
     .notNull()
     .default("S3"),
@@ -27,4 +27,7 @@ export const database = sqliteTable("database", {
   createdAt: integer("createdAt", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
+  createdBy: text("created_by").references(() => user.id, {
+    onDelete: "set null",
+  }),
 });

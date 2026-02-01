@@ -7,13 +7,21 @@ import z, { ZodError } from "zod";
 
 interface Context {
   params: Promise<{
-    id: string[];
+    teamId: string;
+    databaseId: string;
   }>;
 }
 
 export async function DELETE(req: Request, context: Context) {
   const params = await context.params;
-  const databaseId = params.id?.[0];
+
+  const databaseId = params.databaseId;
+  const teamId = params.teamId;
+
+  if (!teamId) {
+    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  }
+
   if (!databaseId) {
     return NextResponse.json(
       { error: "Database ID is required" },
@@ -30,7 +38,11 @@ export async function DELETE(req: Request, context: Context) {
   }
 
   try {
-    await ExternalDatabaseService.DeleteDatabase(session.user.id, databaseId);
+    await ExternalDatabaseService.DeleteDatabase(
+      session.user.id,
+      teamId,
+      databaseId,
+    );
     return NextResponse.json({ message: "Database deleted successfully" });
   } catch (error) {
     return ErrorToNextResponse(error);
@@ -42,7 +54,14 @@ const PatchSchema = z.object({
 });
 export async function PATCH(req: Request, context: Context) {
   const params = await context.params;
-  const databaseId = params.id?.[0];
+
+  const teamId = params.teamId;
+  const databaseId = params.databaseId;
+
+  if (!teamId) {
+    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  }
+
   if (!databaseId) {
     return NextResponse.json(
       { error: "Database ID is required" },
@@ -72,6 +91,7 @@ export async function PATCH(req: Request, context: Context) {
 
     const newDb = await ExternalDatabaseService.RenameDatabase(
       session.user.id,
+      teamId,
       databaseId,
       validatedSchema.name,
     );

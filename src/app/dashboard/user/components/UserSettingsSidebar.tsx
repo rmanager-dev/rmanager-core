@@ -40,16 +40,6 @@ const userSettingsSidebarItems: ItemGroup[] = [
       },
     ],
   },
-  {
-    groupTitle: "Connections",
-    items: [
-      {
-        title: "Databases",
-        Icon: Database,
-        url: "/dashboard/user/databases",
-      },
-    ],
-  },
 ];
 
 const SidebarItemComponent = ({

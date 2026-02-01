@@ -5,18 +5,32 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import z, { ZodError } from "zod";
 
-export async function GET(req: Request) {
+interface Context {
+  params: Promise<{
+    teamId: string;
+  }>;
+}
+
+export async function GET(req: Request, context: Context) {
+  const params = await context.params;
+  const teamId = params.teamId;
+
+  if (!teamId) {
+    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  }
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized " }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const databases = await ExternalDatabaseService.ListDatabase(
       session.user.id,
+      teamId,
     );
     return NextResponse.json(databases);
   } catch (error) {
@@ -33,7 +47,15 @@ const PostSchema = z.object({
   accessKey: z.string().min(1).max(256),
   secretKey: z.string().min(1).max(256),
 });
-export async function POST(req: Request) {
+
+export async function POST(req: Request, context: Context) {
+  const params = await context.params;
+  const teamId = params.teamId;
+
+  if (!teamId) {
+    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  }
+
   // Fetch user session from auth cookie
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -41,7 +63,7 @@ export async function POST(req: Request) {
 
   // Require user to be logged in to make this request
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized " }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body;
@@ -49,7 +71,7 @@ export async function POST(req: Request) {
     body = await req.json();
   } catch {
     return NextResponse.json(
-      { error: "Invalid request body " },
+      { error: "Invalid request body" },
       { status: 400 },
     );
   }
@@ -61,6 +83,7 @@ export async function POST(req: Request) {
     // Link database to user using request data
     const result = await ExternalDatabaseService.LinkDatabase(
       session.user.id,
+      teamId,
       validatedData.name,
       {
         EndpointURL: validatedData.endpoint,
