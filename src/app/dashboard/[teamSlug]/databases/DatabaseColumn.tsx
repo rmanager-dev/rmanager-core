@@ -66,7 +66,7 @@ const DatabaseRenameDialog = ({
             databaseId,
             newName: name,
           });
-          toast.success("Successfully renamed team!");
+          toast.success("Successfully renamed database!", { id });
         } catch (error) {
           if (error instanceof Error) {
             toast.error(error.message, { id });
