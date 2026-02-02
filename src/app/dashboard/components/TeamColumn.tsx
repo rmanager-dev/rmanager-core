@@ -10,13 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { DeleteTeam, RemoveTeamMember } from "@/src/controllers/TeamController";
+import { RemoveTeamMember } from "@/src/controllers/TeamController";
 import { authClient } from "@/src/lib/auth-client";
 import { Team } from "@/src/lib/types/team-types";
 import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export const teamColumns: ColumnDef<Team>[] = [

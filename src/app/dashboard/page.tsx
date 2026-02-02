@@ -1,7 +1,5 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
 import { teamColumns } from "./components/TeamColumn";
-import { ListTeams } from "@/src/controllers/TeamController";
 import { DataTable } from "@/src/components/DataTable";
 import { Button } from "@/src/components/ui/button";
 import { PlusIcon } from "lucide-react";

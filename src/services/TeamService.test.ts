@@ -1,8 +1,8 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/src/db";
 import { TeamService } from "./TeamService";
 import { team_member, user } from "../db/schema";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { UserNotFound } from "../lib/utils/errors";
 import { TeamRole } from "../lib/types/team-types";
 

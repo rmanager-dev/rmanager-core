@@ -1,5 +1,4 @@
 import { sql } from "drizzle-orm";
-import { LibSQLDatabase } from "drizzle-orm/libsql";
 
 export async function resetTestDb(db: any) {
   await db.run(sql`PRAGMA foreign_keys = OFF`);

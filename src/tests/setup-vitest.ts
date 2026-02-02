@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, vi } from "vitest";
+import { afterAll, beforeEach, vi } from "vitest";
 import { setupTestDb } from "./helpers/setup-db";
 import { resetTestDb } from "./helpers/reset-db";
 
