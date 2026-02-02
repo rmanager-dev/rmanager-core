@@ -151,8 +151,8 @@ describe("TeamService", async () => {
       await createUser(user3);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "admin");
-      addUserToTeam(user3, team.id, "admin");
+      await addUserToTeam(user2, team.id, "admin");
+      await addUserToTeam(user3, team.id, "admin");
 
       await expect(
         TeamService.TransferOwnership(user2, user3, team.id),
@@ -194,7 +194,7 @@ describe("TeamService", async () => {
       await createUser(user2);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "admin");
+      await addUserToTeam(user2, team.id, "admin");
       const newData = await TeamService.ChangeTeamName(user2, team.id, {
         name: "New Team",
         displayName: "New Team!",
@@ -229,7 +229,7 @@ describe("TeamService", async () => {
       await createUser(user2);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "developer");
+      await addUserToTeam(user2, team.id, "developer");
 
       await expect(
         TeamService.ChangeTeamName(user2, team.id, { name: "New Name" }),
@@ -260,7 +260,7 @@ describe("TeamService", async () => {
       await createUser(user2);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "viewer");
+      await addUserToTeam(user2, team.id, "viewer");
 
       await expect(
         TeamService.ListTeamMembers(user2, team.id),
@@ -278,8 +278,8 @@ describe("TeamService", async () => {
       await createUser(user3);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "admin");
-      addUserToTeam(user3, team.id, "developer");
+      await addUserToTeam(user2, team.id, "admin");
+      await addUserToTeam(user3, team.id, "developer");
 
       await expect(
         TeamService.RemoveTeamMember(user2, user3, team.id),
@@ -305,9 +305,9 @@ describe("TeamService", async () => {
       await createUser(user4);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "admin");
-      addUserToTeam(user3, team.id, "developer");
-      addUserToTeam(user4, team.id, "admin");
+      await addUserToTeam(user2, team.id, "admin");
+      await addUserToTeam(user3, team.id, "developer");
+      await addUserToTeam(user4, team.id, "admin");
 
       await expect(
         TeamService.RemoveTeamMember(user3, user2, team.id),
@@ -331,7 +331,7 @@ describe("TeamService", async () => {
       await createUser(user2);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "admin");
+      await addUserToTeam(user2, team.id, "admin");
 
       await expect(
         TeamService.RemoveTeamMember(user2, user2, team.id),
@@ -353,8 +353,8 @@ describe("TeamService", async () => {
       await createUser(user3);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "admin");
-      addUserToTeam(user3, team.id, "developer");
+      await addUserToTeam(user2, team.id, "admin");
+      await addUserToTeam(user3, team.id, "developer");
 
       await expect(
         TeamService.UpdateTeamMemberRole(user2, user3, team.id, "viewer"),
@@ -374,8 +374,8 @@ describe("TeamService", async () => {
       await createUser(user3);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "admin");
-      addUserToTeam(user3, team.id, "developer");
+      await addUserToTeam(user2, team.id, "admin");
+      await addUserToTeam(user3, team.id, "developer");
 
       await expect(
         TeamService.UpdateTeamMemberRole(user3, user2, team.id, "viewer"),
@@ -410,7 +410,7 @@ describe("TeamService", async () => {
       await createUser(user2);
 
       const team = await TeamService.CreateTeam(user1, "Acme Corp");
-      addUserToTeam(user2, team.id, "admin");
+      await addUserToTeam(user2, team.id, "admin");
 
       await expect(
         TeamService.UpdateTeamMemberRole(
