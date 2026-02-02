@@ -29,7 +29,7 @@ const CardComponent = ({ children }: React.PropsWithChildren) => (
       <CardTitle>Team Display Name</CardTitle>
       <CardDescription>
         This is the name used for your team across the dashboard and is
-        independant from your team's URL
+        independent from your team's URL
       </CardDescription>
     </CardHeader>
     <Separator />
