@@ -1,5 +1,5 @@
 import FormDialog from "@/src/components/FormDialog";
-import { queryClient } from "@/src/components/QueryClientWrapper";
+
 import {
   FormControl,
   FormField,
@@ -8,10 +8,10 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { CreateTeam } from "@/src/controllers/TeamController";
+
 import { useTeamMutations } from "@/src/hooks/useTeam";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
@@ -40,7 +40,7 @@ export default function CreateTeamDialog({
           toast.error(error.message, { id: toastId });
         } else {
           toast.error(
-            "An unknown error occured while creating your team. Please try again later.",
+            "An unknown error occurred while creating your team. Please try again later.",
             { id: toastId },
           );
         }

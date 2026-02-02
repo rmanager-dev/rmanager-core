@@ -50,8 +50,8 @@ const PatchSchema = z.object({
 });
 export async function PATCH(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId?.[0];
-  const memberId = params.memberId?.[0];
+  const teamId = params.teamId;
+  const memberId = params.memberId;
 
   if (!teamId) {
     return NextResponse.json({ error: "Team ID is required" }, { status: 400 });

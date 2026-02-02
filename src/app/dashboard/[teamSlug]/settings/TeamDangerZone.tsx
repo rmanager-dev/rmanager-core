@@ -41,7 +41,7 @@ const CardComponent = ({ children }: React.PropsWithChildren) => {
           <ItemContent>
             <ItemTitle>Delete Team</ItemTitle>
             <ItemDescription>
-              Your team will be permanently deleted including all of it's
+              Your team will be permanently deleted including all of its
               projects. This action is irreversible.
             </ItemDescription>
           </ItemContent>

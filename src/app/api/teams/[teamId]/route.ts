@@ -67,8 +67,7 @@ export async function PATCH(req: Request, context: Context) {
 
   try {
     const validatedData = PatchSchema.parse(body);
-    if (validatedData.name) {
-    }
+
     const result = await TeamService.ChangeTeamName(
       session.user.id,
       teamId,
