@@ -1,10 +1,13 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
-import { database, user } from "../db/schema";
+import { database } from "../db/schema";
 import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
 import { EncryptString256 } from "../lib/crypto/aes";
 import { randomUUID } from "crypto";
-import { ApiError } from "../lib/utils/errors";
+import { AccessDenied, ApiError, DatabaseError } from "../lib/utils/errors";
+import { Database, DatabaseSelect } from "../lib/types/database-types";
+import { TeamService } from "./TeamService";
+import { hasPermission } from "../lib/utils/team-utils";
 
 export interface DatabaseCredentials {
   AccessKeyID: string;
@@ -14,25 +17,6 @@ export interface DatabaseCredentials {
   BucketName: string;
 }
 
-async function CheckUserExist(UserId: string): Promise<boolean> {
-  const userProfile = await db.query.user.findFirst({
-    where: eq(user.id, UserId),
-    columns: { id: true },
-  });
-  return !!userProfile;
-}
-
-const UserNotFound = new ApiError(401, "UserNotFound", "Unauthorized");
-const DatabaseError = new ApiError(
-  502,
-  "DatabaseError",
-  "Couldn't reach database, please try again later.",
-);
-const AccessDenied = new ApiError(
-  403,
-  "AccessDenied",
-  "You don't have access to this resource",
-);
 const InvalidS3Credentials = new ApiError(
   401,
   "InvalidS3Credentials",
@@ -60,22 +44,23 @@ export const ExternalDatabaseService = {
     return s3Client;
   },
 
-  async LinkDatabase(UserId: string, Name: string, Creds: DatabaseCredentials) {
-    // Check if the user exists
-    if (!(await CheckUserExist(UserId))) {
-      throw UserNotFound;
+  async LinkDatabase(
+    actorId: string,
+    teamId: string,
+    name: string,
+    creds: DatabaseCredentials,
+  ) {
+    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
+    if (!hasPermission(actorRole, "LinkDatabase")) {
+      throw AccessDenied;
     }
 
     // Check if credentials are valid
-    try {
-      await this.CreateS3Client(Creds); // Will throw an error if credentials are invalid
-    } catch (error) {
-      throw InvalidS3Credentials;
-    }
+    await this.CreateS3Client(creds); // Will throw an error if credentials are invalid
 
     // Encrypt sensitive data
-    const encodedAkData = EncryptString256(Creds.AccessKeyID);
-    const encodedSkData = EncryptString256(Creds.SecretAccessKey);
+    const encodedAkData = EncryptString256(creds.AccessKeyID);
+    const encodedSkData = EncryptString256(creds.SecretAccessKey);
 
     // Append data to the database
     try {
@@ -83,12 +68,13 @@ export const ExternalDatabaseService = {
         .insert(database)
         .values({
           id: randomUUID(),
-          userId: UserId,
+          teamId,
+          createdBy: actorId,
 
-          name: Name,
-          bucketName: Creds.BucketName,
-          endpoint: Creds.EndpointURL,
-          region: Creds.Region,
+          name,
+          bucketName: creds.BucketName,
+          endpoint: creds.EndpointURL,
+          region: creds.Region,
 
           akCiphertext: encodedAkData.encryptedData,
           akIv: encodedAkData.initializationVector,
@@ -98,13 +84,7 @@ export const ExternalDatabaseService = {
           skIv: encodedSkData.initializationVector,
           skTag: encodedSkData.authTag,
         })
-        .returning({
-          id: database.id,
-          name: database.name,
-          endpoint: database.endpoint,
-          region: database.region,
-          type: database.type,
-        });
+        .returning(DatabaseSelect);
 
       return newRecord;
     } catch (error) {
@@ -113,23 +93,17 @@ export const ExternalDatabaseService = {
     }
   },
 
-  async ListDatabase(UserId: string) {
-    // Check if the user exists
-    if (!(await CheckUserExist(UserId))) {
-      throw UserNotFound;
+  async ListDatabase(actorId: string, teamId: string) {
+    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
+    if (!hasPermission(actorRole, "ListDatabases")) {
+      throw AccessDenied;
     }
 
     try {
       const results = await db
-        .select({
-          id: database.id,
-          type: database.type,
-          name: database.name,
-          endpoint: database.endpoint,
-          region: database.region,
-        })
+        .select(DatabaseSelect)
         .from(database)
-        .where(eq(database.userId, UserId));
+        .where(eq(database.teamId, teamId));
 
       return results;
     } catch (error) {
@@ -138,63 +112,51 @@ export const ExternalDatabaseService = {
     }
   },
 
-  async DeleteDatabase(UserId: string, DatabaseId: string) {
-    // Check if the user exists
-    if (!(await CheckUserExist(UserId))) {
-      throw UserNotFound;
-    }
-
-    let rowsAffected = 0;
-    try {
-      const result = await db
-        .delete(database)
-        .where(and(eq(database.id, DatabaseId), eq(database.userId, UserId)));
-
-      rowsAffected = result.rowsAffected;
-    } catch (error) {
-      console.error(`Failed to delete database ${DatabaseId}: `, error);
-      throw DatabaseError;
-    }
-
-    if (rowsAffected == 0) {
-      console.warn(
-        `User attempted to delete a database they don't own: DB=${DatabaseId} User=${UserId}`,
-      );
+  async DeleteDatabase(
+    actorId: string,
+    teamId: string,
+    databaseId: string,
+  ): Promise<Database> {
+    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
+    if (!hasPermission(actorRole, "DeleteDatabase")) {
       throw AccessDenied;
+    }
+
+    try {
+      const [result] = await db
+        .delete(database)
+        .where(and(eq(database.id, databaseId), eq(database.teamId, teamId)))
+        .returning(DatabaseSelect);
+      if (!result) throw AccessDenied;
+      return result;
+    } catch (error) {
+      console.error(`Failed to delete database ${databaseId}: `, error);
+      throw DatabaseError;
     }
   },
 
-  async RenameDatabase(UserId: string, DatabaseId: string, NewName: string) {
-    // Check if the user exists
-    if (!(await CheckUserExist(UserId))) {
-      throw UserNotFound;
-    }
-
-    let result;
-    try {
-      result = await db
-        .update(database)
-        .set({ name: NewName })
-        .where(and(eq(database.userId, UserId), eq(database.id, DatabaseId)))
-        .returning({
-          id: database.id,
-          name: database.name,
-          endpoint: database.endpoint,
-          region: database.region,
-          type: database.type,
-        });
-    } catch (error) {
-      console.error(`Failed to rename database ${DatabaseId}: `, error);
-      throw DatabaseError;
-    }
-
-    if (!result) {
-      console.warn(
-        `User attempted to rename a database they don't own: DB=${DatabaseId} User=${UserId}`,
-      );
+  async RenameDatabase(
+    actorId: string,
+    teamId: string,
+    databaseId: string,
+    newName: string,
+  ) {
+    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
+    if (!hasPermission(actorRole, "RenameDatabase")) {
       throw AccessDenied;
     }
 
-    return result;
+    try {
+      const [result] = await db
+        .update(database)
+        .set({ name: newName })
+        .where(and(eq(database.teamId, teamId), eq(database.id, databaseId)))
+        .returning(DatabaseSelect);
+      if (!result) throw AccessDenied;
+      return result;
+    } catch (error) {
+      console.error(`Failed to rename database ${databaseId}: `, error);
+      throw DatabaseError;
+    }
   },
 };

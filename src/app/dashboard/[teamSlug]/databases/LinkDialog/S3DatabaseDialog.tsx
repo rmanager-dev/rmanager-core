@@ -9,6 +9,8 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { LinkDatabase } from "@/src/controllers/ExternalDatabaseController";
+import { useDatabaseMutations } from "@/src/hooks/useDatabase";
+import { useTeam } from "@/src/hooks/useTeam";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -23,6 +25,8 @@ export default function S3DatabaseDialog({
   open,
   onOpenChange,
 }: S3DatabaseDialogProps) {
+  const { createDatabase } = useDatabaseMutations();
+  const { data: team } = useTeam();
   const S3CompatibleCredsSchema = z.object({
     name: z
       .string()
@@ -59,40 +63,25 @@ export default function S3DatabaseDialog({
     },
   });
 
-  const handleS3DatabaseLink = async (data: {
-    name: string;
-    endpoint: string;
-    region: string;
-    bucketName: string;
-    accessKey: string;
-    secretKey: string;
-  }) => {
-    const toasterId = toast.loading("Linking database...");
-    try {
-      const newDb = await LinkDatabase({
-        type: "S3",
-        name: data.name,
-        endpoint: data.endpoint,
-        region: data.region,
-        bucketName: data.bucketName,
-        accessKey: data.accessKey,
-        secretKey: data.secretKey,
+  const handleS3DatabaseLink = (
+    creds: z.infer<typeof S3CompatibleCredsSchema>,
+  ) => {
+    const id = toast.loading("Linking database...");
+    createDatabase
+      .mutateAsync({ teamId: team!.id, data: { ...creds, type: "S3" } })
+      .then(() => {
+        toast.success("Successfully linked database!", { id });
+      })
+      .catch((error) => {
+        if (error instanceof Error) {
+          toast.error(error.message, { id });
+        } else {
+          toast.error(
+            "An unknown error occured while linking your database. Please try again later.",
+            { id },
+          );
+        }
       });
-
-      queryClient.setQueryData(["databases"], (prevData) => {
-        if (!prevData) return [newDb];
-        return [...(prevData as []), newDb];
-      });
-
-      toast.success("Database linked successfully", { id: toasterId });
-      onOpenChange(false);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message, { id: toasterId });
-      } else {
-        toast.error("An unexpected error occurred", { id: toasterId });
-      }
-    }
   };
 
   return (

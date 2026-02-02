@@ -1,11 +1,11 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { toast } from "sonner";
 import SendResetLink from "./SendResetLink";
 import SetNewPassword from "./SetNewPassword";
 
-export default function Page() {
+function PageComponent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -26,4 +26,12 @@ export default function Page() {
   } else {
     return <SendResetLink />;
   }
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PageComponent />
+    </Suspense>
+  );
 }

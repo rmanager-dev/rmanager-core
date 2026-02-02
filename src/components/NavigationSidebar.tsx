@@ -9,9 +9,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/src/components/ui/sidebar";
-import { Database, Settings, ShieldUser } from "lucide-react";
+import { Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Skeleton } from "./ui/skeleton";
 
 interface Item {
   title: string;
@@ -19,28 +20,10 @@ interface Item {
   url: string;
 }
 
-interface ItemGroup {
+export interface ItemGroup {
   groupTitle: string;
   items: Item[];
 }
-
-const userSettingsSidebarItems: ItemGroup[] = [
-  {
-    groupTitle: "User Settings",
-    items: [
-      {
-        title: "Preferences",
-        Icon: Settings,
-        url: "/dashboard/user/preferences",
-      },
-      {
-        title: "Security",
-        Icon: ShieldUser,
-        url: "/dashboard/user/security",
-      },
-    ],
-  },
-];
 
 const SidebarItemComponent = ({
   item,
@@ -65,9 +48,11 @@ const SidebarItemComponent = ({
 const SidebarGroupComponent = ({
   group,
   pathname,
+  isLoading,
 }: {
   group: ItemGroup;
   pathname: string;
+  isLoading: boolean;
 }) => {
   return (
     <SidebarGroup key={group.groupTitle}>
@@ -75,6 +60,9 @@ const SidebarGroupComponent = ({
       <SidebarGroupContent>
         <SidebarMenu>
           {group.items.map((item) => {
+            if (isLoading) {
+              return <Skeleton key={item.title} className="h-8 w-full my-1" />;
+            }
             return (
               <SidebarItemComponent
                 key={item.title}
@@ -89,17 +77,25 @@ const SidebarGroupComponent = ({
   );
 };
 
-export default function UserSettingsSidebar() {
+interface NavigationSidebarProps {
+  items: ItemGroup[];
+  isLoading: boolean;
+}
+export default function NavigationSidebar({
+  items,
+  isLoading,
+}: NavigationSidebarProps) {
   const pathname = usePathname();
   return (
     <Sidebar collapsible="icon" className="top-14">
       <SidebarContent>
-        {userSettingsSidebarItems.map((group) => {
+        {items.map((group) => {
           return (
             <SidebarGroupComponent
               key={group.groupTitle}
               pathname={pathname}
               group={group}
+              isLoading={isLoading}
             />
           );
         })}

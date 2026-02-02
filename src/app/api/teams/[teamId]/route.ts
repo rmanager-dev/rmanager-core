@@ -1,24 +1,22 @@
 import { auth } from "@/src/lib/auth";
 import { ErrorToNextResponse } from "@/src/lib/utils/errors";
-import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
+import { TeamService } from "@/src/services/TeamService";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import z, { ZodError } from "zod";
 
 interface Context {
   params: Promise<{
-    id: string[];
+    teamId: string;
   }>;
 }
 
 export async function DELETE(req: Request, context: Context) {
   const params = await context.params;
-  const databaseId = params.id?.[0];
-  if (!databaseId) {
-    return NextResponse.json(
-      { error: "Database ID is required" },
-      { status: 400 },
-    );
+  const teamId = params.teamId;
+
+  if (!teamId) {
+    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
   }
 
   const session = await auth.api.getSession({
@@ -30,29 +28,29 @@ export async function DELETE(req: Request, context: Context) {
   }
 
   try {
-    await ExternalDatabaseService.DeleteDatabase(session.user.id, databaseId);
-    return NextResponse.json({ message: "Database deleted successfully" });
+    const team = await TeamService.DeleteTeam(session.user.id, teamId);
+    return NextResponse.json(team);
   } catch (error) {
     return ErrorToNextResponse(error);
   }
 }
 
 const PatchSchema = z.object({
-  name: z.string().min(1).max(64),
+  name: z.string().min(3).max(32).optional(),
+  displayName: z.string().min(3).max(32).optional(),
 });
 export async function PATCH(req: Request, context: Context) {
   const params = await context.params;
-  const databaseId = params.id?.[0];
-  if (!databaseId) {
-    return NextResponse.json(
-      { error: "Database ID is required" },
-      { status: 400 },
-    );
+  const teamId = params.teamId;
+
+  if (!teamId) {
+    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
   }
 
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -68,14 +66,14 @@ export async function PATCH(req: Request, context: Context) {
   }
 
   try {
-    const validatedSchema = PatchSchema.parse(body);
+    const validatedData = PatchSchema.parse(body);
 
-    const newDb = await ExternalDatabaseService.RenameDatabase(
+    const result = await TeamService.ChangeTeamName(
       session.user.id,
-      databaseId,
-      validatedSchema.name,
+      teamId,
+      validatedData,
     );
-    return NextResponse.json(newDb);
+    return NextResponse.json(result);
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json({ error: error.message }, { status: 400 });

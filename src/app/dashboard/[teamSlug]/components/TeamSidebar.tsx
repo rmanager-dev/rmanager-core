@@ -1,0 +1,58 @@
+"use client";
+import NavigationSidebar, {
+  ItemGroup,
+} from "@/src/components/NavigationSidebar";
+import { useTeam } from "@/src/hooks/useTeam";
+import { hasPermission } from "@/src/lib/utils/team-utils";
+import { Box, Database, Settings, User } from "lucide-react";
+
+export default function TeamSidebar() {
+  const { data, isLoading } = useTeam();
+
+  const SidebarItems: ItemGroup[] = [
+    {
+      groupTitle: "Workspace",
+      items: [
+        {
+          title: "Projects",
+          Icon: Box,
+          url: "",
+        },
+        {
+          title: "Members",
+          Icon: User,
+          url: "/members",
+        },
+      ],
+    },
+    {
+      groupTitle: "Manage",
+      items: [
+        {
+          title: "Settings",
+          Icon: Settings,
+          url: "/settings",
+        },
+        {
+          title: "Databases",
+          Icon: Database,
+          url: "/databases",
+        },
+      ].filter((item) => {
+        if (item.title === "Databases") {
+          return hasPermission(data?.role, "ListDatabases");
+        }
+        return true;
+      }),
+    },
+  ];
+
+  const dynamicItems = SidebarItems.map((group) => ({
+    ...group,
+    items: group.items.map((item) => ({
+      ...item,
+      url: `/dashboard/${data?.slug}${item.url}`,
+    })),
+  }));
+  return <NavigationSidebar items={dynamicItems} isLoading={isLoading} />;
+}

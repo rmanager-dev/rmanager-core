@@ -1,17 +1,6 @@
-"use client";
+import CallbackDialog from "@/src/components/CallbackDialog";
 import FormDialog from "@/src/components/FormDialog";
-import { queryClient } from "@/src/components/QueryClientWrapper";
 import { Button } from "@/src/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/src/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,10 +16,11 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import {
-  DeleteDatabase,
-  RenameDatabase,
-} from "@/src/controllers/ExternalDatabaseController";
+import { Skeleton } from "@/src/components/ui/skeleton";
+import { useDatabaseMutations } from "@/src/hooks/useDatabase";
+import { useTeam } from "@/src/hooks/useTeam";
+import { Database } from "@/src/lib/types/database-types";
+import { hasPermission } from "@/src/lib/utils/team-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
@@ -39,102 +29,17 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
-export type Database = {
-  id: string;
-  name: string;
-  endpoint: string;
-  region: string;
-  type: string;
-};
-
-const DatabaseDeletionDialog = ({
-  id,
-  trigger,
-}: {
-  id: string;
-  trigger: React.ReactNode;
-}) => {
-  const [isLoading, setIsLoading] = useState(false);
-  return (
-    <Dialog>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Database</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete this database? All deployments
-            associated with this database will be removed. This action cannot be
-            undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="flex sm:flex-col gap-4">
-          <Button
-            className="w-full"
-            variant={"destructive"}
-            disabled={isLoading}
-            onClick={async () => {
-              setIsLoading(true);
-              await handleDatabaseDeletion(id);
-              setIsLoading(false);
-            }}
-          >
-            Delete
-          </Button>
-          <DialogClose className="w-full" asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const handleDatabaseDeletion = async (id: string) => {
-  const toastId = toast.loading("Deleting database...");
-  try {
-    await DeleteDatabase(id);
-    queryClient.setQueryData(["databases"], (oldData) => {
-      if (!oldData) return oldData;
-      return (oldData as Database[]).filter((db) => db.id !== id);
-    });
-    toast.success("Database deleted successfully", { id: toastId });
-  } catch (error) {
-    if (error instanceof Error) {
-      toast.error(error.message, { id: toastId });
-    } else {
-      toast.error("An unexpected error occurred", { id: toastId });
-    }
-  }
-};
-
-const handleDatabaseRename = async (id: string, name: string) => {
-  const toastId = toast.loading("Renaming database...");
-  try {
-    await RenameDatabase(id, name);
-    queryClient.setQueryData(["databases"], (oldData: Database[]) => {
-      if (!oldData) return oldData;
-      return (oldData as Database[]).map((db) =>
-        db.id === id ? { ...db, name } : db,
-      );
-    });
-    toast.success("Database renamed successfully", { id: toastId });
-  } catch (error) {
-    if (error instanceof Error) {
-      toast.error(error.message, { id: toastId });
-    } else {
-      toast.error("An unexpected error occurred", { id: toastId });
-    }
-  }
-};
-
 const DatabaseRenameDialog = ({
-  id,
+  databaseId,
+  teamId,
   trigger,
 }: {
-  id: string;
+  databaseId: string;
+  teamId: string;
   trigger: React.ReactNode;
 }) => {
   const [open, onOpenChange] = useState(false);
+  const { renameDatabase } = useDatabaseMutations();
   const formSchema = z.object({
     name: z
       .string()
@@ -153,8 +58,25 @@ const DatabaseRenameDialog = ({
       title="Rename Database"
       description="Enter a new name for this database. This action will not affect the database's data or configuration"
       form={form}
-      callback={async (data) => {
-        await handleDatabaseRename(id, data.name);
+      callback={async ({ name }) => {
+        const id = toast.loading("Renaming database...");
+        try {
+          await renameDatabase.mutateAsync({
+            teamId,
+            databaseId,
+            newName: name,
+          });
+          toast.success("Successfully renamed database!", { id });
+        } catch (error) {
+          if (error instanceof Error) {
+            toast.error(error.message, { id });
+          } else {
+            toast.error(
+              "An unknown error occured while renaming your database. Please try again later.",
+              { id },
+            );
+          }
+        }
         onOpenChange(false);
       }}
       trigger={trigger}
@@ -183,7 +105,7 @@ const DatabaseRenameDialog = ({
   );
 };
 
-export const columns: ColumnDef<Database>[] = [
+export const databaseColumn: ColumnDef<Database>[] = [
   {
     accessorKey: "name",
     header: "Name",
@@ -213,6 +135,16 @@ export const columns: ColumnDef<Database>[] = [
     id: "actions",
     cell: ({ row }) => {
       const db = row.original;
+      const { data: team, isLoading } = useTeam();
+      const { deleteDatabase } = useDatabaseMutations();
+
+      if (!team || isLoading) {
+        return (
+          <div className="flex justify-end">
+            <Skeleton className="size-8" />
+          </div>
+        );
+      }
 
       return (
         <div className="flex justify-end">
@@ -230,9 +162,11 @@ export const columns: ColumnDef<Database>[] = [
                 Copy Database ID
               </DropdownMenuItem>
               <DatabaseRenameDialog
-                id={db.id}
+                databaseId={db.id}
+                teamId={team.id}
                 trigger={
                   <DropdownMenuItem
+                    disabled={!hasPermission(team.role, "RenameDatabase")}
                     onSelect={(e) => {
                       e.preventDefault();
                     }}
@@ -242,11 +176,33 @@ export const columns: ColumnDef<Database>[] = [
                 }
               />
               <DropdownMenuSeparator />
-              <DatabaseDeletionDialog
-                id={db.id}
+              <CallbackDialog
+                title="Delete Database"
+                description="Are you sure you wanna unlink this database from your team?"
+                callback={async () => {
+                  const id = toast.loading("Deleting database...");
+                  try {
+                    await deleteDatabase.mutateAsync({
+                      teamId: team.id,
+                      databaseId: db.id,
+                    });
+                    toast.success("Successfully deleted database!", { id });
+                  } catch (error) {
+                    if (error instanceof Error) {
+                      toast.error(error.message, { id });
+                    } else {
+                      toast.error(
+                        "An unknown error occured while deleting your database. Please try again later.",
+                        { id },
+                      );
+                    }
+                  }
+                }}
+                confirmationText={db.name}
                 trigger={
                   <DropdownMenuItem
                     variant="destructive"
+                    disabled={!hasPermission(team.role, "DeleteDatabase")}
                     onSelect={(e) => {
                       e.preventDefault();
                     }}
