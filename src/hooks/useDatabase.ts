@@ -6,8 +6,7 @@ import {
   ListDatabases,
   RenameDatabase,
 } from "../controllers/ExternalDatabaseController";
-import { DatabaseInfo } from "../lib/types/database-types";
-import { Database } from "../app/dashboard/[teamSlug]/databases/DatabaseColumnOld";
+import { Database, DatabaseInfo } from "../lib/types/database-types";
 import { useEffect } from "react";
 import { hasPermission } from "../lib/utils/team-utils";
 import { useRouter } from "next/navigation";
