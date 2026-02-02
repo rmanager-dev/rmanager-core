@@ -3,12 +3,12 @@ import { useSearchParams } from "next/navigation";
 import DeleteSuccess from "./DeleteSuccess";
 import TransferOwnership from "./TransferOwnership";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { authClient } from "@/src/lib/auth-client";
 import DeleteLoading from "./DeleteLoading";
 import DeleteError from "./DeleteError";
 
-export default function Page() {
+function PageComponent() {
   const [status, setStatus] = useState<
     "loading" | "require-transfer" | "error" | "success"
   >("loading");
@@ -44,4 +44,12 @@ export default function Page() {
     case "error":
       return <DeleteError />;
   }
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PageComponent />
+    </Suspense>
+  );
 }
