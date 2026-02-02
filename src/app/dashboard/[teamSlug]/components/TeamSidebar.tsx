@@ -11,7 +11,7 @@ export default function TeamSidebar() {
 
   const SidebarItems: ItemGroup[] = [
     {
-      groupTitle: "Manage",
+      groupTitle: "Workspace",
       items: [
         {
           title: "Projects",
@@ -23,6 +23,11 @@ export default function TeamSidebar() {
           Icon: User,
           url: "/members",
         },
+      ],
+    },
+    {
+      groupTitle: "Manage",
+      items: [
         {
           title: "Settings",
           Icon: Settings,
