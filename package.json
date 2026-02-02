@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "npx drizzle-kit push --url file:test.db --schema ./src/db/schema/index.ts --dialect sqlite && vitest --mode test",
-    "push-db": "npx drizzle-kit push --url file:local.db --schema ./src/db/schema/index.ts --dialect sqlite"
+    "push-db": "npx drizzle-kit push --url file:local.db --schema ./src/db/schema/index.ts --dialect sqlite",
+    "studio": "npx drizzle-kit studio"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.940.0",
