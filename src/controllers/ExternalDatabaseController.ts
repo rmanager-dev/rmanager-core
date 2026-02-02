@@ -33,15 +33,12 @@ export async function ListDatabases(teamId: string): Promise<Database[]> {
 }
 
 export async function DeleteDatabase(
-  teamdId: string,
+  teamId: string,
   databaseId: string,
 ): Promise<Database> {
-  const response = await fetch(
-    `/api/teams/${teamdId}/databases/${databaseId}`,
-    {
-      method: "DELETE",
-    },
-  );
+  const response = await fetch(`/api/teams/${teamId}/databases/${databaseId}`, {
+    method: "DELETE",
+  });
 
   const responseData = await response.json();
   if (!response.ok) {
