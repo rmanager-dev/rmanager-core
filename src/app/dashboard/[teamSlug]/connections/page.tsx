@@ -16,7 +16,10 @@ export default function Page() {
 
   return (
     <>
-      <span className="w-full text-left text-lg font-semibold">Databases</span>
+      <span className="w-full text-left text-lg font-semibold">
+        Connections
+      </span>
+      <span className="w-full text-left text-md font-medium">Databases</span>
       <DataTable
         columns={databaseColumn}
         data={data ?? []}
