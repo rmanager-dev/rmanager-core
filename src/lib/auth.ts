@@ -5,6 +5,7 @@ import { twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailTransporter } from "./email";
 import { and, eq } from "drizzle-orm";
+import { TeamService } from "../services/TeamService";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -95,4 +96,19 @@ export const auth = betterAuth({
       },
     }),
   ],
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          const team = await TeamService.CreateTeam(
+            user.id,
+            `user-${user.id.slice(-6)}'s team`,
+          );
+          await TeamService.ChangeTeamName(user.id, team.id, {
+            displayName: "Personal Team",
+          });
+        },
+      },
+    },
+  },
 });
