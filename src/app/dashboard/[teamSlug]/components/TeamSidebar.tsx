@@ -4,7 +4,7 @@ import NavigationSidebar, {
 } from "@/src/components/NavigationSidebar";
 import { useTeam } from "@/src/hooks/useTeam";
 import { hasPermission } from "@/src/lib/utils/team-utils";
-import { Box, Database, Settings, User } from "lucide-react";
+import { Box, Cable, Settings, User } from "lucide-react";
 
 export default function TeamSidebar() {
   const { data, isLoading } = useTeam();
@@ -34,9 +34,9 @@ export default function TeamSidebar() {
           url: "/settings",
         },
         {
-          title: "Databases",
-          Icon: Database,
-          url: "/databases",
+          title: "Connections",
+          Icon: Cable,
+          url: "/connections",
         },
       ].filter((item) => {
         if (item.title === "Databases") {
