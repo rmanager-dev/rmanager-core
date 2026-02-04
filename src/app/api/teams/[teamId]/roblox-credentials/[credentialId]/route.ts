@@ -3,7 +3,7 @@ import {
   RobloxCredentialRenameSchema,
   RobloxCredentialRotateSchema,
 } from "@/src/lib/types/roblox-credentials-types";
-import { AccessDenied, ErrorToNextResponse } from "@/src/lib/utils/errors";
+import { AccessDenied, ErrorToNextResponse } from "@/src/lib/utils/api-utils";
 import { RobloxCredentialsService } from "@/src/services/RobloxCredentialsService";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";

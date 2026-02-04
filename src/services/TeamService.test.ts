@@ -3,7 +3,7 @@ import { db } from "@/src/db";
 import { TeamService } from "./TeamService";
 import { team_member, user } from "../db/schema";
 import { and, eq } from "drizzle-orm";
-import { UserNotFound } from "../lib/utils/errors";
+import { UserNotFound } from "../lib/utils/api-utils";
 import { TeamRole } from "../lib/types/team-types";
 
 async function createUser(name: string) {

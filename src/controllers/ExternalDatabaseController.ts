@@ -1,5 +1,5 @@
 import { Database, DatabaseInfo } from "../lib/types/database-types";
-import { ResponseToError } from "../lib/utils/errors";
+import { ResponseToError } from "../lib/utils/api-utils";
 
 export async function LinkDatabase(
   teamId: string,
