@@ -13,6 +13,7 @@ export function useTeam() {
     queryKey: ["team", teamSlug],
     queryFn: () => TeamController.resolve(teamSlug as string),
     enabled: !!teamSlug,
+    staleTime: 5 * 60 * 1000,
     retry: false,
   });
 
@@ -29,6 +30,7 @@ export function useTeams() {
   return useQuery({
     queryKey: ["teams"],
     queryFn: () => TeamController.list(),
+    staleTime: 5 * 60 * 1000,
   });
 }
 
