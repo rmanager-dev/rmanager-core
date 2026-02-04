@@ -140,6 +140,7 @@ export async function POST(req: Request, context: Context) {
       credentialId,
       validatedData.key,
     );
+    return NextResponse.json({ success: true });
   } catch (error) {
     return ErrorToNextResponse(error);
   }
