@@ -1,4 +1,5 @@
 import CallbackDialog from "@/src/components/CallbackDialog";
+import FormDialog from "@/src/components/FormDialog";
 import LocalTime from "@/src/components/LocalTime";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -7,15 +8,141 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useRobloxCredentialMutations } from "@/src/hooks/useRobloxCredential";
 import { useTeam } from "@/src/hooks/useTeam";
-import { RobloxCredential } from "@/src/lib/types/roblox-credentials-types";
+import {
+  RobloxCredential,
+  RobloxCredentialRenameSchema,
+  RobloxCredentialRotateSchema,
+} from "@/src/lib/types/roblox-credentials-types";
 import { hasPermission } from "@/src/lib/utils/team-utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+
+const RenameRobloxCredentialDialog = ({
+  credId,
+  children,
+}: { credId: string } & React.PropsWithChildren) => {
+  const { data: team } = useTeam();
+  const { renameRobloxCredential } = useRobloxCredentialMutations();
+  const form = useForm({
+    resolver: zodResolver(RobloxCredentialRenameSchema),
+    defaultValues: {
+      name: "",
+    },
+  });
+
+  return (
+    <FormDialog
+      title="Rename Roblox Credential"
+      description="Enter a new name for your Roblox credential. This action will not impact your projects."
+      form={form}
+      callback={({ name }) => {
+        const id = toast.loading("Renaming Roblox credential...");
+        renameRobloxCredential
+          .mutateAsync({ teamId: team!.id, credId, newName: name })
+          .then(() => {
+            toast.success("Successfully renamed Roblox credential!", { id });
+          })
+          .catch((error) => {
+            if (error instanceof Error) {
+              toast.error(error.message, { id });
+            } else {
+              toast.error(
+                "An unknown error happened while renaming Roblox credential. Please try again later.",
+                { id },
+              );
+            }
+          });
+      }}
+      submitButtonText="Rename"
+      trigger={children}
+    >
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Name</FormLabel>
+            <FormControl>
+              <Input placeholder="New Name" maxLength={32} {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </FormDialog>
+  );
+};
+
+const RotateRobloxCredentialDialog = ({
+  credId,
+  children,
+}: { credId: string } & React.PropsWithChildren) => {
+  const { data: team } = useTeam();
+  const { rotateRobloxCredential } = useRobloxCredentialMutations();
+  const form = useForm({
+    resolver: zodResolver(RobloxCredentialRotateSchema),
+    defaultValues: {
+      key: "",
+    },
+  });
+
+  return (
+    <FormDialog
+      title="Rotate Roblox Credential"
+      description="Enter a new API key for your Roblox credential."
+      form={form}
+      callback={({ key }) => {
+        const id = toast.loading("Rotating Roblox credential...");
+        rotateRobloxCredential
+          .mutateAsync({ teamId: team!.id, credId, newKey: key })
+          .then(() => {
+            toast.success("Successfully rotated Roblox credential!", { id });
+          })
+          .catch((error) => {
+            if (error instanceof Error) {
+              toast.error(error.message, { id });
+            } else {
+              toast.error(
+                "An unknown error happened while rotating Roblox credential. Please try again later.",
+                { id },
+              );
+            }
+          });
+      }}
+      submitButtonText="Rotate"
+      trigger={children}
+    >
+      <FormField
+        control={form.control}
+        name="key"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Key</FormLabel>
+            <FormControl>
+              <Input placeholder="Secret API Key" maxLength={2048} {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </FormDialog>
+  );
+};
 
 export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
   {
@@ -60,7 +187,27 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
               >
                 Copy Roblox Credential ID
               </DropdownMenuItem>
+              <RenameRobloxCredentialDialog credId={cred.id}>
+                <DropdownMenuItem
+                  disabled={!hasPermission(team.role, "RenameRobloxCredential")}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  Rename Roblox Credential
+                </DropdownMenuItem>
+              </RenameRobloxCredentialDialog>
               <DropdownMenuSeparator />
+              <RotateRobloxCredentialDialog credId={cred.id}>
+                <DropdownMenuItem
+                  disabled={!hasPermission(team.role, "RotateRobloxCredential")}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  Rotate Roblox Credential
+                </DropdownMenuItem>
+              </RotateRobloxCredentialDialog>
               <CallbackDialog
                 title="Delete Roblox Credential"
                 description="Are you sure you wanna unlink this roblox credential from your team?"
