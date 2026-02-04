@@ -21,6 +21,7 @@ export function useRobloxCredentials() {
     queryKey: ["robloxCredentials", team?.id],
     queryFn: () => RobloxCredentialController.list(team!.id),
     enabled: !!team?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {

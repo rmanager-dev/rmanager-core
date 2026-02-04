@@ -18,6 +18,7 @@ export function useDatabases() {
     queryKey: ["databases", team?.id],
     queryFn: () => ExternalDatabaseController.list(team!.id),
     enabled: !!team?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {
