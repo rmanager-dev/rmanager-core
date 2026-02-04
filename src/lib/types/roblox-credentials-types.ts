@@ -24,7 +24,10 @@ export const RobloxCredentialInfoSchema = z.object({
     .string()
     .min(3, { error: "Name must be at least 3 characters" })
     .max(32, { error: "Name must be at most 32 characters" }),
-  key: z.string().max(2048, { error: "Key must be at most 2048 characters" }),
+  key: z
+    .string()
+    .min(1, { error: "Key must contain at least 1 character" })
+    .max(2048, { error: "Key must be at most 2048 characters" }),
 });
 
 export const RobloxCredentialRenameSchema = z.object({
@@ -35,5 +38,8 @@ export const RobloxCredentialRenameSchema = z.object({
 });
 
 export const RobloxCredentialRotateSchema = z.object({
-  key: z.string().max(2048, { error: "Key must be at most 2048 characters" }),
+  key: z
+    .string()
+    .min(1, { error: "Key must contain at least 1 character" })
+    .max(2048, { error: "Key must be at most 2048 characters" }),
 });
