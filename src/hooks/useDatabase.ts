@@ -1,15 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTeam } from "./useTeam";
-import {
-  DeleteDatabase,
-  LinkDatabase,
-  ListDatabases,
-  RenameDatabase,
-} from "../controllers/ExternalDatabaseController";
 import { Database, DatabaseInfo } from "../lib/types/database-types";
 import { useEffect } from "react";
 import { hasPermission } from "../lib/utils/team-utils";
 import { useRouter } from "next/navigation";
+import { ExternalDatabaseController } from "../controllers/ExternalDatabaseController";
 
 export function useDatabases() {
   const {
@@ -21,7 +16,7 @@ export function useDatabases() {
 
   const query = useQuery({
     queryKey: ["databases", team?.id],
-    queryFn: () => ListDatabases(team!.id),
+    queryFn: () => ExternalDatabaseController.list(team!.id),
     enabled: !!team?.id,
   });
 
@@ -46,7 +41,7 @@ export function useDatabaseMutations() {
 
   const createDatabase = useMutation({
     mutationFn: ({ teamId, data }: { teamId: string; data: DatabaseInfo }) =>
-      LinkDatabase(teamId, data),
+      ExternalDatabaseController.link(teamId, data),
     onSuccess: (database, variables) => {
       queryClient.setQueryData<Database[]>(
         ["databases", variables.teamId],
@@ -65,7 +60,7 @@ export function useDatabaseMutations() {
     }: {
       teamId: string;
       databaseId: string;
-    }) => DeleteDatabase(teamId, databaseId),
+    }) => ExternalDatabaseController.delete(teamId, databaseId),
     onSuccess: (database, variables) => {
       queryClient.setQueryData<Database[]>(
         ["databases", variables.teamId],
@@ -86,7 +81,7 @@ export function useDatabaseMutations() {
       teamId: string;
       databaseId: string;
       newName: string;
-    }) => RenameDatabase(teamId, databaseId, newName),
+    }) => ExternalDatabaseController.rename(teamId, databaseId, newName),
     onSuccess: (database, variables) => {
       queryClient.setQueryData<Database[]>(
         ["databases", variables.teamId],
