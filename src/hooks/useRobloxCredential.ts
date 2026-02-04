@@ -109,4 +109,11 @@ export function useRobloxCredentialMutations() {
       newKey: string;
     }) => RobloxCredentialController.rotate(teamId, credId, newKey),
   });
+
+  return {
+    linkRobloxCredential,
+    deleteRobloxCredential,
+    renameRobloxCredential,
+    rotateRobloxCredential,
+  };
 }
