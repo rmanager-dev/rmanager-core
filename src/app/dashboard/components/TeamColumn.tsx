@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { RemoveTeamMember } from "@/src/controllers/TeamController";
+import { TeamController } from "@/src/controllers/TeamController";
 import { authClient } from "@/src/lib/auth-client";
 import { Team } from "@/src/lib/types/team-types";
 import { useMutation } from "@tanstack/react-query";
@@ -54,7 +54,13 @@ export const teamColumns: ColumnDef<Team>[] = [
     cell: ({ row }) => {
       const { data, isPending } = authClient.useSession();
       const { mutateAsync: leaveTeam } = useMutation({
-        mutationFn: RemoveTeamMember,
+        mutationFn: ({
+          teamId,
+          memberId,
+        }: {
+          teamId: string;
+          memberId: string;
+        }) => TeamController.removeMember(teamId, memberId),
         onSuccess: (_, { teamId }) => {
           queryClient.setQueryData<Team[]>(["teams"], (prevData) =>
             prevData ? prevData.filter((team) => team.id !== teamId) : [],

@@ -1,15 +1,9 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import {
-  ChangeTeamName,
-  CreateTeam,
-  DeleteTeam,
-  ListTeams,
-  ResolveTeamBySlug,
-} from "../controllers/TeamController";
 import { useEffect } from "react";
 import { UserTeam } from "../lib/types/team-types";
+import { TeamController } from "../controllers/TeamController";
 
 export function useTeam() {
   const { teamSlug } = useParams();
@@ -17,7 +11,7 @@ export function useTeam() {
 
   const query = useQuery({
     queryKey: ["team", teamSlug],
-    queryFn: () => ResolveTeamBySlug(teamSlug as string),
+    queryFn: () => TeamController.resolve(teamSlug as string),
     enabled: !!teamSlug,
     retry: false,
   });
@@ -34,7 +28,7 @@ export function useTeam() {
 export function useTeams() {
   return useQuery({
     queryKey: ["teams"],
-    queryFn: ListTeams,
+    queryFn: () => TeamController.list(),
   });
 }
 
@@ -43,7 +37,7 @@ export function useTeamMutations() {
   const router = useRouter();
 
   const createTeam = useMutation({
-    mutationFn: (name: string) => CreateTeam(name),
+    mutationFn: (name: string) => TeamController.create(name),
     onSuccess: (team) => {
       // Add the newly created team to the teams list
       queryClient.setQueryData<UserTeam[]>(["teams"], (prevData) => {
@@ -54,7 +48,7 @@ export function useTeamMutations() {
   });
 
   const deleteTeam = useMutation({
-    mutationFn: (teamId: string) => DeleteTeam(teamId),
+    mutationFn: (teamId: string) => TeamController.delete(teamId),
     onSuccess: (oldTeam) => {
       // Remove old team from the teams list
       queryClient.setQueryData<UserTeam[]>(["teams"], (prevData) => {
@@ -74,7 +68,7 @@ export function useTeamMutations() {
     }: {
       teamId: string;
       payload: { name?: string; displayName?: string };
-    }) => ChangeTeamName(teamId, payload),
+    }) => TeamController.changeName(teamId, payload),
     onSuccess: (newTeam, variables) => {
       const cachedTeam = queryClient.getQueryData<UserTeam[]>(["teams"]);
       const oldTeam = cachedTeam?.find((team) => team.id === variables.teamId);

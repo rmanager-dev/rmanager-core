@@ -1,97 +1,34 @@
 import { Team, TeamMember, UserTeam } from "../lib/types/team-types";
-import { ResponseToError } from "../lib/utils/api-utils";
+import { fetcher } from "../lib/utils/api-utils";
 
-export async function CreateTeam(name: string): Promise<UserTeam> {
-  const response = await fetch("/api/teams", {
-    method: "POST",
-    body: JSON.stringify({ name }),
-  });
+export const TeamController = {
+  create: (name: string) =>
+    fetcher<UserTeam>("/api/teams", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    }),
 
-  const responseData = await response.json();
-  if (!response.ok) {
-    throw ResponseToError(responseData);
-  }
+  delete: (teamId: string) =>
+    fetcher<Team>(`/api/teams/${teamId}`, { method: "DELETE" }),
 
-  return responseData as UserTeam;
-}
+  list: () => fetcher<UserTeam[]>("/api/teams"),
 
-export async function DeleteTeam(teamId: string): Promise<Team> {
-  const response = await fetch(`/api/teams/${teamId}`, { method: "DELETE" });
+  resolve: (slug: string) =>
+    fetcher<UserTeam>(`/api/teams/resolve-slug/${slug}`),
 
-  const responseData = await response.json();
-  if (!response.ok) {
-    const error = ResponseToError(responseData);
-    console.log(error);
-    throw error;
-  }
+  changeName: (
+    teamId: string,
+    newName: { name?: string; displayName?: string },
+  ) =>
+    fetcher<Team>(`/api/teams/${teamId}`, {
+      method: "PATCH",
+      body: JSON.stringify(newName),
+    }),
 
-  return responseData as Team;
-}
-
-export async function ListTeams(): Promise<UserTeam[]> {
-  const response = await fetch(`/api/teams`, { method: "GET" });
-
-  const responseData = await response.json();
-  if (!response.ok) {
-    throw ResponseToError(responseData);
-  }
-
-  return responseData as UserTeam[];
-}
-
-export async function RemoveTeamMember({
-  memberId,
-  teamId,
-}: {
-  memberId: string;
-  teamId: string;
-}): Promise<TeamMember> {
-  const response = await fetch(`/api/teams/${teamId}/members/${memberId}`, {
-    method: "DELETE",
-  });
-
-  const responseData = await response.json();
-  if (!response.ok) {
-    throw ResponseToError(responseData);
-  }
-
-  return responseData as TeamMember;
-}
-
-export async function ResolveTeamBySlug(slug: string): Promise<UserTeam> {
-  const response = await fetch(`/api/teams/resolve-slug/${slug}`);
-
-  const responseData = await response.json();
-  if (!response.ok) {
-    throw ResponseToError(responseData);
-  }
-  return responseData as UserTeam;
-}
-
-export async function ChangeTeamName(
-  teamId: string,
-  newName: { name?: string; displayName?: string },
-): Promise<Team> {
-  const response = await fetch(`/api/teams/${teamId}`, {
-    method: "PATCH",
-    body: JSON.stringify(newName),
-  });
-
-  const responseData = await response.json();
-  if (!response.ok) {
-    throw ResponseToError(responseData);
-  }
-
-  return responseData as Team;
-}
-
-export async function ListTeamMembers(teamId: string): Promise<TeamMember[]> {
-  const response = await fetch(`/api/teams/${teamId}/members`);
-
-  const responseData = await response.json();
-  if (!response.ok) {
-    throw ResponseToError(responseData);
-  }
-
-  return responseData as TeamMember[];
-}
+  removeMember: (teamId: string, memberId: string) =>
+    fetcher<TeamMember>(`/api/teams/${teamId}/members/${memberId}`, {
+      method: "DELETE",
+    }),
+  listMembers: (teamId: string) =>
+    fetcher<TeamMember[]>(`/api/teams/${teamId}/members`),
+};
