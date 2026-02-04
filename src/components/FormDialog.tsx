@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/src/components/ui/dialog";
 import { Form } from "@/src/components/ui/form";
-import React from "react";
+import React, { useState } from "react";
 import { FieldValues, UseFormReturn } from "react-hook-form";
 
 export interface FormDialogProps<TFormData extends FieldValues> {
@@ -53,15 +53,20 @@ export default function FormDialog<TFormData extends FieldValues>({
   trigger,
   form,
   callback,
-  open,
-  onOpenChange,
+  open: externalOpen,
+  onOpenChange: setExternalOpen,
   children,
 }: FormDialogProps<TFormData> & React.PropsWithChildren) {
   const [isLoading, setIsLoading] = React.useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const open = externalOpen ?? internalOpen;
+  const onOpenChange = setExternalOpen ?? setInternalOpen;
 
   const handleSubmit = async (data: TFormData) => {
     setIsLoading(true);
     await callback(data);
+    onOpenChange(false);
     form.reset();
     setIsLoading(false);
   };
