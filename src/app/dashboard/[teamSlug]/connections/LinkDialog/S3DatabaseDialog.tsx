@@ -1,5 +1,4 @@
 import FormDialog from "@/src/components/FormDialog";
-import { queryClient } from "@/src/components/QueryClientWrapper";
 import {
   FormControl,
   FormField,
@@ -8,7 +7,6 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { LinkDatabase } from "@/src/controllers/ExternalDatabaseController";
 import { useDatabaseMutations } from "@/src/hooks/useDatabase";
 import { useTeam } from "@/src/hooks/useTeam";
 import { zodResolver } from "@hookform/resolvers/zod";
