@@ -14,6 +14,7 @@ export function useMembers() {
     queryKey: ["members", team?.id],
     queryFn: () => TeamController.listMembers(team!.id),
     enabled: !!team?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   const isLoading = isLoadingTeam || query.isLoading;
