@@ -1,5 +1,5 @@
 import { auth } from "@/src/lib/auth";
-import { ErrorToNextResponse } from "@/src/lib/utils/errors";
+import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
 import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";

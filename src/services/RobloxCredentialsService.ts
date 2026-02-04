@@ -7,7 +7,7 @@ import {
   RobloxCredentialInfo,
   RobloxCredentialSelect,
 } from "../lib/types/roblox-credentials-types";
-import { AccessDenied, DatabaseError } from "../lib/utils/errors";
+import { AccessDenied, DatabaseError } from "../lib/utils/api-utils";
 import { hasPermission } from "../lib/utils/team-utils";
 import { TeamService } from "./TeamService";
 import { and, eq } from "drizzle-orm";

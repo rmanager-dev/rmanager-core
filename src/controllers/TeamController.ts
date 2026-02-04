@@ -1,5 +1,5 @@
 import { Team, TeamMember, UserTeam } from "../lib/types/team-types";
-import { ResponseToError } from "../lib/utils/errors";
+import { ResponseToError } from "../lib/utils/api-utils";
 
 export async function CreateTeam(name: string): Promise<UserTeam> {
   const response = await fetch("/api/teams", {

@@ -1,6 +1,6 @@
 import { team_member } from "@/src/db/schema";
 import { auth } from "@/src/lib/auth";
-import { ErrorToNextResponse } from "@/src/lib/utils/errors";
+import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
 import { TeamService } from "@/src/services/TeamService";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
