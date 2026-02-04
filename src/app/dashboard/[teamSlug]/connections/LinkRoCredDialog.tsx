@@ -40,6 +40,7 @@ export default function LinkRobloxCredentialDialog({
       title="Link Roblox API Key"
       description="Provide a Roblox API key to be used in your projects"
       form={form}
+      submitButtonText="Link"
       callback={({ name, key }) => {
         const id = toast.loading("Linking Roblox API key to your team...");
         linkRobloxCredential
