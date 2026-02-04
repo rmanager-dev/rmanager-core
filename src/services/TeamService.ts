@@ -7,7 +7,7 @@ import {
   ApiError,
   DatabaseError,
   UserNotFound,
-} from "../lib/utils/errors";
+} from "../lib/utils/api-utils";
 import { randomUUID } from "crypto";
 import { team_member } from "../db/schema/team_member";
 import { CheckUserExist } from "../lib/utils/auth-utils";

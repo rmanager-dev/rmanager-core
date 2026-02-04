@@ -4,7 +4,7 @@ import { database } from "../db/schema";
 import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
 import { EncryptString256 } from "../lib/crypto/aes";
 import { randomUUID } from "crypto";
-import { AccessDenied, ApiError, DatabaseError } from "../lib/utils/errors";
+import { AccessDenied, ApiError, DatabaseError } from "../lib/utils/api-utils";
 import { Database, DatabaseSelect } from "../lib/types/database-types";
 import { TeamService } from "./TeamService";
 import { hasPermission } from "../lib/utils/team-utils";
