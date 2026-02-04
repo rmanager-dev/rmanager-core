@@ -8,38 +8,73 @@ import { useState } from "react";
 import LinkDatabaseDialog from "./LinkDialog/LinkDatabaseDialog";
 import { hasPermission } from "@/src/lib/utils/team-utils";
 import { useTeam } from "@/src/hooks/useTeam";
+import { robloxCredentialColumn } from "./RobloxCredentialColumn";
+import LinkRobloxCredentialDialog from "./LinkRoCredDialog";
+import { useRobloxCredentials } from "@/src/hooks/useRobloxCredential";
 
 export default function Page() {
-  const [open, setIsOpen] = useState(false);
+  const [isLinkDbOpen, setIsLinkDbOpen] = useState(false);
+  const [isLinkCredOpen, setIsLinkCredOpen] = useState(false);
   const { data: team } = useTeam();
-  const { data, isLoading } = useDatabases();
+  const { data: dbData, isLoading: isDbLoading } = useDatabases();
+  const { data: credData, isLoading: isCredLoading } = useRobloxCredentials();
 
   return (
     <>
       <span className="w-full text-left text-lg font-semibold">
         Connections
       </span>
-      <span className="w-full text-left text-md font-medium">Databases</span>
-      <DataTable
-        columns={databaseColumn}
-        data={data ?? []}
-        emptyString="No database found"
-        loading={isLoading}
-        loadingString="Loading..."
-        searchBoxPlaceholder="Search databases"
-        searchBoxTarget="name"
-        actionComponent={
-          <Button
-            variant={"outline"}
-            onClick={() => setIsOpen(true)}
-            disabled={!hasPermission(team?.role, "LinkDatabase")}
-          >
-            <Plus />
-            <span>Link Database</span>
-          </Button>
-        }
+      <div className="w-full">
+        <span className="w-full text-left text-md font-medium">Databases</span>
+        <DataTable
+          columns={databaseColumn}
+          data={dbData ?? []}
+          emptyString="No database found"
+          loading={isDbLoading}
+          loadingString="Loading..."
+          searchBoxPlaceholder="Search databases"
+          searchBoxTarget="name"
+          actionComponent={
+            <Button
+              variant={"outline"}
+              onClick={() => setIsLinkDbOpen(true)}
+              disabled={!hasPermission(team?.role, "LinkDatabase")}
+            >
+              <Plus />
+              <span>Link Database</span>
+            </Button>
+          }
+        />
+      </div>
+      <LinkDatabaseDialog open={isLinkDbOpen} onOpenChange={setIsLinkDbOpen} />
+      <div className="w-full mt-12">
+        <span className="w-full text-left text-md font-medium">
+          Roblox Credentials
+        </span>
+        <DataTable
+          columns={robloxCredentialColumn}
+          data={credData ?? []}
+          emptyString="No Roblox credential found"
+          loading={isCredLoading}
+          loadingString="Loading..."
+          searchBoxPlaceholder="Search Roblox credentials"
+          searchBoxTarget="name"
+          actionComponent={
+            <Button
+              variant={"outline"}
+              onClick={() => setIsLinkCredOpen(true)}
+              disabled={!hasPermission(team?.role, "LinkRobloxCredential")}
+            >
+              <Plus />
+              <span>Link Roblox Credential</span>
+            </Button>
+          }
+        />
+      </div>
+      <LinkRobloxCredentialDialog
+        open={isLinkCredOpen}
+        setIsOpen={setIsLinkCredOpen}
       />
-      <LinkDatabaseDialog open={open} onOpenChange={setIsOpen} />
     </>
   );
 }
