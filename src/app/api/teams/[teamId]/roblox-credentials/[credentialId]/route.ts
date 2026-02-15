@@ -15,7 +15,7 @@ interface Context {
   }>;
 }
 
-export async function DELETE(req: Request, context: Context) {
+export async function DELETE(context: Context) {
   const { teamId, credentialId } = await context.params;
   if (!teamId) {
     return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
@@ -134,13 +134,13 @@ export async function POST(req: Request, context: Context) {
   }
 
   try {
-    await RobloxCredentialsService.RotateRobloxCredential(
+    const rotatedCred = await RobloxCredentialsService.RotateRobloxCredential(
       session.user.id,
       teamId,
       credentialId,
       validatedData.key,
     );
-    return NextResponse.json({ success: true });
+    return NextResponse.json(rotatedCred);
   } catch (error) {
     return ErrorToNextResponse(error);
   }

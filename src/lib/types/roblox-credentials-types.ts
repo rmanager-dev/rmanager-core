@@ -2,11 +2,20 @@ import { roblox_credentials } from "@/src/db/schema/roblox_credentials";
 import { InferDrizzleSelect } from "../utils";
 import z from "zod";
 
+export type RobloxCredentialStatus =
+  typeof roblox_credentials.$inferSelect.status;
+
 export const RobloxCredentialSelect = {
   id: roblox_credentials.id,
   teamId: roblox_credentials.teamId,
+  status: roblox_credentials.status,
+  errorMessage: roblox_credentials.errorMessage,
   name: roblox_credentials.name,
+  expirationDate: roblox_credentials.expirationDate,
+  keyOwnerRobloxId: roblox_credentials.keyOwnerRobloxId,
   createdAt: roblox_credentials.createdAt,
+  lastUsed: roblox_credentials.lastUsed,
+  lastRefreshedAt: roblox_credentials.lastRefreshedAt,
 };
 export type RobloxCredential = InferDrizzleSelect<
   typeof RobloxCredentialSelect

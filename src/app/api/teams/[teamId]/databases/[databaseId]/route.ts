@@ -12,7 +12,7 @@ interface Context {
   }>;
 }
 
-export async function DELETE(req: Request, context: Context) {
+export async function DELETE(context: Context) {
   const params = await context.params;
 
   const databaseId = params.databaseId;
@@ -38,12 +38,12 @@ export async function DELETE(req: Request, context: Context) {
   }
 
   try {
-    await ExternalDatabaseService.DeleteDatabase(
+    const deletedDb = await ExternalDatabaseService.DeleteDatabase(
       session.user.id,
       teamId,
       databaseId,
     );
-    return NextResponse.json({ message: "Database deleted successfully" });
+    return NextResponse.json(deletedDb);
   } catch (error) {
     return ErrorToNextResponse(error);
   }
