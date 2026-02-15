@@ -43,6 +43,7 @@ export default function StatusBadge({ kind, errorMessage, lastRefreshed }: Statu
     error: {
       label: "Error",
       className: `bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 cursor-pointer`,
+      Icon: <Info />,
       popoverTitle: "Action Required",
       popoverDescription:
         errorMessage ??
