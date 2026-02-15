@@ -24,10 +24,19 @@ export const RobloxCredentialController = {
     ),
 
   rotate: (teamId: string, credId: string, newKey: string) =>
-    fetcher(`/api/teams/${teamId}/roblox-credentials/${credId}`, {
-      method: "POST",
-      body: JSON.stringify({ key: newKey }),
-    }),
+    fetcher<RobloxCredential>(
+      `/api/teams/${teamId}/roblox-credentials/${credId}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ key: newKey }),
+      },
+    ),
+
+  refresh: (teamId: string, credId: string) =>
+    fetcher<RobloxCredential>(
+      `/api/teams/${teamId}/roblox-credentials/${credId}/refresh`,
+      { method: "POST" },
+    ),
 
   list: (teamId: string) =>
     fetcher<RobloxCredential[]>(`/api/teams/${teamId}/roblox-credentials`),

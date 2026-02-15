@@ -109,6 +109,33 @@ export function useRobloxCredentialMutations() {
       credId: string;
       newKey: string;
     }) => RobloxCredentialController.rotate(teamId, credId, newKey),
+    onSuccess: (rotatedCred, variables) => {
+      queryClient.setQueryData<RobloxCredential[]>(
+        ["robloxCredentials", variables.teamId],
+        (prevData) => {
+          if (!prevData) return [rotatedCred];
+          return prevData.map((cred) =>
+            cred.id == rotatedCred.id ? rotatedCred : cred,
+          );
+        },
+      );
+    },
+  });
+
+  const refreshRobloxCredential = useMutation({
+    mutationFn: ({ teamId, credId }: { teamId: string; credId: string }) =>
+      RobloxCredentialController.refresh(teamId, credId),
+    onSuccess: (refreshedCred, variables) => {
+      queryClient.setQueryData<RobloxCredential[]>(
+        ["robloxCredentials", variables.teamId],
+        (prevData) => {
+          if (!prevData) return [refreshedCred];
+          return prevData.map((cred) =>
+            cred.id === refreshedCred.id ? refreshedCred : cred,
+          );
+        },
+      );
+    },
   });
 
   return {
@@ -116,5 +143,6 @@ export function useRobloxCredentialMutations() {
     deleteRobloxCredential,
     renameRobloxCredential,
     rotateRobloxCredential,
+    refreshRobloxCredential,
   };
 }
