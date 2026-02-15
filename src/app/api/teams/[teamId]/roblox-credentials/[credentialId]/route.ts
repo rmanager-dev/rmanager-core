@@ -15,7 +15,7 @@ interface Context {
   }>;
 }
 
-export async function DELETE(context: Context) {
+export async function DELETE(_: Request, context: Context) {
   const { teamId, credentialId } = await context.params;
   if (!teamId) {
     return NextResponse.json({ error: "Team ID is required" }, { status: 400 });

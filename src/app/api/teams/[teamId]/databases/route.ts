@@ -11,7 +11,7 @@ interface Context {
   }>;
 }
 
-export async function GET(req: Request, context: Context) {
+export async function GET(_: Request, context: Context) {
   const params = await context.params;
   const teamId = params.teamId;
 

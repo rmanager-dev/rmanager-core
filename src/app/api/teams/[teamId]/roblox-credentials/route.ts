@@ -11,7 +11,7 @@ interface Context {
   }>;
 }
 
-export async function GET(req: Request, context: Context) {
+export async function GET(_: Request, context: Context) {
   const { teamId } = await context.params;
   if (!teamId) {
     return NextResponse.json({ error: "Team ID is required" }, { status: 400 });

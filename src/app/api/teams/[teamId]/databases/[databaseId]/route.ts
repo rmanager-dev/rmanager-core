@@ -12,7 +12,7 @@ interface Context {
   }>;
 }
 
-export async function DELETE(context: Context) {
+export async function DELETE(_: Request, context: Context) {
   const params = await context.params;
 
   const databaseId = params.databaseId;
