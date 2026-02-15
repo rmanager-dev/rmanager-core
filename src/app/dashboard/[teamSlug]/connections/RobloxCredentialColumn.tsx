@@ -1,6 +1,7 @@
 import CallbackDialog from "@/src/components/CallbackDialog";
 import FormDialog from "@/src/components/FormDialog";
 import LocalTime from "@/src/components/LocalTime";
+import StatusBadge from "@/src/components/StatusBadge";
 import { Button } from "@/src/components/ui/button";
 import {
   DropdownMenuContent,
@@ -8,13 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/src/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useRobloxCredentialMutations } from "@/src/hooks/useRobloxCredential";
@@ -28,7 +23,7 @@ import { hasPermission } from "@/src/lib/utils/team-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { Copy, MoreHorizontal, Pencil, RefreshCw, RotateCcwKey, Trash } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -150,8 +145,52 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
     header: "Name",
   },
   {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const cred = row.original;
+      const { data: team, isLoading } = useTeam();
+
+      if (!team || isLoading) {
+        return (
+          <div className="flex justify-end">
+            <Skeleton className="size-8" />
+          </div>
+        );
+      }
+
+      return (
+        <StatusBadge
+          kind={cred.status}
+          errorMessage={cred.errorMessage ?? undefined}
+          lastRefreshed={new Date(cred.lastRefreshedAt)}
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "expirationDate",
+    header: "Expires",
+    cell: ({ getValue }) => {
+      const time = getValue<string | undefined>();
+      if (!!time) {
+        return <LocalTime time={new Date(time)} />;
+      } else {
+        return "Never";
+      }
+    },
+  },
+  {
     accessorKey: "createdAt",
-    header: "Created At",
+    header: "Created",
+    cell: ({ getValue }) => {
+      const time = new Date(getValue<string>());
+      return <LocalTime time={time} />;
+    },
+  },
+  {
+    accessorKey: "lastUsed",
+    header: "Last Used",
     cell: ({ getValue }) => {
       const time = new Date(getValue<string>());
       return <LocalTime time={time} />;
@@ -162,7 +201,7 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
     cell: ({ row }) => {
       const cred = row.original;
       const { data: team, isLoading } = useTeam();
-      const { deleteRobloxCredential } = useRobloxCredentialMutations();
+      const { deleteRobloxCredential, refreshRobloxCredential } = useRobloxCredentialMutations();
 
       if (!team || isLoading) {
         return (
@@ -171,6 +210,25 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
           </div>
         );
       }
+
+      const handleKeyRefresh = () => {
+        const id = toast.loading("Refreshing Roblox credential info...");
+        refreshRobloxCredential
+          .mutateAsync({ teamId: team.id, credId: cred.id })
+          .then(() => {
+            toast.success("Successfully refreshed Roblox credential info!", { id });
+          })
+          .catch((error) => {
+            if (error instanceof Error) {
+              toast.error(error.message, { id });
+            } else {
+              toast.error(
+                "An unknown error happened while refreshing Roblox credential. Please try again later.",
+                { id },
+              );
+            }
+          });
+      };
 
       return (
         <div className="flex justify-end">
@@ -182,11 +240,18 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="align-end">
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(cred.id)}
-              >
-                Copy Roblox Credential ID
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(cred.id)}>
+                <Copy />
+                <span>Copy Key ID</span>
               </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!hasPermission(team.role, "RefreshRobloxCredential")}
+                onClick={() => handleKeyRefresh()}
+              >
+                <RefreshCw />
+                <span>Refresh Key</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <RenameRobloxCredentialDialog credId={cred.id}>
                 <DropdownMenuItem
                   disabled={!hasPermission(team.role, "RenameRobloxCredential")}
@@ -194,10 +259,10 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
                     e.preventDefault();
                   }}
                 >
-                  Rename Roblox Credential
+                  <Pencil />
+                  <span>Rename Key</span>
                 </DropdownMenuItem>
               </RenameRobloxCredentialDialog>
-              <DropdownMenuSeparator />
               <RotateRobloxCredentialDialog credId={cred.id}>
                 <DropdownMenuItem
                   disabled={!hasPermission(team.role, "RotateRobloxCredential")}
@@ -205,9 +270,11 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
                     e.preventDefault();
                   }}
                 >
-                  Rotate Roblox Credential
+                  <RotateCcwKey />
+                  <span>Rotate Key</span>
                 </DropdownMenuItem>
               </RotateRobloxCredentialDialog>
+              <DropdownMenuSeparator />
               <CallbackDialog
                 title="Delete Roblox Credential"
                 description="Are you sure you wanna unlink this roblox credential from your team?"
@@ -236,14 +303,13 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
                 trigger={
                   <DropdownMenuItem
                     variant="destructive"
-                    disabled={
-                      !hasPermission(team.role, "DeleteRobloxCredential")
-                    }
+                    disabled={!hasPermission(team.role, "DeleteRobloxCredential")}
                     onSelect={(e) => {
                       e.preventDefault();
                     }}
                   >
-                    Delete Roblox Credential
+                    <Trash />
+                    <span>Delete Key</span>
                   </DropdownMenuItem>
                 }
               />
