@@ -1,15 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const formatter = Intl.DateTimeFormat(undefined, {
+const formatter = Intl.DateTimeFormat("en-US", {
   day: "2-digit",
   month: "short",
   year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
 });
 
-const relativeFormatter = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+const relativeFormatter = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
 
 const units: { unit: Intl.RelativeTimeFormatUnit; amount: number }[] = [
   { unit: "year", amount: 365 * 24 * 60 * 60 },
@@ -27,16 +25,6 @@ export default function LocalTime({
   time: Date;
   mode?: "absolute" | "relative";
 }) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return <span>Loading...</span>;
-  }
-
   if (mode === "relative") {
     const diffInSec = Math.floor((time.getTime() - Date.now()) / 1000);
     for (const { unit, amount } of units) {

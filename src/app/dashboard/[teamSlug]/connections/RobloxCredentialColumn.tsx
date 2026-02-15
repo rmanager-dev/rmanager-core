@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Copy, MoreHorizontal, Pencil, RefreshCw, RotateCcwKey, Trash } from "lucide-react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -145,6 +146,22 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
     header: "Name",
   },
   {
+    accessorKey: "keyOwnerRobloxId",
+    header: "Roblox User",
+    cell: ({ getValue }) => {
+      const userId = getValue<string>();
+      return (
+        <Link
+          className="text-muted-foreground border-b border-muted-foreground/10 transition-all hover:text-foreground hover:border-foreground pb-0.5"
+          href={`https://roblox.com/users/${userId}/profile`}
+          target="_blank"
+        >
+          View Profile
+        </Link>
+      );
+    },
+  },
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
@@ -170,7 +187,7 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
   },
   {
     accessorKey: "expirationDate",
-    header: "Expires",
+    header: "Expires In",
     cell: ({ getValue }) => {
       const time = getValue<string | undefined>();
       if (!!time) {
@@ -181,19 +198,19 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
     },
   },
   {
-    accessorKey: "createdAt",
-    header: "Created",
+    accessorKey: "lastUsed",
+    header: "Last Used",
     cell: ({ getValue }) => {
       const time = new Date(getValue<string>());
       return <LocalTime time={time} />;
     },
   },
   {
-    accessorKey: "lastUsed",
-    header: "Last Used",
+    accessorKey: "createdAt",
+    header: "Created",
     cell: ({ getValue }) => {
       const time = new Date(getValue<string>());
-      return <LocalTime time={time} />;
+      return <LocalTime time={time} mode="absolute" />;
     },
   },
   {
