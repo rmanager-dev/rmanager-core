@@ -13,7 +13,7 @@ interface Context {
   }>;
 }
 
-export async function DELETE(req: Request, context: Context) {
+export async function DELETE(_: Request, context: Context) {
   const params = await context.params;
   const teamId = params.teamId;
   const memberId = params.memberId;

@@ -11,7 +11,7 @@ interface Context {
   }>;
 }
 
-export async function POST(context: Context) {
+export async function POST(_: Request, context: Context) {
   const { teamId, credentialId } = await context.params;
   if (!teamId) {
     return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
