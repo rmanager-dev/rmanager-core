@@ -322,7 +322,7 @@ export const RobloxCredentialsService = {
     teamId: string,
   ): Promise<RobloxCredential[]> {
     const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "RenameRobloxCredential")) {
+    if (!hasPermission(actorRole, "ListRobloxCredentials")) {
       throw AccessDenied;
     }
 
