@@ -24,12 +24,6 @@ export function useRobloxCredentials() {
     staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    if (team && !hasPermission(team.role, "ListRobloxCredentials")) {
-      router.replace(`/dashboard/${team.slug}`);
-    }
-  }, [team]);
-
   const isLoading = isTeamLoading || query.isLoading;
   const isError = isTeamError || query.isError;
 

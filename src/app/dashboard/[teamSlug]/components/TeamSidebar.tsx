@@ -1,7 +1,5 @@
 "use client";
-import NavigationSidebar, {
-  ItemGroup,
-} from "@/src/components/NavigationSidebar";
+import NavigationSidebar, { ItemGroup } from "@/src/components/NavigationSidebar";
 import { useTeam } from "@/src/hooks/useTeam";
 import { hasPermission } from "@/src/lib/utils/team-utils";
 import { Box, Cable, Settings, User } from "lucide-react";
@@ -39,8 +37,11 @@ export default function TeamSidebar() {
           url: "/connections",
         },
       ].filter((item) => {
-        if (item.title === "Databases") {
-          return hasPermission(data?.role, "ListDatabases");
+        if (item.title === "Connections") {
+          return (
+            hasPermission(data?.role, "ListDatabases") ||
+            hasPermission(data?.role, "ListRobloxCredentials")
+          );
         }
         return true;
       }),
