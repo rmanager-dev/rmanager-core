@@ -21,12 +21,6 @@ export function useDatabases() {
     staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    if (team && !hasPermission(team.role, "ListDatabases")) {
-      router.replace(`/dashboard/${team.slug}/`);
-    }
-  }, [team]);
-
   const isLoading = isLoadingTeam || query.isLoading;
   const isError = isErrorTeam || query.isError;
 
