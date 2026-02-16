@@ -79,12 +79,14 @@ export default function StatusBadge({ kind, errorMessage, lastRefreshed }: Statu
       </PopoverTrigger>
       <PopoverContent>
         <PopoverHeader>
-          <PopoverTitle>{config.popoverTitle}</PopoverTitle>
+          <PopoverTitle className="text-foreground font-semibold">
+            {config.popoverTitle}
+          </PopoverTitle>
           {config.popoverDescription && (
             <PopoverDescription>{config.popoverDescription}</PopoverDescription>
           )}
           {lastRefreshed && (
-            <PopoverDescription>
+            <PopoverDescription className="italic text-xs ">
               <span>Last checked: </span>
               <LocalTime time={lastRefreshed} mode="relative" />
             </PopoverDescription>
