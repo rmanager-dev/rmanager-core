@@ -130,7 +130,7 @@ export const RobloxCredentialsService = {
     const client = tx ?? db;
 
     // Check if the credential is expiring soon (in less than a week)
-    const expDate = new Date(keyInfo.expirationUtcTime);
+    const expDate = new Date(keyInfo.expirationTimeUtc);
     const now = Date.now();
     const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
     const isExpiringSoon = expDate.getTime() - now < ONE_WEEK_MS;
@@ -151,9 +151,9 @@ export const RobloxCredentialsService = {
       const [updated] = await client
         .update(roblox_credentials)
         .set({
-          expirationDate: keyInfo.expirationUtcTime
-            ? new Date(keyInfo.expirationUtcTime)
-            : null,
+          ...(keyInfo.expirationTimeUtc !== undefined
+            ? { expirationDate: new Date(keyInfo.expirationTimeUtc) }
+            : {}),
           lastRefreshedAt: new Date(),
           status,
           errorMessage: message ?? null,
@@ -206,8 +206,8 @@ export const RobloxCredentialsService = {
           keyCiphertext: encodedKey.encryptedData,
           keyIv: encodedKey.initializationVector,
           keyTag: encodedKey.authTag,
-          expirationDate: keyInfo.expirationUtcTime
-            ? new Date(keyInfo.expirationUtcTime)
+          expirationDate: keyInfo.expirationTimeUtc
+            ? new Date(keyInfo.expirationTimeUtc)
             : null,
           keyOwnerRobloxId: keyInfo.authorizedUserId,
           createdBy: actorId,
