@@ -3,6 +3,7 @@ import { db } from "../db";
 import { roblox_credentials } from "../db/schema/roblox_credentials";
 import { DecryptString256, EncryptString256 } from "../lib/crypto/aes";
 import {
+  roblox_credential_status,
   RobloxCredential,
   RobloxCredentialInfo,
   RobloxCredentialSelect,
@@ -137,13 +138,13 @@ export const RobloxCredentialsService = {
 
     if (!keyInfo.enabled) {
       status = "error";
-      message = "This key is disabled in the Roblox Creator Dashboard";
+      message = roblox_credential_status.disabled;
     } else if (keyInfo.expired) {
       status = "error";
-      message = "This key has reached its expiration date";
+      message = roblox_credential_status.expired;
     } else if (isExpiringSoon) {
       status = "warning";
-      message = "This key expires in less than a week";
+      message = roblox_credential_status.expires_soon;
     }
 
     // Update the credential row with the new introspect data
@@ -187,10 +188,10 @@ export const RobloxCredentialsService = {
 
     if (!keyInfo.enabled) {
       finalStatus = "error";
-      message = "This key is disabled in the Roblox Creator Dashboard";
+      message = roblox_credential_status.disabled;
     } else if (keyInfo.expired) {
       finalStatus = "error";
-      message = "This key has reached it's expiration date";
+      message = roblox_credential_status.expired;
     }
 
     const encodedKey = EncryptString256(creds.key);
@@ -355,12 +356,9 @@ export const RobloxCredentialsService = {
       } catch (error) {
         if (error instanceof ApiError) {
           if (error.status === 429) {
-            await setStatus("warning", "Roblox is rate-limiting this key");
+            await setStatus("warning", roblox_credential_status.rate_limit);
           } else if (error.status >= 500) {
-            await setStatus(
-              "warning",
-              "Roblox servers are currently unreachable",
-            );
+            await setStatus("warning", roblox_credential_status.roblox_down);
           } else {
             await setStatus("error", error.clientMessage);
           }

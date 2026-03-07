@@ -52,3 +52,11 @@ export const RobloxCredentialRotateSchema = z.object({
     .min(1, { error: "Key must contain at least 1 character" })
     .max(2048, { error: "Key must be at most 2048 characters" }),
 });
+
+export const roblox_credential_status = {
+  expires_soon: "This key expires in less than a week",
+  expired: "This key has reached its expiration date",
+  disabled: "This key is disabled in the Roblox Creator Dashboard",
+  rate_limit: "Roblox is rate-limiting this key",
+  roblox_down: "Roblox servers are currently unreachable",
+};
