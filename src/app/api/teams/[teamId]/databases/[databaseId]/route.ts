@@ -1,6 +1,7 @@
 import { auth } from "@/src/lib/auth";
-import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { AccessDenied, ErrorToNextResponse } from "@/src/lib/utils/api-utils";
 import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
+import { DatabaseRotateSchema } from "@/src/lib/types/database-types";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import z, { ZodError } from "zod";
@@ -101,6 +102,61 @@ export async function PATCH(req: Request, context: Context) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    return ErrorToNextResponse(error);
+  }
+}
+
+export async function POST(req: Request, context: Context) {
+  const params = await context.params;
+  const teamId = params.teamId;
+  const databaseId = params.databaseId;
+
+  if (!teamId) {
+    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  }
+  if (!databaseId) {
+    return NextResponse.json(
+      { error: "Database ID is required" },
+      { status: 400 },
+    );
+  }
+
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    return ErrorToNextResponse(AccessDenied);
+  }
+
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid json body" }, { status: 400 });
+  }
+
+  let validatedData;
+  try {
+    validatedData = DatabaseRotateSchema.parse(body);
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid body request format" },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const rotatedDb = await ExternalDatabaseService.RotateDatabaseCredentials(
+      session.user.id,
+      teamId,
+      databaseId,
+      {
+        AccessKeyID: validatedData.accessKey,
+        SecretAccessKey: validatedData.secretKey,
+      },
+    );
+    return NextResponse.json(rotatedDb);
+  } catch (error) {
     return ErrorToNextResponse(error);
   }
 }
