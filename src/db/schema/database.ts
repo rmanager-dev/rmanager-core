@@ -8,6 +8,12 @@ export const database = sqliteTable("database", {
   teamId: text("team_id")
     .notNull()
     .references(() => team.id, { onDelete: "cascade" }),
+
+  status: text("status", { enum: ["healthy", "warning", "error"] })
+    .notNull()
+    .default("healthy"),
+  errorMessage: text("error_message"),
+
   type: text("type", { enum: ["S3"] })
     .notNull()
     .default("S3"),
@@ -23,6 +29,15 @@ export const database = sqliteTable("database", {
   skCiphertext: text("sk_ciphertext").notNull(),
   skIv: text("sk_iv").notNull(),
   skTag: text("sk_tag").notNull(),
+
+  lastUsed: integer("last_used", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+  lastRefreshedAt: integer("last_refreshed_at", {
+    mode: "timestamp_ms",
+  })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
 
   createdAt: integer("createdAt", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
