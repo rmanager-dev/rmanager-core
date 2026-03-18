@@ -21,4 +21,21 @@ export const ExternalDatabaseController = {
       method: "PATCH",
       body: JSON.stringify({ name: newName }),
     }),
+
+  rotate: (
+    teamId: string,
+    databaseId: string,
+    accessKey: string,
+    secretKey: string,
+  ) =>
+    fetcher<Database>(`/api/teams/${teamId}/databases/${databaseId}`, {
+      method: "POST",
+      body: JSON.stringify({ accessKey, secretKey }),
+    }),
+
+  refresh: (teamId: string, databaseId: string) =>
+    fetcher<Database>(
+      `/api/teams/${teamId}/databases/${databaseId}/refresh`,
+      { method: "POST" },
+    ),
 };
