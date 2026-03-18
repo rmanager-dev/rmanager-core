@@ -20,6 +20,8 @@ export const TEAM_PERMISSIONS = {
   LinkDatabase: ROLES_RANK.admin,
   DeleteDatabase: ROLES_RANK.admin,
   RenameDatabase: ROLES_RANK.admin,
+  RefreshDatabase: ROLES_RANK.admin,
+  RotateDatabaseCredentials: ROLES_RANK.admin,
 
   ListRobloxCredentials: ROLES_RANK.viewer,
   LinkRobloxCredential: ROLES_RANK.admin,
