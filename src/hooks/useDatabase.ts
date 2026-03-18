@@ -88,9 +88,53 @@ export function useDatabaseMutations() {
     },
   });
 
+  const refreshDatabase = useMutation({
+    mutationFn: ({
+      teamId,
+      databaseId,
+    }: {
+      teamId: string;
+      databaseId: string;
+    }) => ExternalDatabaseController.refresh(teamId, databaseId),
+    onSuccess: (database, variables) => {
+      queryClient.setQueryData<Database[]>(
+        ["databases", variables.teamId],
+        (prevData) => {
+          if (!prevData) return [database];
+          return prevData.map((db) => (db.id === database.id ? database : db));
+        },
+      );
+    },
+  });
+
+  const rotateDatabase = useMutation({
+    mutationFn: ({
+      teamId,
+      databaseId,
+      accessKey,
+      secretKey,
+    }: {
+      teamId: string;
+      databaseId: string;
+      accessKey: string;
+      secretKey: string;
+    }) => ExternalDatabaseController.rotate(teamId, databaseId, accessKey, secretKey),
+    onSuccess: (database, variables) => {
+      queryClient.setQueryData<Database[]>(
+        ["databases", variables.teamId],
+        (prevData) => {
+          if (!prevData) return [database];
+          return prevData.map((db) => (db.id === database.id ? database : db));
+        },
+      );
+    },
+  });
+
   return {
     createDatabase,
     deleteDatabase,
     renameDatabase,
+    refreshDatabase,
+    rotateDatabase,
   };
 }
