@@ -7,6 +7,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { Skeleton } from "@/src/components/ui/skeleton";
@@ -15,7 +16,7 @@ import { authClient } from "@/src/lib/auth-client";
 import { Team } from "@/src/lib/types/team-types";
 import { useMutation } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { Copy, LogOut, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 export const teamColumns: ColumnDef<Team>[] = [
@@ -87,8 +88,10 @@ export const teamColumns: ColumnDef<Team>[] = [
               <DropdownMenuItem
                 onClick={() => navigator.clipboard.writeText(team.id)}
               >
-                Copy Team ID
+                <Copy />
+                <span>Copy Team ID</span>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <CallbackDialog
                 title="Leave Team"
                 description={`Are you sure you want to leave the team "${team.displayName}" ?`}
@@ -122,7 +125,8 @@ export const teamColumns: ColumnDef<Team>[] = [
                     variant="destructive"
                     onSelect={(e) => e.preventDefault()}
                   >
-                    Leave Team
+                    <LogOut />
+                    <span>Leave Team</span>
                   </DropdownMenuItem>
                 }
               />
