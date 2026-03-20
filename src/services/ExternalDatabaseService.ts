@@ -13,6 +13,9 @@ import {
 } from "../lib/types/database-types";
 import { TeamService } from "./TeamService";
 import { hasPermission } from "../lib/utils/team-utils";
+import { createLogger } from "../lib/utils/logger";
+
+const logger = createLogger("ExternalDatabaseService");
 
 export interface DatabaseCredentials {
   AccessKeyID: string;
@@ -47,6 +50,7 @@ export const ExternalDatabaseService = {
 
   async _useDatabase<T>(
     databaseId: string,
+    teamId: string,
     callback: (
       creds: DatabaseCredentials,
       setStatus: (kind: DatabaseStatus, message?: string) => Promise<void>,
@@ -59,7 +63,7 @@ export const ExternalDatabaseService = {
         [dbInfo] = await tx
           .select()
           .from(database)
-          .where(eq(database.id, databaseId));
+          .where(and(eq(database.id, databaseId), eq(database.teamId, teamId)));
       } catch {
         throw DatabaseError;
       }
@@ -271,7 +275,7 @@ export const ExternalDatabaseService = {
 
       return newRecord;
     } catch (error) {
-      console.error("Database insertion failed: ", error);
+      logger.error("Database insertion failed", error, { teamId, operation: "LinkDatabase" });
       throw DatabaseError;
     }
   },
@@ -290,7 +294,7 @@ export const ExternalDatabaseService = {
 
       return results;
     } catch (error) {
-      console.error("Error while fetching user's databases: ", error);
+      logger.error("Failed to fetch databases", error, { teamId, operation: "ListDatabase" });
       throw DatabaseError;
     }
   },
@@ -313,7 +317,8 @@ export const ExternalDatabaseService = {
       if (!result) throw AccessDenied;
       return result;
     } catch (error) {
-      console.error(`Failed to delete database ${databaseId}: `, error);
+      if (error instanceof ApiError) throw error;
+      logger.error("Failed to delete database", error, { resourceId: databaseId, operation: "DeleteDatabase" });
       throw DatabaseError;
     }
   },
@@ -338,7 +343,8 @@ export const ExternalDatabaseService = {
       if (!result) throw AccessDenied;
       return result;
     } catch (error) {
-      console.error(`Failed to rename database ${databaseId}: `, error);
+      if (error instanceof ApiError) throw error;
+      logger.error("Failed to rename database", error, { resourceId: databaseId, operation: "RenameDatabase" });
       throw DatabaseError;
     }
   },
@@ -355,6 +361,7 @@ export const ExternalDatabaseService = {
 
     return await this._useDatabase(
       databaseId,
+      teamId,
       async (creds, _setStatus, tx) => {
         const updated = await this._applyIntrospectResults(
           databaseId,
@@ -378,7 +385,7 @@ export const ExternalDatabaseService = {
       throw AccessDenied;
     }
 
-    return await this._useDatabase(databaseId, async (creds, _setStatus, tx) => {
+    return await this._useDatabase(databaseId, teamId, async (creds, _setStatus, tx) => {
       const fullCreds: DatabaseCredentials = {
         ...creds,
         AccessKeyID: newCreds.AccessKeyID,

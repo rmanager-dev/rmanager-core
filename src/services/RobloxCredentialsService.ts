@@ -11,8 +11,11 @@ import {
 } from "../lib/types/roblox-credentials-types";
 import { AccessDenied, ApiError, DatabaseError } from "../lib/utils/api-utils";
 import { hasPermission } from "../lib/utils/team-utils";
+import { createLogger } from "../lib/utils/logger";
 import { TeamService } from "./TeamService";
 import { and, eq } from "drizzle-orm";
+
+const logger = createLogger("RobloxCredentialsService");
 
 export const RobloxCredentialsService = {
   // Internal Methods
@@ -57,6 +60,7 @@ export const RobloxCredentialsService = {
 
   async _useCredential<T>(
     credId: string,
+    teamId: string,
     callback: (
       key: string,
       setStatus: (
@@ -72,7 +76,7 @@ export const RobloxCredentialsService = {
         [keyInfo] = await tx
           .select()
           .from(roblox_credentials)
-          .where(eq(roblox_credentials.id, credId));
+          .where(and(eq(roblox_credentials.id, credId), eq(roblox_credentials.teamId, teamId)));
       } catch {
         throw DatabaseError;
       }
@@ -348,7 +352,7 @@ export const RobloxCredentialsService = {
       throw AccessDenied;
     }
 
-    return await this._useCredential(credId, async (key, setStatus, tx) => {
+    return await this._useCredential(credId, teamId, async (key, setStatus, tx) => {
       // Try to fetch the credential info using _introspectKey
       let keyInfo;
       try {
@@ -377,7 +381,9 @@ export const RobloxCredentialsService = {
             tx,
           );
           if (updatedCred) return updatedCred;
-        } catch (error) {}
+        } catch (error) {
+          logger.error("Failed to apply introspect results", error, { resourceId: credId });
+        }
       }
 
       // Return the final credential info (fallback for when _introspectKey rejected)
