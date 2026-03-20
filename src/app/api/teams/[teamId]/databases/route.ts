@@ -1,5 +1,6 @@
 import { auth } from "@/src/lib/auth";
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { isSafeEndpointUrl } from "@/src/lib/utils/url-utils";
 import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -41,7 +42,10 @@ export async function GET(_: Request, context: Context) {
 const PostSchema = z.object({
   type: z.enum(["S3"]).default("S3"),
   name: z.string().min(1).max(64),
-  endpoint: z.url("Invalid URL").max(2048, "Max URL length exceeded"),
+  endpoint: z
+    .url("Invalid URL")
+    .max(2048, "Max URL length exceeded")
+    .refine(isSafeEndpointUrl, "Endpoint URL must be a public HTTPS address"),
   region: z.string().min(1).max(50),
   bucketName: z.string().min(1).max(100),
   accessKey: z.string().min(1).max(256),

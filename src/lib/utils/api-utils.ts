@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { createLogger } from "./logger";
+
+const logger = createLogger("api-utils");
 
 export type ErrorResponse = {
   code: string;
@@ -28,7 +31,7 @@ export function ErrorToNextResponse(error: unknown): NextResponse {
     );
   }
 
-  console.error("Unhandled server error:", (error as any).message ?? error);
+  logger.error("Unhandled server error", error);
   return NextResponse.json(
     { error: "Unknown server error. Please try again later." },
     { status: 500 },
