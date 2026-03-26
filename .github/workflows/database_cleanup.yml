@@ -3,6 +3,10 @@ on:
   pull_request:
     types:
       - closed
+    paths-ignore:
+      - .gitignore
+      - .github/**
+      - README.md
   workflow_dispatch:
     inputs:
       pr_number:
@@ -13,6 +17,8 @@ on:
 jobs:
   cleanup_database:
     runs-on: ubuntu-latest
+    env:
+      TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
     steps:
       - name: Install Turso CLI
         run: |
@@ -30,8 +36,5 @@ jobs:
           echo "DB_NAME=$DB_NAME" >> $GITHUB_ENV
 
       - name: Destroy Turso Database
-        env:
-          TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
-          DB_NAME: ${{ env.DB_NAME }}
         run: |
           turso db destroy "$DB_NAME" --yes || echo "Database already gone or never existed"
