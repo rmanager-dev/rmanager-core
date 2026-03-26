@@ -17,7 +17,7 @@ on:
         type: number
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.inputs.pr_number }}
   cancel-in-progress: true
 
 permissions:
@@ -25,7 +25,29 @@ permissions:
   contents: read
 
 jobs:
+  check-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Check Migrations
+        run: |
+          npx drizzle-kit generate
+          if [ -n "$(git status --porcelain drizzle/)" ]; then
+            echo "⚠️ Missing migration files! Please run npx drizzle-kit generate..."
+            exit 1
+          fi
+
   deploy:
+    needs: [check-migrations]
     environment: Preview
     runs-on: ubuntu-latest
     steps:
@@ -59,7 +81,7 @@ jobs:
           TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
         run: |
           # Create a branch from the dev database with the generated safe name
-          turso db create ${{ env.SAFE_BRANCH_NAME }} --from-db dev || true
+          turso db show ${{ env.SAFE_BRANCH_NAME }} &> /dev/null || turso db create ${{ env.SAFE_BRANCH_NAME }} --from-db dev
 
       - name: Get Database Credentials
         env:
@@ -82,7 +104,7 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ env.DB_TOKEN }}
         run: |
           # Push changes to the created database
-          npx drizzle-kit push
+          npx drizzle-kit migrate
 
       - name: Make Preview Deployment
         id: vercel-deployment
@@ -92,17 +114,17 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           # Make a preview deployment with the created database
-          DEPLOYMENT_URL=$(npx vercel deploy --target preview --token ${{ secrets.VERCEL_TOKEN }} \
-          --build-env TURSO_DATABASE_URL=${{ env.DB_URL }} \
-          --build-env TURSO_AUTH_TOKEN=${{ env.DB_TOKEN }} \
-          --env TURSO_DATABASE_URL=${{ env.DB_URL }} \
-          --env TURSO_AUTH_TOKEN=${{ env.DB_TOKEN }} \
+          DEPLOYMENT_URL=$(npx vercel deploy --target preview --token "$VERCEL_TOKEN" \
+          --build-env TURSO_DATABASE_URL="$DB_URL" \
+          --build-env TURSO_AUTH_TOKEN="$DB_TOKEN" \
+          --env TURSO_DATABASE_URL="$DB_URL" \
+          --env TURSO_AUTH_TOKEN="$DB_TOKEN" \
           --yes --logs)
 
           echo "DEPLOYMENT_URL=$DEPLOYMENT_URL" >> $GITHUB_ENV
 
       - name: Comment on PR
-        if: always()
+        if: always() && env.PR_NUM != ''
         uses: actions/github-script@v8
         env:
           DEPLOYMENT_URL: ${{ env.DEPLOYMENT_URL }}
