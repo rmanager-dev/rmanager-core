@@ -15,7 +15,7 @@ permissions:
 
 concurrency:
   group: deployment-dev
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -36,7 +36,7 @@ jobs:
           TURSO_DATABASE_URL: ${{ secrets.DEV_DB_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.DEV_DB_TOKEN }}
         run: |
-          npx drizzle-kit push
+          npx drizzle-kit migrate
 
       - name: Make Development Deployment
         env:
