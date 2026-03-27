@@ -13,6 +13,9 @@ export const auth = betterAuth({
     schema,
   }),
   appName: "rManager",
+  trustedOrigins: process.env.VERCEL_URL
+    ? [`https://${process.env.VERCEL_URL}`]
+    : [],
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
