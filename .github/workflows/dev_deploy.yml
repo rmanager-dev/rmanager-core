@@ -44,4 +44,4 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          npx vercel deploy --target preview --yes --token ${{ secrets.VERCEL_TOKEN }}
+          npx vercel deploy --target preview --yes --token "$VERCEL_TOKEN"
