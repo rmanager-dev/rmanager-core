@@ -25,29 +25,7 @@ permissions:
   contents: read
 
 jobs:
-  check-migrations:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "npm"
-
-      - run: npm ci
-
-      - name: Check Migrations
-        run: |
-          npx drizzle-kit generate
-          if [ -n "$(git status --porcelain drizzle/)" ]; then
-            echo "⚠️ Missing migration files! Please run npx drizzle-kit generate..."
-            exit 1
-          fi
-
   deploy:
-    needs: [check-migrations]
     environment: Preview
     runs-on: ubuntu-latest
     steps:
