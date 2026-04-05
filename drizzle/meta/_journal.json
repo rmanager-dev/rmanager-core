@@ -29,6 +29,13 @@
       "when": 1775382237392,
       "tag": "0003_happy_starhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1775383387755,
+      "tag": "0004_kind_vision",
+      "breakpoints": true
     }
   ]
 }
