@@ -7,3 +7,4 @@ export * from "./database";
 export * from "./team";
 export * from "./team_member";
 export * from "./roblox_credentials";
+export * from "./project";
