@@ -29,12 +29,12 @@ export default function StatusBadge({ kind, errorMessage, lastRefreshed }: Statu
   const statusConfig: Record<RobloxCredentialStatus, StatusConfigType> = {
     healthy: {
       label: "Healthy",
-      className: `bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 cursor-pointer`,
+      className: `bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300 cursor-pointer`,
       popoverTitle: "System Operational",
     },
     warning: {
       label: "Warning",
-      className: `bg-yellow-700 text-orange-200 cursor-pointer`,
+      className: `bg-orange-100 text-orange-500 dark:bg-orange-500 dark:text-orange-200 cursor-pointer`,
       Icon: <Info />,
       popoverTitle: "Attention Required",
       popoverDescription:
@@ -42,7 +42,7 @@ export default function StatusBadge({ kind, errorMessage, lastRefreshed }: Statu
     },
     error: {
       label: "Error",
-      className: `bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 cursor-pointer`,
+      className: `bg-red-100 text-red-500 dark:bg-red-950 dark:text-red-300 cursor-pointer`,
       Icon: <Info />,
       popoverTitle: "Action Required",
       popoverDescription:
