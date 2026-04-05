@@ -10,7 +10,7 @@ export const project = sqliteTable(
     name: text("name").notNull(),
     slug: text("slug").notNull(),
 
-    teamId: text("teamId")
+    teamId: text("team_id")
       .notNull()
       .references(() => team.id, { onDelete: "cascade" }),
 
