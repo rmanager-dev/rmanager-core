@@ -8,8 +8,8 @@ export default function Page() {
 
   return (
     <div>
-      <p>{project?.name}</p>
-      <p>{project?.slug}</p>
+      <p>Name: {project?.name}</p>
+      <p>Slug: {project?.slug}</p>
     </div>
   );
 }
