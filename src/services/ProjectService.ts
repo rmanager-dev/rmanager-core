@@ -21,7 +21,7 @@ const InvalidProjectName = new ApiError(
 const ProjectSlugTaken = new ApiError(
   409,
   "ProjectSlugTaken",
-  "A project with this name already exist in the team",
+  "A project with this name already exists in the team",
 );
 
 export const ProjectService = {
