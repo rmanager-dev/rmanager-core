@@ -47,7 +47,7 @@ export default function Page() {
           columns={projectColumns}
           emptyString="No Projects"
           searchBoxPlaceholder="Search projects"
-          searchBoxTarget="namehacka"
+          searchBoxTarget="name"
           loading={isLoading}
           loadingString="Loading..."
           actionComponent={<CreateProjectButton />}
