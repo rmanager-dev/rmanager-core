@@ -14,3 +14,16 @@ export type InferDrizzleSelect<T> = {
       : TData | null
     : never;
 };
+
+export function nameToSlug(
+  name: string,
+  minLength?: number,
+  maxLength?: number,
+) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+    .trim()
+    .split(/\s+/) // Remove white spaces
+    .join("-"); // Join the words with a dash
+}
