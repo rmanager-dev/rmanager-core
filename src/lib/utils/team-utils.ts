@@ -29,6 +29,11 @@ export const TEAM_PERMISSIONS = {
   RenameRobloxCredential: ROLES_RANK.admin,
   RotateRobloxCredential: ROLES_RANK.admin,
   RefreshRobloxCredential: ROLES_RANK.admin,
+
+  ListProjects: ROLES_RANK.viewer,
+  CreateProject: ROLES_RANK.developer,
+  DeleteProject: ROLES_RANK.admin,
+  RenameProject: ROLES_RANK.admin,
 } as const satisfies Record<string, number>;
 
 export type TeamAction = keyof typeof TEAM_PERMISSIONS;
