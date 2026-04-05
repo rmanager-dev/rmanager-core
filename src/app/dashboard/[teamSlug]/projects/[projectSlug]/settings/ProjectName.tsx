@@ -27,7 +27,7 @@ const CardComponent = ({ children }: React.PropsWithChildren) => (
     <CardHeader>
       <CardTitle>Project Name</CardTitle>
       <CardDescription>
-        This is the name of your project displayed accross the dashboard.
+        This is the name of your project displayed across the dashboard.
       </CardDescription>
     </CardHeader>
     <Separator />
@@ -42,7 +42,7 @@ export default function ProjectName() {
   const [open, setIsOpen] = useState(false);
   const { renameProject } = useProjectMutations();
 
-  const formSchema = RenameProjectSchema.refine((values) => values.name !== team?.name, {
+  const formSchema = RenameProjectSchema.refine((values) => values.name !== project?.name, {
     error: "New project name must be different than your current project name",
   });
 

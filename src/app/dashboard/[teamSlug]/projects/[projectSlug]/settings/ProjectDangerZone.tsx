@@ -33,9 +33,9 @@ const CardComponent = ({ children }: React.PropsWithChildren) => {
             <Trash className="stroke-destructive-foreground" />
           </ItemMedia>
           <ItemContent>
-            <ItemTitle>Delete Team</ItemTitle>
+            <ItemTitle>Delete Project</ItemTitle>
             <ItemDescription>
-              Your team will be permanently deleted including all of its projects. This action is
+              Your project will be permanently deleted including all of its data. This action is
               irreversible.
             </ItemDescription>
           </ItemContent>
