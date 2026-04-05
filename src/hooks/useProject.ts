@@ -66,6 +66,11 @@ export function useProjectMutations() {
           return [...prevData, project];
         },
       );
+
+      queryClient.setQueryData<Project>(
+        ["project", variables.teamId, project.id],
+        () => project,
+      );
     },
   });
 
@@ -77,14 +82,18 @@ export function useProjectMutations() {
       teamId: string;
       projectId: string;
     }) => ProjectController.delete(teamId, projectId),
-    onSuccess: (project, variables) => {
+    onSuccess: (oldProject, variables) => {
       queryClient.setQueryData<Project[]>(
         ["projects", variables.teamId],
         (prevData) => {
           if (!prevData) return prevData;
-          return prevData.filter((p) => p.id !== project.id);
+          return prevData.filter((p) => p.id !== oldProject.id);
         },
       );
+
+      queryClient.removeQueries({
+        queryKey: ["project", variables.teamId, oldProject.slug],
+      });
     },
   });
 
@@ -105,6 +114,11 @@ export function useProjectMutations() {
           if (!prevData) return [project];
           return prevData.map((p) => (p.id === project.id ? project : p));
         },
+      );
+
+      queryClient.setQueryData<Project>(
+        ["project", variables.teamId, project.id],
+        () => project,
       );
     },
   });
