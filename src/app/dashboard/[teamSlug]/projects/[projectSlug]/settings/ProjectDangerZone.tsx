@@ -16,6 +16,7 @@ import { useProject, useProjectMutations } from "@/src/hooks/useProject";
 import { useTeam } from "@/src/hooks/useTeam";
 import { hasPermission } from "@/src/lib/utils/team-utils";
 import { Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
@@ -46,6 +47,7 @@ const CardComponent = ({ children }: React.PropsWithChildren) => {
 };
 
 export default function ProjectDangerZone() {
+  const router = useRouter();
   const { data: team, isLoading: isTeamLoading } = useTeam();
   const { data: project, isLoading: isProjectLoading } = useProject();
 
@@ -57,6 +59,7 @@ export default function ProjectDangerZone() {
       .mutateAsync({ teamId: team!.id, projectId: project!.id })
       .then(() => {
         toast.success("Successfully deleted project", { id });
+        router.replace(`/dashboard/${team?.slug}`);
       })
       .catch((error) => {
         if (error instanceof Error) {
