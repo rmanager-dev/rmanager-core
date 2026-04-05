@@ -86,6 +86,7 @@ export const ProjectService = {
         .delete(project)
         .where(and(eq(project.id, projectId), eq(project.teamId, teamId)))
         .returning(ProjectSelect);
+      if (!result) throw AccessDenied;
       return result;
     } catch {
       throw DatabaseError;
@@ -114,6 +115,7 @@ export const ProjectService = {
         .set({ name: newName, slug })
         .where(and(eq(project.id, projectId), eq(project.teamId, teamId)))
         .returning(ProjectSelect);
+      if (!result) throw AccessDenied;
       return result;
     } catch (error) {
       if (
