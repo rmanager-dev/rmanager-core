@@ -15,11 +15,7 @@ export type InferDrizzleSelect<T> = {
     : never;
 };
 
-export function nameToSlug(
-  name: string,
-  minLength?: number,
-  maxLength?: number,
-) {
+export function nameToSlug(name: string) {
   return name
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, "") // Remove special characters
