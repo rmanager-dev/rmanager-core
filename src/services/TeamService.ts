@@ -22,6 +22,7 @@ import {
   UserTeam,
   UserTeamSelect,
 } from "../lib/types/team-types";
+import { nameToSlug } from "../lib/utils";
 
 const InvalidSlug = new ApiError(
   409,
@@ -68,11 +69,7 @@ const InvalidRole = new ApiError(
 export const TeamService = {
   // Private Methods
   CreateSlugFromName(name: string) {
-    const cleanName = name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
-      .split(/\s+/) // Remove white spaces
-      .join("-"); // Join the words with a dash
+    const cleanName = nameToSlug(name);
 
     if (cleanName.length < 3 || cleanName.length > 32) {
       throw InvalidName;
