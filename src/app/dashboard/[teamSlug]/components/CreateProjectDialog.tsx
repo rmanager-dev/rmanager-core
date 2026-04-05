@@ -47,7 +47,7 @@ export default function CreateProjectDialog({ open, setIsOpen }: CreateProjectDi
   return (
     <FormDialog
       title="Create a new Project"
-      description="A project lets you manage a Roblox game and all of it's environments"
+      description="A project lets you manage a Roblox game and all of its environments"
       open={open}
       onOpenChange={setIsOpen}
       form={form}
