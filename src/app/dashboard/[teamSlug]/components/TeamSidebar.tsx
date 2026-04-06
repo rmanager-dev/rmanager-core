@@ -27,14 +27,14 @@ export default function TeamSidebar() {
       groupTitle: "Manage",
       items: [
         {
-          title: "Settings",
-          Icon: Settings,
-          url: "/settings",
-        },
-        {
           title: "Connections",
           Icon: Cable,
           url: "/connections",
+        },
+        {
+          title: "Settings",
+          Icon: Settings,
+          url: "/settings",
         },
       ].filter((item) => {
         if (item.title === "Connections") {
