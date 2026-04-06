@@ -103,13 +103,7 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          const team = await TeamService.CreateTeam(
-            user.id,
-            `user-${user.id.slice(-6)}'s team`,
-          );
-          await TeamService.ChangeTeamName(user.id, team.id, {
-            displayName: "Personal Team",
-          });
+          await TeamService.CreateTeam(user.id, `${user.email}'s Teams`);
         },
       },
     },
