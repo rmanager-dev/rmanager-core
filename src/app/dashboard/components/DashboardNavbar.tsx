@@ -105,7 +105,7 @@ export default function DashboardNavbar() {
                             className="flex gap-1 items-center"
                           >
                             <Building2 className="max-h-4" />
-                            <span className="truncate">{team.displayName}</span>
+                            <span className="truncate">{team.name}</span>
                           </Link>
                         </BreadcrumbLink>
                       </BreadcrumbItem>
@@ -113,7 +113,7 @@ export default function DashboardNavbar() {
                         label="Switch Team"
                         items={teams}
                         activeItem={team}
-                        getLabel={(t) => t.displayName}
+                        getLabel={(t) => t.name}
                         getHref={(t) =>
                           project ? `/dashboard/${t.slug}` : `/dashboard/${t.slug}/${afterTeamPath}`
                         }

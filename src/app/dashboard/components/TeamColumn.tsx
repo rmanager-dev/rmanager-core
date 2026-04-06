@@ -21,19 +21,8 @@ import { toast } from "sonner";
 
 export const teamColumns: ColumnDef<Team>[] = [
   {
-    id: "team_details",
-    header: "Team",
-    accessorFn: (row) => `${row.displayName} ${row.name}`,
-    cell: (info) => (
-      <div className="flex flex-col w-full">
-        <span className="font-semibold text-sm text-foreground truncate">
-          {info.row.original.displayName}
-        </span>
-        <span className="text-[11px] text-muted-foreground italic">
-          @{info.row.original.name}
-        </span>
-      </div>
-    ),
+    accessorKey: "name",
+    header: "Name",
   },
   {
     accessorKey: "role",
@@ -55,13 +44,8 @@ export const teamColumns: ColumnDef<Team>[] = [
     cell: ({ row }) => {
       const { data, isPending } = authClient.useSession();
       const { mutateAsync: leaveTeam } = useMutation({
-        mutationFn: ({
-          teamId,
-          memberId,
-        }: {
-          teamId: string;
-          memberId: string;
-        }) => TeamController.removeMember(teamId, memberId),
+        mutationFn: ({ teamId, memberId }: { teamId: string; memberId: string }) =>
+          TeamController.removeMember(teamId, memberId),
         onSuccess: (_, { teamId }) => {
           queryClient.setQueryData<Team[]>(["teams"], (prevData) =>
             prevData ? prevData.filter((team) => team.id !== teamId) : [],
@@ -85,16 +69,14 @@ export const teamColumns: ColumnDef<Team>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="align-end">
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(team.id)}
-              >
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(team.id)}>
                 <Copy />
                 <span>Copy Team ID</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <CallbackDialog
                 title="Leave Team"
-                description={`Are you sure you want to leave the team "${team.displayName}" ?`}
+                description={`Are you sure you want to leave the team "${team.name}" ?`}
                 callback={async () => {
                   const toastId = toast.loading("Leaving team...");
                   try {
@@ -121,10 +103,7 @@ export const teamColumns: ColumnDef<Team>[] = [
                 submitButtonVariant={"destructive"}
                 cancelButtonVariant={"outline"}
                 trigger={
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onSelect={(e) => e.preventDefault()}
-                  >
+                  <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
                     <LogOut />
                     <span>Leave Team</span>
                   </DropdownMenuItem>

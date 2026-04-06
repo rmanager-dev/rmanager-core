@@ -1,15 +1,10 @@
 import FormDialog from "@/src/components/FormDialog";
 
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/src/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 
 import { useTeamMutations } from "@/src/hooks/useTeam";
+import { CreateTeamSchema } from "@/src/lib/types/team-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useForm } from "react-hook-form";
@@ -21,10 +16,7 @@ interface CreateTeamDialogProps {
   setIsOpen: (open: boolean) => void;
 }
 
-export default function CreateTeamDialog({
-  open,
-  setIsOpen,
-}: CreateTeamDialogProps) {
+export default function CreateTeamDialog({ open, setIsOpen }: CreateTeamDialogProps) {
   const { createTeam } = useTeamMutations();
 
   const handleTeamCreation = async (name: string) => {
@@ -47,12 +39,6 @@ export default function CreateTeamDialog({
       });
   };
 
-  const CreateTeamSchema = z.object({
-    name: z
-      .string()
-      .min(3, { error: "Team name must be at least 3 characters" })
-      .max(32, { error: "Team name must be at most 32 characters" }),
-  });
   const form = useForm({
     resolver: zodResolver(CreateTeamSchema),
     defaultValues: {
