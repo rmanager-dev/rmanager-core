@@ -36,7 +36,6 @@ export function useTeams() {
 
 export function useTeamMutations() {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const createTeam = useMutation({
     mutationFn: (name: string) => TeamController.create(name),
@@ -64,46 +63,15 @@ export function useTeamMutations() {
   });
 
   const renameTeam = useMutation({
-    mutationFn: ({
-      teamId,
-      payload,
-    }: {
-      teamId: string;
-      payload: { name?: string; displayName?: string };
-    }) => TeamController.changeName(teamId, payload),
+    mutationFn: ({ teamId, newName }: { teamId: string; newName: string }) =>
+      TeamController.changeName(teamId, newName),
     onSuccess: (newTeam, variables) => {
-      const cachedTeam = queryClient.getQueryData<UserTeam[]>(["teams"]);
-      const oldTeam = cachedTeam?.find((team) => team.id === variables.teamId);
-      const oldSlug = oldTeam?.slug;
-
-      // Update the teams list
       queryClient.setQueryData<UserTeam[]>(["teams"], (prevData) => {
-        if (!prevData) return prevData;
-        return prevData.map((team) =>
-          team.id === newTeam.id ? { ...team, ...newTeam } : team,
-        );
+        if (!prevData) return [newTeam];
+        return prevData.map((t) => (t.id == newTeam.id ? newTeam : t));
       });
 
-      const pathname = window.location.pathname;
-      const relativePath = pathname
-        .split("/dashboard/")[1]
-        .split("/")
-        .slice(1)
-        .join("/");
-      router.replace(`/dashboard/${newTeam.slug}/${relativePath}`);
-
-      if (oldSlug && oldTeam && oldSlug !== newTeam.slug) {
-        queryClient.removeQueries({ queryKey: ["team", oldSlug] });
-        queryClient.setQueryData(["team", newTeam.slug], {
-          ...oldTeam,
-          ...newTeam,
-        });
-      } else if (oldSlug) {
-        queryClient.setQueryData<UserTeam>(["team", oldSlug], (oldTeam) => {
-          if (!oldTeam) return oldTeam;
-          return { ...oldTeam, ...newTeam };
-        });
-      }
+      queryClient.setQueryData(["team", newTeam.slug], () => newTeam);
     },
   });
 
