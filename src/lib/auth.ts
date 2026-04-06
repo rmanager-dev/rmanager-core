@@ -1,11 +1,12 @@
 import { db } from "@/src/db";
 import * as schema from "@/src/db/schema";
 import { APIError, betterAuth } from "better-auth";
-import { twoFactor } from "better-auth/plugins";
+import { admin, twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailTransporter } from "./email";
 import { and, eq } from "drizzle-orm";
 import { TeamService } from "../services/TeamService";
+import { dash } from "@better-auth/infra";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -42,7 +43,7 @@ export const auth = betterAuth({
   user: {
     changeEmail: {
       enabled: true,
-      sendChangeEmailVerification: async ({ user, url, newEmail }) => {
+      sendChangeEmailConfirmation: async ({ user, url, newEmail }) => {
         await emailTransporter.sendMail({
           to: user.email,
           subject: "Approve email change",
@@ -93,6 +94,8 @@ export const auth = betterAuth({
     window: 60,
   },
   plugins: [
+    dash(),
+    admin(),
     twoFactor({
       backupCodeOptions: {
         storeBackupCodes: "encrypted",
