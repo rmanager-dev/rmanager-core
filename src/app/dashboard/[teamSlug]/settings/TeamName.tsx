@@ -7,19 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/src/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useTeam, useTeamMutations } from "@/src/hooks/useTeam";
 import { hasPermission } from "@/src/lib/utils/team-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -29,9 +24,7 @@ const CardComponent = ({ children }: React.PropsWithChildren) => (
   <Card className="w-full">
     <CardHeader>
       <CardTitle>Team Name</CardTitle>
-      <CardDescription>
-        This is the name used to generate the URL of your team.
-      </CardDescription>
+      <CardDescription>This is the name used to generate the URL of your team.</CardDescription>
     </CardHeader>
     <Separator />
     <CardContent>{children}</CardContent>
@@ -39,7 +32,8 @@ const CardComponent = ({ children }: React.PropsWithChildren) => (
 );
 
 export default function TeamName() {
-  const { data: team, isLoading, refetch } = useTeam();
+  const router = useRouter();
+  const { data: team, isLoading } = useTeam();
   const [open, setIsOpen] = useState(false);
   const { renameTeam } = useTeamMutations();
 
@@ -51,8 +45,7 @@ export default function TeamName() {
         .max(32, { error: "Name must be at most 32 characters" }),
     })
     .refine((values) => values.name !== team?.name, {
-      error:
-        "Given display name must be different than your current display name",
+      error: "Given display name must be different than your current display name",
     });
 
   const form = useForm({
@@ -65,11 +58,12 @@ export default function TeamName() {
   const handleChangeName = (name: string) => {
     const id = toast.loading("Updating team name...");
     renameTeam
-      .mutateAsync({ teamId: team!.id, payload: { name } })
-      .then(async () => {
+      .mutateAsync({ teamId: team!.id, newName: name })
+      .then(async (newTeam) => {
         toast.success("Successfully updated team name!", {
           id,
         });
+        router.replace(`/dashboard/${newTeam.slug}/settings`);
       })
       .catch((error) => {
         if (error instanceof Error) {
@@ -108,11 +102,7 @@ export default function TeamName() {
             render={({ field }) => (
               <FormItem className="w-full max-w-lg">
                 <FormControl>
-                  <Input
-                    placeholder={team?.name}
-                    disabled={disabled}
-                    {...field}
-                  />
+                  <Input placeholder={team?.name} disabled={disabled} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
