@@ -1,4 +1,5 @@
 import { auth } from "@/src/lib/auth";
+import { CreateTeamSchema } from "@/src/lib/types/team-types";
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
 import { TeamService } from "@/src/services/TeamService";
 import { headers } from "next/headers";
@@ -22,9 +23,6 @@ export async function GET(req: Request) {
   }
 }
 
-const PostSchema = z.object({
-  name: z.string().min(3).max(32),
-});
 export async function POST(req: Request) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -45,7 +43,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const validatedData = PostSchema.parse(body);
+    const validatedData = CreateTeamSchema.parse(body);
     const newTeam = await TeamService.CreateTeam(
       session.user.id,
       validatedData.name,
