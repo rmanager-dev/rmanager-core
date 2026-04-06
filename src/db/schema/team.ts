@@ -4,10 +4,9 @@ import { user } from "./user";
 
 export const team = sqliteTable("team", {
   id: text("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
 
-  displayName: text("display_name").notNull(),
   name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
 
   ownerId: text("owner_id")
     .notNull()

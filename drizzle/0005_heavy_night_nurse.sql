@@ -1,0 +1,1 @@
+ALTER TABLE `team` DROP COLUMN `display_name`;
