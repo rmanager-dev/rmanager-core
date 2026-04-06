@@ -16,13 +16,10 @@ export const TeamController = {
   resolve: (slug: string) =>
     fetcher<UserTeam>(`/api/teams/resolve-slug/${slug}`),
 
-  changeName: (
-    teamId: string,
-    newName: { name?: string; displayName?: string },
-  ) =>
-    fetcher<Team>(`/api/teams/${teamId}`, {
+  changeName: (teamId: string, newName: string) =>
+    fetcher<UserTeam>(`/api/teams/${teamId}`, {
       method: "PATCH",
-      body: JSON.stringify(newName),
+      body: JSON.stringify({ name: newName }),
     }),
 
   removeMember: (teamId: string, memberId: string) =>

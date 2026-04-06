@@ -1,4 +1,5 @@
 import { auth } from "@/src/lib/auth";
+import { RenameTeamSchema } from "@/src/lib/types/team-types";
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
 import { TeamService } from "@/src/services/TeamService";
 import { headers } from "next/headers";
@@ -35,10 +36,6 @@ export async function DELETE(_: Request, context: Context) {
   }
 }
 
-const PatchSchema = z.object({
-  name: z.string().min(3).max(32).optional(),
-  displayName: z.string().min(3).max(32).optional(),
-});
 export async function PATCH(req: Request, context: Context) {
   const params = await context.params;
   const teamId = params.teamId;
@@ -66,12 +63,12 @@ export async function PATCH(req: Request, context: Context) {
   }
 
   try {
-    const validatedData = PatchSchema.parse(body);
+    const { name } = RenameTeamSchema.parse(body);
 
     const result = await TeamService.ChangeTeamName(
       session.user.id,
       teamId,
-      validatedData,
+      name,
     );
     return NextResponse.json(result);
   } catch (error) {
