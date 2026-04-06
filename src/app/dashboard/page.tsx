@@ -34,7 +34,7 @@ export default function Page() {
             columns={teamColumns}
             emptyString="No Teams"
             searchBoxPlaceholder="Search teams"
-            searchBoxTarget="team_details"
+            searchBoxTarget="name"
             loading={isLoading}
             loadingString="Loading..."
             actionComponent={<CreateTeamButton />}
