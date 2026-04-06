@@ -119,7 +119,6 @@ export const TeamService = {
             .values({
               id: teamId,
               name: teamName,
-              displayName: teamName,
               slug,
               ownerId: actorId,
             })
@@ -225,40 +224,37 @@ export const TeamService = {
   async ChangeTeamName(
     actorId: string,
     teamId: string,
-    newName: { displayName?: string; name?: string },
-  ): Promise<Team | undefined> {
+    newName: string,
+  ): Promise<UserTeam | undefined> {
     const role = await this.GetTeamUserRole(actorId, teamId);
 
     if (!hasPermission(role, "ChangeTeamName")) {
       throw AccessDenied;
     }
 
-    const updatePayload: Partial<typeof team.$inferInsert> = {};
-
-    if (newName.displayName) {
-      updatePayload.displayName = newName.displayName;
-    }
-
-    if (newName.name) {
-      updatePayload.name = newName.name;
-    }
-
-    if (Object.keys(updatePayload).length < 1) {
-      return;
-    }
-
     for (let i = 0; i < 3; i++) {
-      if (updatePayload.name) {
-        updatePayload.slug = this.CreateSlugFromName(updatePayload.name);
-      }
+      let slug;
       try {
-        const [result] = await db
+        slug = this.CreateSlugFromName(newName);
+      } catch (error) {
+        throw error;
+      }
+
+      try {
+        await db
           .update(team)
-          .set(updatePayload)
-          .where(eq(team.id, teamId))
-          .returning(TeamSelect);
+          .set({ slug, name: newName })
+          .where(eq(team.id, teamId));
+
+        const [result] = await db
+          .select(UserTeamSelect)
+          .from(team)
+          .innerJoin(team_member, eq(team.id, team_member.teamId))
+          .where(and(eq(team.id, teamId), eq(team_member.userId, actorId)));
+
         return result;
       } catch (error) {
+        console.log(error);
         if (error instanceof Error) {
           if (error.message.includes("SQLITE_CONSTRAINT_UNIQUE")) {
             continue;
@@ -267,6 +263,7 @@ export const TeamService = {
         throw DatabaseError;
       }
     }
+    throw InvalidSlug;
   },
 
   async GetTeamBySlug(
