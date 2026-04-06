@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { Button } from "@/src/components/ui/button";
+import { usePathname } from "next/navigation";
 
 interface ItemDropdownProps<T> {
   label: string;
@@ -65,10 +66,14 @@ function ItemDropdown<T extends { id: string | number }>({
 }
 
 export default function DashboardNavbar() {
+  const pathname = usePathname();
   const { data: teams, isLoading: isTeamsLoading } = useTeams();
   const { data: team, isLoading: isTeamLoading } = useTeam();
   const { data: projects, isLoading: isProjectsLoading } = useProjects();
   const { data: project, isLoading: isProjectLoading } = useProject();
+
+  const afterTeamPath = pathname.split(`/dashboard/${team?.slug}`)[1];
+  const afterProjectPath = pathname.split(`/dashboard/${team?.slug}/projects/${project?.slug}`)[1];
 
   return (
     <Navbar className="h-14">
@@ -109,7 +114,9 @@ export default function DashboardNavbar() {
                         items={teams}
                         activeItem={team}
                         getLabel={(t) => t.displayName}
-                        getHref={(t) => `/dashboard/${t.slug}`}
+                        getHref={(t) =>
+                          project ? `/dashboard/${t.slug}` : `/dashboard/${t.slug}/${afterTeamPath}`
+                        }
                       />
                     </div>
                   </div>
@@ -136,14 +143,16 @@ export default function DashboardNavbar() {
                         items={projects}
                         activeItem={project}
                         getLabel={(p) => p.name}
-                        getHref={(p) => `/dashboard/${team.slug}/projects/${p.slug}`}
+                        getHref={(p) =>
+                          `/dashboard/${team.slug}/projects/${p.slug}/${afterProjectPath}`
+                        }
                       />
                     </div>
                   </div>
                 </>
               )}
             </BreadcrumbList>
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-9 bg-linear-to-l from-background to-transparent max-h-5/6" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-background to-transparent max-h-5/6" />
           </Breadcrumb>
         </div>
         <UserDropdown triggerProps={{ className: "rounded-full" }} />
