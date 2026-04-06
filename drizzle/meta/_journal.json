@@ -43,6 +43,13 @@
       "when": 1775474479580,
       "tag": "0005_heavy_night_nurse",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1775501978062,
+      "tag": "0006_illegal_wraith",
+      "breakpoints": true
     }
   ]
 }
