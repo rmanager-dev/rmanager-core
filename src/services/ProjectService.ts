@@ -4,8 +4,6 @@ import { project } from "../db/schema";
 import { randomUUID } from "crypto";
 import { AccessDenied, ApiError, DatabaseError } from "../lib/utils/api-utils";
 import { Project, ProjectSelect } from "../lib/types/project-types";
-import { TeamService } from "./TeamService";
-import { hasPermission } from "../lib/utils/team-utils";
 import { nameToSlug } from "../lib/utils";
 
 const ProjectNotFound = new ApiError(
@@ -21,7 +19,7 @@ const InvalidProjectName = new ApiError(
 const ProjectSlugTaken = new ApiError(
   409,
   "ProjectSlugTaken",
-  "A project with this name already exists in the team",
+  "A project with this name already exists in the organization",
 );
 
 export const ProjectService = {
@@ -34,16 +32,7 @@ export const ProjectService = {
 
   // Public Methods
 
-  async CreateProject(
-    actorId: string,
-    teamId: string,
-    name: string,
-  ): Promise<Project> {
-    const role = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(role, "CreateProject")) {
-      throw AccessDenied;
-    }
-
+  async CreateProject(organizationId: string, name: string): Promise<Project> {
     name = name.trim();
     this.ValidateProjectName(name);
     const slug = nameToSlug(name);
@@ -56,7 +45,7 @@ export const ProjectService = {
           id: randomUUID(),
           name,
           slug,
-          teamId,
+          organizationId,
         })
         .returning(ProjectSelect);
       return newProject;
@@ -72,38 +61,32 @@ export const ProjectService = {
   },
 
   async DeleteProject(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     projectId: string,
   ): Promise<Project | undefined> {
-    const role = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(role, "DeleteProject")) {
-      throw AccessDenied;
-    }
-
     try {
       const [result] = await db
         .delete(project)
-        .where(and(eq(project.id, projectId), eq(project.teamId, teamId)))
+        .where(
+          and(
+            eq(project.id, projectId),
+            eq(project.organizationId, organizationId),
+          ),
+        )
         .returning(ProjectSelect);
       if (!result) throw AccessDenied;
       return result;
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
       throw DatabaseError;
     }
   },
 
   async RenameProject(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     projectId: string,
     newName: string,
   ): Promise<Project | undefined> {
-    const role = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(role, "RenameProject")) {
-      throw AccessDenied;
-    }
-
     newName = newName.trim();
     this.ValidateProjectName(newName);
     const slug = nameToSlug(newName);
@@ -113,7 +96,12 @@ export const ProjectService = {
       const [result] = await db
         .update(project)
         .set({ name: newName, slug })
-        .where(and(eq(project.id, projectId), eq(project.teamId, teamId)))
+        .where(
+          and(
+            eq(project.id, projectId),
+            eq(project.organizationId, organizationId),
+          ),
+        )
         .returning(ProjectSelect);
       if (!result) throw AccessDenied;
       return result;
@@ -129,21 +117,20 @@ export const ProjectService = {
   },
 
   async GetProject(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     projectId: string,
   ): Promise<Project> {
-    const role = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(role, "ListProjects")) {
-      throw AccessDenied;
-    }
-
     let result;
     try {
       [result] = await db
         .select(ProjectSelect)
         .from(project)
-        .where(and(eq(project.id, projectId), eq(project.teamId, teamId)))
+        .where(
+          and(
+            eq(project.id, projectId),
+            eq(project.organizationId, organizationId),
+          ),
+        )
         .limit(1);
     } catch {
       throw DatabaseError;
@@ -157,21 +144,20 @@ export const ProjectService = {
   },
 
   async GetProjectBySlug(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     projectSlug: string,
   ): Promise<Project> {
-    const role = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(role, "ListProjects")) {
-      throw AccessDenied;
-    }
-
     let result;
     try {
       [result] = await db
         .select(ProjectSelect)
         .from(project)
-        .where(and(eq(project.slug, projectSlug), eq(project.teamId, teamId)))
+        .where(
+          and(
+            eq(project.slug, projectSlug),
+            eq(project.organizationId, organizationId),
+          ),
+        )
         .limit(1);
     } catch {
       throw DatabaseError;
@@ -184,17 +170,12 @@ export const ProjectService = {
     return result;
   },
 
-  async ListTeamProjects(actorId: string, teamId: string): Promise<Project[]> {
-    const role = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(role, "ListProjects")) {
-      throw AccessDenied;
-    }
-
+  async ListOrganizationProjects(organizationId: string): Promise<Project[]> {
     try {
       return await db
         .select(ProjectSelect)
         .from(project)
-        .where(eq(project.teamId, teamId));
+        .where(eq(project.organizationId, organizationId));
     } catch {
       throw DatabaseError;
     }
