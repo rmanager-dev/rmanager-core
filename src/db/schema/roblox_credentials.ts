@@ -1,13 +1,13 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { team } from "./team";
 import { sql } from "drizzle-orm";
 import { user } from "./user";
+import { organization } from "./organization";
 
 export const roblox_credentials = sqliteTable("roblox_credentials", {
   id: text("id").primaryKey(),
-  teamId: text("team_id")
+  organizationId: text("organization_id")
     .notNull()
-    .references(() => team.id, { onDelete: "cascade" }),
+    .references(() => organization.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
 
   status: text("status", { enum: ["healthy", "warning", "error"] })

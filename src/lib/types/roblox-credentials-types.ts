@@ -7,7 +7,7 @@ export type RobloxCredentialStatus =
 
 export const RobloxCredentialSelect = {
   id: roblox_credentials.id,
-  teamId: roblox_credentials.teamId,
+  organization_id: roblox_credentials.organizationId,
   status: roblox_credentials.status,
   errorMessage: roblox_credentials.errorMessage,
   name: roblox_credentials.name,
