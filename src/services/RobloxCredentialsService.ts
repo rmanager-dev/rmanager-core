@@ -10,9 +10,7 @@ import {
   RobloxCredentialStatus,
 } from "../lib/types/roblox-credentials-types";
 import { AccessDenied, ApiError, DatabaseError } from "../lib/utils/api-utils";
-import { hasPermission } from "../lib/utils/team-utils";
 import { createLogger } from "../lib/utils/logger";
-import { TeamService } from "./TeamService";
 import { and, eq } from "drizzle-orm";
 
 const logger = createLogger("RobloxCredentialsService");
@@ -60,7 +58,7 @@ export const RobloxCredentialsService = {
 
   async _useCredential<T>(
     credId: string,
-    teamId: string,
+    organizationId: string,
     callback: (
       key: string,
       setStatus: (
@@ -71,12 +69,12 @@ export const RobloxCredentialsService = {
     ) => T | Promise<T>,
   ): Promise<T> {
     return await db.transaction(async (tx) => {
-      let keyInfo: typeof roblox_credentials.$inferSelect;
+      let keyInfo;
       try {
-        [keyInfo] = await tx
-          .select()
-          .from(roblox_credentials)
-          .where(and(eq(roblox_credentials.id, credId), eq(roblox_credentials.teamId, teamId)));
+        keyInfo = await db.query.roblox_credentials.findFirst({
+          where: (cred, { eq, and }) =>
+            and(eq(cred.id, credId), eq(cred.organizationId, organizationId)),
+        });
       } catch {
         throw DatabaseError;
       }
@@ -177,15 +175,9 @@ export const RobloxCredentialsService = {
   // API Methods
   async LinkRobloxCredential(
     actorId: string,
-    teamId: string,
+    organizationId: string,
     creds: RobloxCredentialInfo,
   ): Promise<RobloxCredential> {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-
-    if (!hasPermission(actorRole, "LinkRobloxCredential")) {
-      throw AccessDenied;
-    }
-
     let finalStatus: RobloxCredentialStatus = "healthy";
     let message;
     const keyInfo = await this._introspectKey(creds.key);
@@ -204,7 +196,7 @@ export const RobloxCredentialsService = {
         .insert(roblox_credentials)
         .values({
           id: randomUUID(),
-          teamId,
+          organizationId,
           name: creds.name,
           status: finalStatus,
           errorMessage: message,
@@ -226,43 +218,32 @@ export const RobloxCredentialsService = {
   },
 
   async DeleteRobloxCredential(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     credId: string,
   ): Promise<RobloxCredential> {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "DeleteRobloxCredential")) {
-      throw AccessDenied;
-    }
-
     try {
       const [result] = await db
         .delete(roblox_credentials)
         .where(
           and(
             eq(roblox_credentials.id, credId),
-            eq(roblox_credentials.teamId, teamId),
+            eq(roblox_credentials.organizationId, organizationId),
           ),
         )
         .returning(RobloxCredentialSelect);
       if (!result) throw AccessDenied;
       return result;
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
       throw DatabaseError;
     }
   },
 
   async RenameRobloxCredential(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     credId: string,
     newName: string,
   ): Promise<RobloxCredential> {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "RenameRobloxCredential")) {
-      throw AccessDenied;
-    }
-
     try {
       const [result] = await db
         .update(roblox_credentials)
@@ -270,28 +251,23 @@ export const RobloxCredentialsService = {
         .where(
           and(
             eq(roblox_credentials.id, credId),
-            eq(roblox_credentials.teamId, teamId),
+            eq(roblox_credentials.organizationId, organizationId),
           ),
         )
         .returning(RobloxCredentialSelect);
       if (!result) throw AccessDenied;
       return result;
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
       throw DatabaseError;
     }
   },
 
   async RotateRobloxCredential(
-    actorId: string,
-    teamId: string,
+    orgId: string,
     credId: string,
     newKey: string,
   ): Promise<RobloxCredential> {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "RotateRobloxCredential")) {
-      throw AccessDenied;
-    }
-
     const keyInfo = await this._introspectKey(newKey);
     if (!keyInfo.enabled) {
       throw new ApiError(
@@ -309,33 +285,33 @@ export const RobloxCredentialsService = {
 
     const newKeyEncrypted = EncryptString256(newKey);
     return await db.transaction(async (tx) => {
-      await tx
+      const [cred] = await tx
         .update(roblox_credentials)
         .set({
           keyCiphertext: newKeyEncrypted.encryptedData,
           keyIv: newKeyEncrypted.initializationVector,
           keyTag: newKeyEncrypted.authTag,
         })
-        .where(eq(roblox_credentials.id, credId));
-
+        .where(
+          and(
+            eq(roblox_credentials.id, credId),
+            eq(roblox_credentials.organizationId, orgId),
+          ),
+        )
+        .returning({ id: roblox_credentials.id });
+      if (!cred) throw AccessDenied;
       return this._applyIntrospectResults(credId, keyInfo, tx);
     });
   },
 
-  async ListTeamRobloxCredentials(
-    actorId: string,
-    teamId: string,
+  async ListOrganizationRobloxCredentials(
+    organizationId: string,
   ): Promise<RobloxCredential[]> {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "ListRobloxCredentials")) {
-      throw AccessDenied;
-    }
-
     try {
       const results = await db
         .select(RobloxCredentialSelect)
         .from(roblox_credentials)
-        .where(eq(roblox_credentials.teamId, teamId));
+        .where(eq(roblox_credentials.organizationId, organizationId));
       return results;
     } catch {
       throw DatabaseError;
@@ -343,58 +319,58 @@ export const RobloxCredentialsService = {
   },
 
   async RefreshRobloxCredential(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     credId: string,
   ): Promise<RobloxCredential> {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "RefreshRobloxCredential")) {
-      throw AccessDenied;
-    }
-
-    return await this._useCredential(credId, teamId, async (key, setStatus, tx) => {
-      // Try to fetch the credential info using _introspectKey
-      let keyInfo;
-      try {
-        keyInfo = await this._introspectKey(key);
-      } catch (error) {
-        if (error instanceof ApiError) {
-          if (error.status === 429) {
-            await setStatus("warning", roblox_credential_status.rate_limit);
-          } else if (error.status >= 500) {
-            await setStatus("warning", roblox_credential_status.roblox_down);
-          } else {
-            await setStatus("error", error.clientMessage);
-          }
-        } else {
-          throw error;
-        }
-      }
-
-      // Update credential row
-      // Skip if _introspectKey rejected
-      if (keyInfo) {
+    return await this._useCredential(
+      credId,
+      organizationId,
+      async (key, setStatus, tx) => {
+        // Try to fetch the credential info using _introspectKey
+        let keyInfo;
         try {
-          const updatedCred = await this._applyIntrospectResults(
-            credId,
-            keyInfo,
-            tx,
-          );
-          if (updatedCred) return updatedCred;
+          keyInfo = await this._introspectKey(key);
         } catch (error) {
-          logger.error("Failed to apply introspect results", error, { resourceId: credId });
+          if (error instanceof ApiError) {
+            if (error.status === 429) {
+              await setStatus("warning", roblox_credential_status.rate_limit);
+            } else if (error.status >= 500) {
+              await setStatus("warning", roblox_credential_status.roblox_down);
+            } else {
+              await setStatus("error", error.clientMessage);
+            }
+          } else {
+            throw error;
+          }
         }
-      }
 
-      // Return the final credential info (fallback for when _introspectKey rejected)
-      const result = await tx
-        .select(RobloxCredentialSelect)
-        .from(roblox_credentials)
-        .where(eq(roblox_credentials.id, credId))
-        .get();
+        // Update credential row
+        // Skip if _introspectKey rejected
+        if (keyInfo) {
+          try {
+            const updatedCred = await this._applyIntrospectResults(
+              credId,
+              keyInfo,
+              tx,
+            );
+            if (updatedCred) return updatedCred;
+          } catch (error) {
+            logger.error("Failed to apply introspect results", error, {
+              resourceId: credId,
+            });
+          }
+        }
 
-      if (!result) throw DatabaseError;
-      return result;
-    });
+        // Return the final credential info (fallback for when _introspectKey rejected)
+        const result = await tx
+          .select(RobloxCredentialSelect)
+          .from(roblox_credentials)
+          .where(eq(roblox_credentials.id, credId))
+          .get();
+
+        if (!result) throw DatabaseError;
+        return result;
+      },
+    );
   },
 };

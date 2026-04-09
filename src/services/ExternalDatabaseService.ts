@@ -11,8 +11,6 @@ import {
   DatabaseStatus,
   database_status,
 } from "../lib/types/database-types";
-import { TeamService } from "./TeamService";
-import { hasPermission } from "../lib/utils/team-utils";
 import { createLogger } from "../lib/utils/logger";
 
 const logger = createLogger("ExternalDatabaseService");
@@ -50,7 +48,7 @@ export const ExternalDatabaseService = {
 
   async _useDatabase<T>(
     databaseId: string,
-    teamId: string,
+    organizationId: string,
     callback: (
       creds: DatabaseCredentials,
       setStatus: (kind: DatabaseStatus, message?: string) => Promise<void>,
@@ -58,12 +56,12 @@ export const ExternalDatabaseService = {
     ) => T | Promise<T>,
   ): Promise<T> {
     return await db.transaction(async (tx) => {
-      let dbInfo: typeof database.$inferSelect;
+      let dbInfo;
       try {
-        [dbInfo] = await tx
-          .select()
-          .from(database)
-          .where(and(eq(database.id, databaseId), eq(database.teamId, teamId)));
+        dbInfo = await tx.query.database.findFirst({
+          where: (db, { eq, and }) =>
+            and(eq(db.id, databaseId), eq(db.organizationId, organizationId)),
+        });
       } catch {
         throw DatabaseError;
       }
@@ -223,15 +221,10 @@ export const ExternalDatabaseService = {
 
   async LinkDatabase(
     actorId: string,
-    teamId: string,
+    organizationId: string,
     name: string,
     creds: DatabaseCredentials,
   ) {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "LinkDatabase")) {
-      throw AccessDenied;
-    }
-
     // Check if credentials are valid
     const introspectResult = await this._introspectDatabase(creds);
     if (introspectResult.status === "error") {
@@ -252,7 +245,7 @@ export const ExternalDatabaseService = {
         .insert(database)
         .values({
           id: randomUUID(),
-          teamId,
+          organizationId,
           createdBy: actorId,
 
           name,
@@ -275,93 +268,92 @@ export const ExternalDatabaseService = {
 
       return newRecord;
     } catch (error) {
-      logger.error("Database insertion failed", error, { teamId, operation: "LinkDatabase" });
+      logger.error("Database insertion failed", error, {
+        organizationId,
+        operation: "LinkDatabase",
+      });
       throw DatabaseError;
     }
   },
 
-  async ListDatabase(actorId: string, teamId: string) {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "ListDatabases")) {
-      throw AccessDenied;
-    }
-
+  async ListDatabase(organizationId: string) {
     try {
       const results = await db
         .select(DatabaseSelect)
         .from(database)
-        .where(eq(database.teamId, teamId));
+        .where(eq(database.organizationId, organizationId));
 
       return results;
     } catch (error) {
-      logger.error("Failed to fetch databases", error, { teamId, operation: "ListDatabase" });
+      logger.error("Failed to fetch databases", error, {
+        organizationId,
+        operation: "ListDatabase",
+      });
       throw DatabaseError;
     }
   },
 
   async DeleteDatabase(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     databaseId: string,
   ): Promise<Database> {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "DeleteDatabase")) {
-      throw AccessDenied;
-    }
-
     try {
       const [result] = await db
         .delete(database)
-        .where(and(eq(database.id, databaseId), eq(database.teamId, teamId)))
+        .where(
+          and(
+            eq(database.id, databaseId),
+            eq(database.organizationId, organizationId),
+          ),
+        )
         .returning(DatabaseSelect);
       if (!result) throw AccessDenied;
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Failed to delete database", error, { resourceId: databaseId, operation: "DeleteDatabase" });
+      logger.error("Failed to delete database", error, {
+        resourceId: databaseId,
+        operation: "DeleteDatabase",
+      });
       throw DatabaseError;
     }
   },
 
   async RenameDatabase(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     databaseId: string,
     newName: string,
   ) {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "RenameDatabase")) {
-      throw AccessDenied;
-    }
-
     try {
       const [result] = await db
         .update(database)
         .set({ name: newName })
-        .where(and(eq(database.teamId, teamId), eq(database.id, databaseId)))
+        .where(
+          and(
+            eq(database.organizationId, organizationId),
+            eq(database.id, databaseId),
+          ),
+        )
         .returning(DatabaseSelect);
       if (!result) throw AccessDenied;
       return result;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      logger.error("Failed to rename database", error, { resourceId: databaseId, operation: "RenameDatabase" });
+      logger.error("Failed to rename database", error, {
+        resourceId: databaseId,
+        operation: "RenameDatabase",
+      });
       throw DatabaseError;
     }
   },
 
   async RefreshDatabase(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     databaseId: string,
   ): Promise<Database> {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "RefreshDatabase")) {
-      throw AccessDenied;
-    }
-
     return await this._useDatabase(
       databaseId,
-      teamId,
+      organizationId,
       async (creds, _setStatus, tx) => {
         const updated = await this._applyIntrospectResults(
           databaseId,
@@ -375,54 +367,56 @@ export const ExternalDatabaseService = {
   },
 
   async RotateDatabaseCredentials(
-    actorId: string,
-    teamId: string,
+    organizationId: string,
     databaseId: string,
     newCreds: Pick<DatabaseCredentials, "AccessKeyID" | "SecretAccessKey">,
   ): Promise<Database> {
-    const actorRole = await TeamService.GetTeamUserRole(actorId, teamId);
-    if (!hasPermission(actorRole, "RotateDatabaseCredentials")) {
-      throw AccessDenied;
-    }
+    return await this._useDatabase(
+      databaseId,
+      organizationId,
+      async (creds, _setStatus, tx) => {
+        const fullCreds: DatabaseCredentials = {
+          ...creds,
+          AccessKeyID: newCreds.AccessKeyID,
+          SecretAccessKey: newCreds.SecretAccessKey,
+        };
 
-    return await this._useDatabase(databaseId, teamId, async (creds, _setStatus, tx) => {
-      const fullCreds: DatabaseCredentials = {
-        ...creds,
-        AccessKeyID: newCreds.AccessKeyID,
-        SecretAccessKey: newCreds.SecretAccessKey,
-      };
+        const introspectResult = await this._introspectDatabase(fullCreds);
+        if (introspectResult.status === "error") {
+          throw new ApiError(
+            400,
+            "DATABASE_UNREACHABLE",
+            introspectResult.message ?? database_status.connection_failed,
+          );
+        }
 
-      const introspectResult = await this._introspectDatabase(fullCreds);
-      if (introspectResult.status === "error") {
-        throw new ApiError(
-          400,
-          "DATABASE_UNREACHABLE",
-          introspectResult.message ?? database_status.connection_failed,
-        );
-      }
+        const encodedAkData = EncryptString256(newCreds.AccessKeyID);
+        const encodedSkData = EncryptString256(newCreds.SecretAccessKey);
 
-      const encodedAkData = EncryptString256(newCreds.AccessKeyID);
-      const encodedSkData = EncryptString256(newCreds.SecretAccessKey);
-
-      try {
-        const [updated] = await tx
-          .update(database)
-          .set({
-            akCiphertext: encodedAkData.encryptedData,
-            akIv: encodedAkData.initializationVector,
-            akTag: encodedAkData.authTag,
-            skCiphertext: encodedSkData.encryptedData,
-            skIv: encodedSkData.initializationVector,
-            skTag: encodedSkData.authTag,
-          })
-          .where(eq(database.id, databaseId))
-          .returning(DatabaseSelect);
-        if (!updated) throw AccessDenied;
-        return await this._applyIntrospectResults(databaseId, introspectResult, tx);
-      } catch (error) {
-        if (error instanceof ApiError) throw error;
-        throw DatabaseError;
-      }
-    });
+        try {
+          const [updated] = await tx
+            .update(database)
+            .set({
+              akCiphertext: encodedAkData.encryptedData,
+              akIv: encodedAkData.initializationVector,
+              akTag: encodedAkData.authTag,
+              skCiphertext: encodedSkData.encryptedData,
+              skIv: encodedSkData.initializationVector,
+              skTag: encodedSkData.authTag,
+            })
+            .where(eq(database.id, databaseId))
+            .returning(DatabaseSelect);
+          if (!updated) throw AccessDenied;
+          return await this._applyIntrospectResults(
+            databaseId,
+            introspectResult,
+            tx,
+          );
+        } catch (error) {
+          if (error instanceof ApiError) throw error;
+          throw DatabaseError;
+        }
+      },
+    );
   },
 };
