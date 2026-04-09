@@ -2,40 +2,40 @@ import { Database, DatabaseInfo } from "../lib/types/database-types";
 import { fetcher } from "../lib/utils/api-utils";
 
 export const ExternalDatabaseController = {
-  link: (teamId: string, data: DatabaseInfo) =>
-    fetcher<Database>(`/api/teams/${teamId}/databases`, {
+  link: (organizationId: string, data: DatabaseInfo) =>
+    fetcher<Database>(`/api/org/${organizationId}/databases`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  list: (teamId: string) =>
-    fetcher<Database[]>(`/api/teams/${teamId}/databases`),
+  list: (organizationId: string) =>
+    fetcher<Database[]>(`/api/org/${organizationId}/databases`),
 
-  delete: (teamId: string, databaseId: string) =>
-    fetcher<Database>(`/api/teams/${teamId}/databases/${databaseId}`, {
+  delete: (organizationId: string, databaseId: string) =>
+    fetcher<Database>(`/api/org/${organizationId}/databases/${databaseId}`, {
       method: "DELETE",
     }),
 
-  rename: (teamId: string, databaseId: string, newName: string) =>
-    fetcher<Database>(`/api/teams/${teamId}/databases/${databaseId}`, {
+  rename: (organizationId: string, databaseId: string, newName: string) =>
+    fetcher<Database>(`/api/org/${organizationId}/databases/${databaseId}`, {
       method: "PATCH",
       body: JSON.stringify({ name: newName }),
     }),
 
   rotate: (
-    teamId: string,
+    organizationId: string,
     databaseId: string,
     accessKey: string,
     secretKey: string,
   ) =>
-    fetcher<Database>(`/api/teams/${teamId}/databases/${databaseId}`, {
+    fetcher<Database>(`/api/org/${organizationId}/databases/${databaseId}`, {
       method: "POST",
       body: JSON.stringify({ accessKey, secretKey }),
     }),
 
-  refresh: (teamId: string, databaseId: string) =>
+  refresh: (organizationId: string, databaseId: string) =>
     fetcher<Database>(
-      `/api/teams/${teamId}/databases/${databaseId}/refresh`,
+      `/api/org/${organizationId}/databases/${databaseId}/refresh`,
       { method: "POST" },
     ),
 };
