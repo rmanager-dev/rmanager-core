@@ -1,13 +1,13 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 import { sql } from "drizzle-orm";
-import { team } from "./team";
+import { organization } from "./organization";
 
 export const database = sqliteTable("database", {
   id: text("id").primaryKey(),
-  teamId: text("team_id")
+  organizationId: text("organization_id")
     .notNull()
-    .references(() => team.id, { onDelete: "cascade" }),
+    .references(() => organization.id, { onDelete: "cascade" }),
 
   status: text("status", { enum: ["healthy", "warning", "error"] })
     .notNull()

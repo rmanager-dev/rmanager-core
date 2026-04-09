@@ -15,7 +15,7 @@ export const database_status = {
 
 export const DatabaseSelect = {
   id: database.id,
-  teamId: database.teamId,
+  organization_id: database.organization_id,
 
   status: database.status,
   errorMessage: database.errorMessage,

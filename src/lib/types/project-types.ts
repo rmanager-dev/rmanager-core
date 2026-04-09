@@ -6,7 +6,7 @@ export const ProjectSelect = {
   id: project.id,
   name: project.name,
   slug: project.slug,
-  teamId: project.teamId,
+  organization_id: project.organization_id,
   createdAt: project.createdAt,
 };
 export type Project = InferDrizzleSelect<typeof ProjectSelect>;
