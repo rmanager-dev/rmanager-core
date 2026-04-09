@@ -1,35 +1,28 @@
-import { auth } from "@/src/lib/auth";
 import { RobloxCredentialInfoSchema } from "@/src/lib/types/roblox-credentials-types";
-import { AccessDenied, ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
 import { RobloxCredentialsService } from "@/src/services/RobloxCredentialsService";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 interface Context {
   params: Promise<{
-    teamId: string;
+    orgId: string;
   }>;
 }
 
-export async function GET(_: Request, context: Context) {
-  const { teamId } = await context.params;
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return ErrorToNextResponse(AccessDenied);
+export async function GET(req: Request, context: Context) {
+  const { orgId } = await context.params;
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   try {
+    await requireOrgPermission(req, orgId, {});
     const credentials =
-      await RobloxCredentialsService.ListTeamRobloxCredentials(
-        session.user.id,
-        teamId,
-      );
+      await RobloxCredentialsService.ListOrganizationRobloxCredentials(orgId);
     return NextResponse.json(credentials);
   } catch (error) {
     return ErrorToNextResponse(error);
@@ -37,16 +30,12 @@ export async function GET(_: Request, context: Context) {
 }
 
 export async function POST(req: Request, context: Context) {
-  const { teamId } = await context.params;
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return ErrorToNextResponse(AccessDenied);
+  const { orgId } = await context.params;
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   let body;
@@ -67,9 +56,12 @@ export async function POST(req: Request, context: Context) {
   }
 
   try {
+    const session = await requireOrgPermission(req, orgId, {
+      roblox_credential: ["create"],
+    });
     const newCredential = await RobloxCredentialsService.LinkRobloxCredential(
       session.user.id,
-      teamId,
+      orgId,
       validatedData,
     );
     return NextResponse.json(newCredential);
