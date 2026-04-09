@@ -1,11 +1,9 @@
 import { db } from "@/src/db";
 import * as schema from "@/src/db/schema";
 import { APIError, betterAuth } from "better-auth";
-import { admin, twoFactor } from "better-auth/plugins";
+import { admin, organization, twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailTransporter } from "./email";
-import { and, eq } from "drizzle-orm";
-import { TeamService } from "../services/TeamService";
 import { dash } from "@better-auth/infra";
 
 export const auth = betterAuth({
@@ -17,6 +15,16 @@ export const auth = betterAuth({
   trustedOrigins: process.env.VERCEL_URL
     ? [`https://${process.env.VERCEL_URL}`]
     : [],
+  plugins: [
+    dash(),
+    admin(),
+    twoFactor({
+      backupCodeOptions: {
+        storeBackupCodes: "encrypted",
+      },
+    }),
+    organization(),
+  ],
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
@@ -54,24 +62,32 @@ export const auth = betterAuth({
     deleteUser: {
       enabled: true,
       beforeDelete: async (user) => {
-        let ownedTeams;
+        let ownedOrgs;
         try {
-          ownedTeams = await db
-            .select()
-            .from(schema.team_member)
-            .where(
-              and(
-                eq(schema.team_member.userId, user.id),
-                eq(schema.team_member.role, "owner"),
-              ),
-            );
+          ownedOrgs = await db.query.member.findMany({
+            where: (member, { eq, and }) =>
+              and(eq(member.userId, user.id), eq(member.role, "owner")),
+            with: {
+              organization: {
+                with: {
+                  members: {
+                    where: (org_member, { eq }) => eq(org_member.role, "owner"),
+                  },
+                },
+              },
+            },
+          });
         } catch {
           throw new APIError("INTERNAL_SERVER_ERROR", {
             message:
               "An unexpected error occurred while checking your account status. Please try again later.",
           });
         }
-        if (ownedTeams.length > 0) {
+        const soleOwnerOrgs = ownedOrgs.filter(
+          (org) => org.organization.members.length === 1,
+        );
+
+        if (soleOwnerOrgs.length > 0) {
           throw new APIError("BAD_REQUEST", {
             message:
               "Cannot delete account while owning teams. Please transfer ownership or delete your teams beforehand.",
@@ -92,23 +108,5 @@ export const auth = betterAuth({
     enabled: true,
     max: 60,
     window: 60,
-  },
-  plugins: [
-    dash(),
-    admin(),
-    twoFactor({
-      backupCodeOptions: {
-        storeBackupCodes: "encrypted",
-      },
-    }),
-  ],
-  databaseHooks: {
-    user: {
-      create: {
-        after: async (user) => {
-          await TeamService.CreateTeam(user.id, `${user.email}'s Teams`);
-        },
-      },
-    },
   },
 });
