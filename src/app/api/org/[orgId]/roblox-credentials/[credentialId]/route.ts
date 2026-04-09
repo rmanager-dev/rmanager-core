@@ -1,24 +1,26 @@
-import { auth } from "@/src/lib/auth";
 import {
   RobloxCredentialRenameSchema,
   RobloxCredentialRotateSchema,
 } from "@/src/lib/types/roblox-credentials-types";
-import { AccessDenied, ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
 import { RobloxCredentialsService } from "@/src/services/RobloxCredentialsService";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 interface Context {
   params: Promise<{
-    teamId: string;
+    orgId: string;
     credentialId: string;
   }>;
 }
 
-export async function DELETE(_: Request, context: Context) {
-  const { teamId, credentialId } = await context.params;
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+export async function DELETE(req: Request, context: Context) {
+  const { orgId, credentialId } = await context.params;
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
   if (!credentialId) {
     return NextResponse.json(
@@ -27,18 +29,11 @@ export async function DELETE(_: Request, context: Context) {
     );
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return ErrorToNextResponse(AccessDenied);
-  }
-
   try {
+    await requireOrgPermission(req, orgId, { roblox_credential: ["delete"] });
     const deletedCredential =
       await RobloxCredentialsService.DeleteRobloxCredential(
-        session.user.id,
-        teamId,
+        orgId,
         credentialId,
       );
     return NextResponse.json(deletedCredential);
@@ -48,22 +43,18 @@ export async function DELETE(_: Request, context: Context) {
 }
 
 export async function PATCH(req: Request, context: Context) {
-  const { teamId, credentialId } = await context.params;
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  const { orgId, credentialId } = await context.params;
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
   if (!credentialId) {
     return NextResponse.json(
       { error: "Credential ID is required" },
       { status: 400 },
     );
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return ErrorToNextResponse(AccessDenied);
   }
 
   let body;
@@ -84,10 +75,10 @@ export async function PATCH(req: Request, context: Context) {
   }
 
   try {
+    await requireOrgPermission(req, orgId, { roblox_credential: ["rename"] });
     const renamedCredential =
       await RobloxCredentialsService.RenameRobloxCredential(
-        session.user.id,
-        teamId,
+        orgId,
         credentialId,
         validatedData.name,
       );
@@ -98,22 +89,18 @@ export async function PATCH(req: Request, context: Context) {
 }
 
 export async function POST(req: Request, context: Context) {
-  const { teamId, credentialId } = await context.params;
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  const { orgId, credentialId } = await context.params;
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
   if (!credentialId) {
     return NextResponse.json(
       { error: "Credential ID is required" },
       { status: 400 },
     );
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return ErrorToNextResponse(AccessDenied);
   }
 
   let body;
@@ -134,9 +121,9 @@ export async function POST(req: Request, context: Context) {
   }
 
   try {
+    await requireOrgPermission(req, orgId, { roblox_credential: ["rotate"] });
     const rotatedCred = await RobloxCredentialsService.RotateRobloxCredential(
-      session.user.id,
-      teamId,
+      orgId,
       credentialId,
       validatedData.key,
     );

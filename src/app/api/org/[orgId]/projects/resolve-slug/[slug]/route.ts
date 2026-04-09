@@ -1,43 +1,34 @@
-import { auth } from "@/src/lib/auth";
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
 import { ProjectService } from "@/src/services/ProjectService";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 interface Context {
   params: Promise<{
-    teamId: string;
+    orgId: string;
     slug: string;
   }>;
 }
 
-export async function GET(_: Request, context: Context) {
+export async function GET(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
   const slug = params.slug;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   if (!slug) {
     return NextResponse.json({ error: "Slug is required" }, { status: 400 });
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
-    const data = await ProjectService.GetProjectBySlug(
-      session.user.id,
-      teamId,
-      slug,
-    );
+    await requireOrgPermission(req, orgId, {});
+    const data = await ProjectService.GetProjectBySlug(orgId, slug);
     return NextResponse.json(data);
   } catch (error) {
     return ErrorToNextResponse(error);

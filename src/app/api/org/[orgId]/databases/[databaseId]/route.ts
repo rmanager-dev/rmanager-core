@@ -1,26 +1,28 @@
-import { auth } from "@/src/lib/auth";
-import { AccessDenied, ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
 import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
 import { DatabaseRotateSchema } from "@/src/lib/types/database-types";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import z, { ZodError } from "zod";
+import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
 
 interface Context {
   params: Promise<{
-    teamId: string;
+    orgId: string;
     databaseId: string;
   }>;
 }
 
-export async function DELETE(_: Request, context: Context) {
+export async function DELETE(req: Request, context: Context) {
   const params = await context.params;
 
   const databaseId = params.databaseId;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   if (!databaseId) {
@@ -30,18 +32,10 @@ export async function DELETE(_: Request, context: Context) {
     );
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
+    await requireOrgPermission(req, orgId, { database: ["delete"] });
     const deletedDb = await ExternalDatabaseService.DeleteDatabase(
-      session.user.id,
-      teamId,
+      orgId,
       databaseId,
     );
     return NextResponse.json(deletedDb);
@@ -56,11 +50,14 @@ const PatchSchema = z.object({
 export async function PATCH(req: Request, context: Context) {
   const params = await context.params;
 
-  const teamId = params.teamId;
+  const orgId = params.orgId;
   const databaseId = params.databaseId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   if (!databaseId) {
@@ -68,13 +65,6 @@ export async function PATCH(req: Request, context: Context) {
       { error: "Database ID is required" },
       { status: 400 },
     );
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body;
@@ -88,11 +78,11 @@ export async function PATCH(req: Request, context: Context) {
   }
 
   try {
+    await requireOrgPermission(req, orgId, { database: ["rename"] });
     const validatedSchema = PatchSchema.parse(body);
 
     const newDb = await ExternalDatabaseService.RenameDatabase(
-      session.user.id,
-      teamId,
+      orgId,
       databaseId,
       validatedSchema.name,
     );
@@ -108,24 +98,20 @@ export async function PATCH(req: Request, context: Context) {
 
 export async function POST(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
   const databaseId = params.databaseId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
   if (!databaseId) {
     return NextResponse.json(
       { error: "Database ID is required" },
       { status: 400 },
     );
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return ErrorToNextResponse(AccessDenied);
   }
 
   let body;
@@ -146,9 +132,9 @@ export async function POST(req: Request, context: Context) {
   }
 
   try {
+    await requireOrgPermission(req, orgId, { database: ["rotate"] });
     const rotatedDb = await ExternalDatabaseService.RotateDatabaseCredentials(
-      session.user.id,
-      teamId,
+      orgId,
       databaseId,
       {
         AccessKeyID: validatedData.accessKey,

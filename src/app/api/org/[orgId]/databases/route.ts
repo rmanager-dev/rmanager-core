@@ -1,38 +1,30 @@
-import { auth } from "@/src/lib/auth";
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
 import { isSafeEndpointUrl } from "@/src/lib/utils/url-utils";
 import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import z, { ZodError } from "zod";
 
 interface Context {
   params: Promise<{
-    teamId: string;
+    orgId: string;
   }>;
 }
 
-export async function GET(_: Request, context: Context) {
+export async function GET(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   try {
-    const databases = await ExternalDatabaseService.ListDatabase(
-      session.user.id,
-      teamId,
-    );
+    await requireOrgPermission(req, orgId, {}); // Check if the user is in the organization (no special permissions needed to list databases)
+    const databases = await ExternalDatabaseService.ListDatabase(orgId);
     return NextResponse.json(databases);
   } catch (error) {
     return ErrorToNextResponse(error);
@@ -54,20 +46,13 @@ const PostSchema = z.object({
 
 export async function POST(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
-  }
-
-  // Fetch user session from auth cookie
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  // Require user to be logged in to make this request
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   let body;
@@ -81,13 +66,17 @@ export async function POST(req: Request, context: Context) {
   }
 
   try {
+    const session = await requireOrgPermission(req, orgId, {
+      database: ["create"],
+    });
+
     // Validate the request's data using zod (errors if malformed)
     const validatedData = PostSchema.parse(body);
 
     // Link database to user using request data
     const result = await ExternalDatabaseService.LinkDatabase(
       session.user.id,
-      teamId,
+      orgId,
       validatedData.name,
       {
         EndpointURL: validatedData.endpoint,

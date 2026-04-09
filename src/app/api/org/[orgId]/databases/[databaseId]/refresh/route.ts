@@ -1,21 +1,23 @@
-import { auth } from "@/src/lib/auth";
-import { AccessDenied, ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
 import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 interface Context {
   params: Promise<{
-    teamId: string;
+    orgId: string;
     databaseId: string;
   }>;
 }
 
-export async function POST(_: Request, context: Context) {
-  const { teamId, databaseId } = await context.params;
+export async function POST(req: Request, context: Context) {
+  const { orgId, databaseId } = await context.params;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
   if (!databaseId) {
     return NextResponse.json(
@@ -24,17 +26,10 @@ export async function POST(_: Request, context: Context) {
     );
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return ErrorToNextResponse(AccessDenied);
-  }
-
   try {
+    await requireOrgPermission(req, orgId, { database: ["refresh"] });
     const refreshedDb = await ExternalDatabaseService.RefreshDatabase(
-      session.user.id,
-      teamId,
+      orgId,
       databaseId,
     );
     return NextResponse.json(refreshedDb);

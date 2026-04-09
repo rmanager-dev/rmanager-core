@@ -1,25 +1,27 @@
-import { auth } from "@/src/lib/auth";
 import { RenameProjectSchema } from "@/src/lib/types/project-types";
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
 import { ProjectService } from "@/src/services/ProjectService";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import z, { ZodError } from "zod";
+import { ZodError } from "zod";
 
 interface Context {
   params: Promise<{
-    teamId: string;
+    orgId: string;
     projectId: string;
   }>;
 }
 
-export async function GET(_: Request, context: Context) {
+export async function GET(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
   const projectId = params.projectId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   if (!projectId) {
@@ -29,20 +31,9 @@ export async function GET(_: Request, context: Context) {
     );
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
-    const project = await ProjectService.GetProject(
-      session.user.id,
-      teamId,
-      projectId,
-    );
+    await requireOrgPermission(req, orgId, {});
+    const project = await ProjectService.GetProject(orgId, projectId);
     return NextResponse.json(project);
   } catch (error) {
     return ErrorToNextResponse(error);
@@ -51,11 +42,14 @@ export async function GET(_: Request, context: Context) {
 
 export async function PATCH(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
   const projectId = params.projectId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   if (!projectId) {
@@ -63,14 +57,6 @@ export async function PATCH(req: Request, context: Context) {
       { error: "Project ID is required" },
       { status: 400 },
     );
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body;
@@ -84,10 +70,10 @@ export async function PATCH(req: Request, context: Context) {
   }
 
   try {
+    await requireOrgPermission(req, orgId, { project: ["rename"] });
     const validatedData = RenameProjectSchema.parse(body);
     const updatedProject = await ProjectService.RenameProject(
-      session.user.id,
-      teamId,
+      orgId,
       projectId,
       validatedData.name,
     );
@@ -100,13 +86,16 @@ export async function PATCH(req: Request, context: Context) {
   }
 }
 
-export async function DELETE(_: Request, context: Context) {
+export async function DELETE(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
   const projectId = params.projectId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   if (!projectId) {
@@ -116,20 +105,9 @@ export async function DELETE(_: Request, context: Context) {
     );
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
-    const deletedProject = await ProjectService.DeleteProject(
-      session.user.id,
-      teamId,
-      projectId,
-    );
+    await requireOrgPermission(req, orgId, { project: ["delete"] });
+    const deletedProject = await ProjectService.DeleteProject(orgId, projectId);
     return NextResponse.json(deletedProject);
   } catch (error) {
     return ErrorToNextResponse(error);

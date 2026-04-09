@@ -1,38 +1,30 @@
-import { auth } from "@/src/lib/auth";
 import { CreateProjectSchema } from "@/src/lib/types/project-types";
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
+import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
 import { ProjectService } from "@/src/services/ProjectService";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import z, { ZodError } from "zod";
+import { ZodError } from "zod";
 
 interface Context {
   params: Promise<{
-    teamId: string;
+    orgId: string;
   }>;
 }
 
-export async function GET(_: Request, context: Context) {
+export async function GET(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   try {
-    const projects = await ProjectService.ListTeamProjects(
-      session.user.id,
-      teamId,
-    );
+    await requireOrgPermission(req, orgId, {});
+    const projects = await ProjectService.ListOrganizationProjects(orgId);
     return NextResponse.json(projects);
   } catch (error) {
     return ErrorToNextResponse(error);
@@ -41,18 +33,13 @@ export async function GET(_: Request, context: Context) {
 
 export async function POST(req: Request, context: Context) {
   const params = await context.params;
-  const teamId = params.teamId;
+  const orgId = params.orgId;
 
-  if (!teamId) {
-    return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
-  }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!orgId) {
+    return NextResponse.json(
+      { error: "Organization ID is required" },
+      { status: 400 },
+    );
   }
 
   let body;
@@ -66,10 +53,10 @@ export async function POST(req: Request, context: Context) {
   }
 
   try {
+    await requireOrgPermission(req, orgId, { project: ["create"] });
     const validatedData = CreateProjectSchema.parse(body);
     const newProject = await ProjectService.CreateProject(
-      session.user.id,
-      teamId,
+      orgId,
       validatedData.name,
     );
     return NextResponse.json(newProject);
