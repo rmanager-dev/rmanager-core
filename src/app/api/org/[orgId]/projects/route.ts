@@ -1,6 +1,9 @@
 import { CreateProjectSchema } from "@/src/lib/types/project-types";
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
-import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
+import {
+  requireOrgMember,
+  requireOrgPermission,
+} from "@/src/lib/utils/auth-utils";
 import { ProjectService } from "@/src/services/ProjectService";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -23,7 +26,7 @@ export async function GET(req: Request, context: Context) {
   }
 
   try {
-    await requireOrgPermission(req, orgId, {});
+    await requireOrgMember(req, orgId);
     const projects = await ProjectService.ListOrganizationProjects(orgId);
     return NextResponse.json(projects);
   } catch (error) {
