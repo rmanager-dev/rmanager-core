@@ -176,7 +176,8 @@ export const ProjectService = {
         .select(ProjectSelect)
         .from(project)
         .where(eq(project.organizationId, organizationId));
-    } catch {
+    } catch (error) {
+      console.log(error);
       throw DatabaseError;
     }
   },
