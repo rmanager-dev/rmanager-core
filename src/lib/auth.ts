@@ -18,6 +18,14 @@ export const auth = betterAuth({
     provider: "sqlite",
     schema,
   }),
+  experimental: {
+    joins: true,
+  },
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: ["x-vercel-forwarded-for", "x-forwarded-for"],
+    },
+  },
   appName: "rManager",
   trustedOrigins: process.env.VERCEL_URL
     ? [`https://${process.env.VERCEL_URL}`]
@@ -42,7 +50,7 @@ export const auth = betterAuth({
   ],
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 6,
+    minPasswordLength: 8,
     maxPasswordLength: 256,
     autoSignIn: true,
     sendResetPassword: async ({ user, url }) => {
