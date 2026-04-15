@@ -1,28 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTeam } from "./useTeam";
 import { Database, DatabaseInfo } from "../lib/types/database-types";
-import { useEffect } from "react";
-import { hasPermission } from "../lib/utils/team-utils";
 import { useRouter } from "next/navigation";
 import { ExternalDatabaseController } from "../controllers/ExternalDatabaseController";
+import { useOrg } from "./useOrg";
 
 export function useDatabases() {
-  const {
-    data: team,
-    isLoading: isLoadingTeam,
-    isError: isErrorTeam,
-  } = useTeam();
+  const { data: org, isLoading: isOrgLoading, isError: isErrorOrg } = useOrg();
   const router = useRouter();
 
   const query = useQuery({
-    queryKey: ["databases", team?.id],
-    queryFn: () => ExternalDatabaseController.list(team!.id),
-    enabled: !!team?.id,
+    queryKey: ["databases", org?.id],
+    queryFn: () => ExternalDatabaseController.list(org!.id),
+    enabled: !!org?.id,
     staleTime: 5 * 60 * 1000,
   });
 
-  const isLoading = isLoadingTeam || query.isLoading;
-  const isError = isErrorTeam || query.isError;
+  const isLoading = isOrgLoading || query.isLoading;
+  const isError = isErrorOrg || query.isError;
 
   return {
     ...query,
@@ -35,11 +29,11 @@ export function useDatabaseMutations() {
   const queryClient = useQueryClient();
 
   const createDatabase = useMutation({
-    mutationFn: ({ teamId, data }: { teamId: string; data: DatabaseInfo }) =>
-      ExternalDatabaseController.link(teamId, data),
+    mutationFn: ({ orgId, data }: { orgId: string; data: DatabaseInfo }) =>
+      ExternalDatabaseController.link(orgId, data),
     onSuccess: (database, variables) => {
       queryClient.setQueryData<Database[]>(
-        ["databases", variables.teamId],
+        ["databases", variables.orgId],
         (prevData) => {
           if (!prevData) return [database];
           return [...prevData, database];
@@ -50,15 +44,15 @@ export function useDatabaseMutations() {
 
   const deleteDatabase = useMutation({
     mutationFn: ({
-      teamId,
+      orgId,
       databaseId,
     }: {
-      teamId: string;
+      orgId: string;
       databaseId: string;
-    }) => ExternalDatabaseController.delete(teamId, databaseId),
+    }) => ExternalDatabaseController.delete(orgId, databaseId),
     onSuccess: (database, variables) => {
       queryClient.setQueryData<Database[]>(
-        ["databases", variables.teamId],
+        ["databases", variables.orgId],
         (prevData) => {
           if (!prevData) return prevData;
           return prevData.filter((db) => db.id !== database.id);
@@ -69,17 +63,17 @@ export function useDatabaseMutations() {
 
   const renameDatabase = useMutation({
     mutationFn: ({
-      teamId,
+      orgId,
       databaseId,
       newName,
     }: {
-      teamId: string;
+      orgId: string;
       databaseId: string;
       newName: string;
-    }) => ExternalDatabaseController.rename(teamId, databaseId, newName),
+    }) => ExternalDatabaseController.rename(orgId, databaseId, newName),
     onSuccess: (database, variables) => {
       queryClient.setQueryData<Database[]>(
-        ["databases", variables.teamId],
+        ["databases", variables.orgId],
         (prevData) => {
           if (!prevData) return [database];
           return prevData.map((db) => (db.id === database.id ? database : db));
@@ -90,15 +84,15 @@ export function useDatabaseMutations() {
 
   const refreshDatabase = useMutation({
     mutationFn: ({
-      teamId,
+      orgId,
       databaseId,
     }: {
-      teamId: string;
+      orgId: string;
       databaseId: string;
-    }) => ExternalDatabaseController.refresh(teamId, databaseId),
+    }) => ExternalDatabaseController.refresh(orgId, databaseId),
     onSuccess: (database, variables) => {
       queryClient.setQueryData<Database[]>(
-        ["databases", variables.teamId],
+        ["databases", variables.orgId],
         (prevData) => {
           if (!prevData) return [database];
           return prevData.map((db) => (db.id === database.id ? database : db));
@@ -109,19 +103,25 @@ export function useDatabaseMutations() {
 
   const rotateDatabase = useMutation({
     mutationFn: ({
-      teamId,
+      orgId,
       databaseId,
       accessKey,
       secretKey,
     }: {
-      teamId: string;
+      orgId: string;
       databaseId: string;
       accessKey: string;
       secretKey: string;
-    }) => ExternalDatabaseController.rotate(teamId, databaseId, accessKey, secretKey),
+    }) =>
+      ExternalDatabaseController.rotate(
+        orgId,
+        databaseId,
+        accessKey,
+        secretKey,
+      ),
     onSuccess: (database, variables) => {
       queryClient.setQueryData<Database[]>(
-        ["databases", variables.teamId],
+        ["databases", variables.orgId],
         (prevData) => {
           if (!prevData) return [database];
           return prevData.map((db) => (db.id === database.id ? database : db));

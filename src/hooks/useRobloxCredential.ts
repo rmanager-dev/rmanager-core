@@ -1,31 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTeam } from "./useTeam";
 import { RobloxCredentialController } from "../controllers/RobloxCredentialController";
-import { useEffect } from "react";
-import { hasPermission } from "../lib/utils/team-utils";
-import { useRouter } from "next/navigation";
 import {
   RobloxCredential,
   RobloxCredentialInfo,
 } from "../lib/types/roblox-credentials-types";
+import { useOrg } from "./useOrg";
 
 export function useRobloxCredentials() {
-  const router = useRouter();
-  const {
-    data: team,
-    isLoading: isTeamLoading,
-    isError: isTeamError,
-  } = useTeam();
+  const { data: org, isLoading: isOrgLoading, isError: isOrgError } = useOrg();
 
   const query = useQuery({
-    queryKey: ["robloxCredentials", team?.id],
-    queryFn: () => RobloxCredentialController.list(team!.id),
-    enabled: !!team?.id,
+    queryKey: ["robloxCredentials", org?.id],
+    queryFn: () => RobloxCredentialController.list(org!.id),
+    enabled: !!org?.id,
     staleTime: 5 * 60 * 1000,
   });
 
-  const isLoading = isTeamLoading || query.isLoading;
-  const isError = isTeamError || query.isError;
+  const isLoading = isOrgLoading || query.isLoading;
+  const isError = isOrgError || query.isError;
 
   return {
     ...query,
@@ -39,15 +31,15 @@ export function useRobloxCredentialMutations() {
 
   const linkRobloxCredential = useMutation({
     mutationFn: ({
-      teamId,
+      orgId,
       data,
     }: {
-      teamId: string;
+      orgId: string;
       data: RobloxCredentialInfo;
-    }) => RobloxCredentialController.link(teamId, data),
+    }) => RobloxCredentialController.link(orgId, data),
     onSuccess: (newCred, variables) => {
       queryClient.setQueryData<RobloxCredential[]>(
-        ["robloxCredentials", variables.teamId],
+        ["robloxCredentials", variables.orgId],
         (prevData) => {
           if (!prevData) return [newCred];
           return [...prevData, newCred];
@@ -57,11 +49,11 @@ export function useRobloxCredentialMutations() {
   });
 
   const deleteRobloxCredential = useMutation({
-    mutationFn: ({ teamId, credId }: { teamId: string; credId: string }) =>
-      RobloxCredentialController.delete(teamId, credId),
+    mutationFn: ({ orgId, credId }: { orgId: string; credId: string }) =>
+      RobloxCredentialController.delete(orgId, credId),
     onSuccess: (oldCred, variables) => {
       queryClient.setQueryData<RobloxCredential[]>(
-        ["robloxCredentials", variables.teamId],
+        ["robloxCredentials", variables.orgId],
         (prevData) => {
           if (!prevData) return prevData;
           return prevData.filter((cred) => cred.id !== oldCred.id);
@@ -72,17 +64,17 @@ export function useRobloxCredentialMutations() {
 
   const renameRobloxCredential = useMutation({
     mutationFn: ({
-      teamId,
+      orgId,
       credId,
       newName,
     }: {
-      teamId: string;
+      orgId: string;
       credId: string;
       newName: string;
-    }) => RobloxCredentialController.rename(teamId, credId, newName),
+    }) => RobloxCredentialController.rename(orgId, credId, newName),
     onSuccess: (renamedCred, variables) => {
       queryClient.setQueryData<RobloxCredential[]>(
-        ["robloxCredentials", variables.teamId],
+        ["robloxCredentials", variables.orgId],
         (prevData) => {
           if (!prevData) return [renamedCred];
           return prevData.map((cred) =>
@@ -95,17 +87,17 @@ export function useRobloxCredentialMutations() {
 
   const rotateRobloxCredential = useMutation({
     mutationFn: ({
-      teamId,
+      orgId,
       credId,
       newKey,
     }: {
-      teamId: string;
+      orgId: string;
       credId: string;
       newKey: string;
-    }) => RobloxCredentialController.rotate(teamId, credId, newKey),
+    }) => RobloxCredentialController.rotate(orgId, credId, newKey),
     onSuccess: (rotatedCred, variables) => {
       queryClient.setQueryData<RobloxCredential[]>(
-        ["robloxCredentials", variables.teamId],
+        ["robloxCredentials", variables.orgId],
         (prevData) => {
           if (!prevData) return [rotatedCred];
           return prevData.map((cred) =>
@@ -117,11 +109,11 @@ export function useRobloxCredentialMutations() {
   });
 
   const refreshRobloxCredential = useMutation({
-    mutationFn: ({ teamId, credId }: { teamId: string; credId: string }) =>
-      RobloxCredentialController.refresh(teamId, credId),
+    mutationFn: ({ orgId, credId }: { orgId: string; credId: string }) =>
+      RobloxCredentialController.refresh(orgId, credId),
     onSuccess: (refreshedCred, variables) => {
       queryClient.setQueryData<RobloxCredential[]>(
-        ["robloxCredentials", variables.teamId],
+        ["robloxCredentials", variables.orgId],
         (prevData) => {
           if (!prevData) return [refreshedCred];
           return prevData.map((cred) =>

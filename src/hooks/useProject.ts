@@ -2,48 +2,44 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useTeam } from "./useTeam";
 import { Project } from "../lib/types/project-types";
 import { ProjectController } from "../controllers/ProjectController";
+import { useOrg } from "./useOrg";
 
 export function useProject() {
-  const { teamSlug, projectSlug } = useParams();
-  const { data: team } = useTeam();
+  const { orgSlug, projectSlug } = useParams();
+  const { data: org } = useOrg();
   const router = useRouter();
 
   const query = useQuery({
-    queryKey: ["project", team?.id, projectSlug],
-    queryFn: () => ProjectController.resolve(team!.id, projectSlug as string),
-    enabled: !!team?.id && !!projectSlug,
+    queryKey: ["project", org?.id, projectSlug],
+    queryFn: () => ProjectController.resolve(org!.id, projectSlug as string),
+    enabled: !!org?.id && !!projectSlug,
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
 
   useEffect(() => {
     if (query.isError) {
-      router.push(`/dashboard/${teamSlug}`);
+      router.push(`/dashboard/${orgSlug}`);
     }
-  }, [query.isError, router, teamSlug]);
+  }, [query.isError, router, orgSlug]);
 
   return query;
 }
 
 export function useProjects() {
-  const {
-    data: team,
-    isLoading: isLoadingTeam,
-    isError: isErrorTeam,
-  } = useTeam();
+  const { data: org, isLoading: isLoadingOrg, isError: isErrorOrg } = useOrg();
 
   const query = useQuery({
-    queryKey: ["projects", team?.id],
-    queryFn: () => ProjectController.list(team!.id),
-    enabled: !!team?.id,
+    queryKey: ["projects", org?.id],
+    queryFn: () => ProjectController.list(org!.id),
+    enabled: !!org?.id,
     staleTime: 5 * 60 * 1000,
   });
 
-  const isLoading = isLoadingTeam || query.isLoading;
-  const isError = isErrorTeam || query.isError;
+  const isLoading = isLoadingOrg || query.isLoading;
+  const isError = isErrorOrg || query.isError;
 
   return {
     ...query,
@@ -56,11 +52,11 @@ export function useProjectMutations() {
   const queryClient = useQueryClient();
 
   const createProject = useMutation({
-    mutationFn: ({ teamId, name }: { teamId: string; name: string }) =>
-      ProjectController.create(teamId, name),
+    mutationFn: ({ orgId, name }: { orgId: string; name: string }) =>
+      ProjectController.create(orgId, name),
     onSuccess: (project, variables) => {
       queryClient.setQueryData<Project[]>(
-        ["projects", variables.teamId],
+        ["projects", variables.orgId],
         (prevData) => {
           if (!prevData) return [project];
           return [...prevData, project];
@@ -68,23 +64,18 @@ export function useProjectMutations() {
       );
 
       queryClient.setQueryData<Project>(
-        ["project", variables.teamId, project.id],
+        ["project", variables.orgId, project.id],
         () => project,
       );
     },
   });
 
   const deleteProject = useMutation({
-    mutationFn: ({
-      teamId,
-      projectId,
-    }: {
-      teamId: string;
-      projectId: string;
-    }) => ProjectController.delete(teamId, projectId),
+    mutationFn: ({ orgId, projectId }: { orgId: string; projectId: string }) =>
+      ProjectController.delete(orgId, projectId),
     onSuccess: (oldProject, variables) => {
       queryClient.setQueryData<Project[]>(
-        ["projects", variables.teamId],
+        ["projects", variables.orgId],
         (prevData) => {
           if (!prevData) return prevData;
           return prevData.filter((p) => p.id !== oldProject.id);
@@ -92,24 +83,24 @@ export function useProjectMutations() {
       );
 
       queryClient.removeQueries({
-        queryKey: ["project", variables.teamId, oldProject.slug],
+        queryKey: ["project", variables.orgId, oldProject.slug],
       });
     },
   });
 
   const renameProject = useMutation({
     mutationFn: ({
-      teamId,
+      orgId,
       projectId,
       newName,
     }: {
-      teamId: string;
+      orgId: string;
       projectId: string;
       newName: string;
-    }) => ProjectController.rename(teamId, projectId, newName),
+    }) => ProjectController.rename(orgId, projectId, newName),
     onSuccess: (project, variables) => {
       queryClient.setQueryData<Project[]>(
-        ["projects", variables.teamId],
+        ["projects", variables.orgId],
         (prevData) => {
           if (!prevData) return [project];
           return prevData.map((p) => (p.id === project.id ? project : p));
@@ -117,7 +108,7 @@ export function useProjectMutations() {
       );
 
       queryClient.setQueryData<Project>(
-        ["project", variables.teamId, project.id],
+        ["project", variables.orgId, project.id],
         () => project,
       );
     },
