@@ -13,10 +13,10 @@ import { toast } from "sonner";
 import z from "zod";
 
 const CreateOrgSchema = z.object({
-  name: z.string().min(1).max(32),
+  name: z.string().min(3, { error: "Name must be at least 3 characters" }).max(32),
   slug: z
     .string()
-    .min(1)
+    .min(3, { error: "Slug must be at least 3 characters" })
     .max(32)
     .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers and hyphens"),
 });
