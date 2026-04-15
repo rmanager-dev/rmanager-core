@@ -3,10 +3,10 @@ import {
   requireOrgMember,
   requireOrgPermission,
 } from "@/src/lib/utils/auth-utils";
-import { isSafeEndpointUrl } from "@/src/lib/utils/url-utils";
+import { DatabaseCreateSchema } from "@/src/lib/types/database-types";
 import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
 import { NextResponse } from "next/server";
-import z, { ZodError } from "zod";
+import { ZodError } from "zod";
 
 interface Context {
   params: Promise<{
@@ -34,18 +34,7 @@ export async function GET(req: Request, context: Context) {
   }
 }
 
-const PostSchema = z.object({
-  type: z.enum(["S3"]).default("S3"),
-  name: z.string().min(1).max(64),
-  endpoint: z
-    .url("Invalid URL")
-    .max(2048, "Max URL length exceeded")
-    .refine(isSafeEndpointUrl, "Endpoint URL must be a public HTTPS address"),
-  region: z.string().min(1).max(50),
-  bucketName: z.string().min(1).max(100),
-  accessKey: z.string().min(1).max(256),
-  secretKey: z.string().min(1).max(256),
-});
+const PostSchema = DatabaseCreateSchema;
 
 export async function POST(req: Request, context: Context) {
   const params = await context.params;

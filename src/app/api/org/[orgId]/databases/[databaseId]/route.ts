@@ -1,8 +1,8 @@
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
 import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
-import { DatabaseRotateSchema } from "@/src/lib/types/database-types";
+import { DatabaseRenameSchema, DatabaseRotateSchema } from "@/src/lib/types/database-types";
 import { NextResponse } from "next/server";
-import z, { ZodError } from "zod";
+import { ZodError } from "zod";
 import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
 
 interface Context {
@@ -44,9 +44,7 @@ export async function DELETE(req: Request, context: Context) {
   }
 }
 
-const PatchSchema = z.object({
-  name: z.string().min(1).max(64),
-});
+const PatchSchema = DatabaseRenameSchema;
 export async function PATCH(req: Request, context: Context) {
   const params = await context.params;
 
