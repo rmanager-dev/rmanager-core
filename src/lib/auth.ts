@@ -5,6 +5,13 @@ import { admin, organization, twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailTransporter } from "./email";
 import { dash } from "@better-auth/infra";
+import {
+  ac,
+  owner,
+  admin as adminRole,
+  developer,
+  viewer,
+} from "./permissions";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -23,7 +30,15 @@ export const auth = betterAuth({
         storeBackupCodes: "encrypted",
       },
     }),
-    organization(),
+    organization({
+      ac,
+      roles: {
+        owner,
+        admin: adminRole,
+        developer,
+        viewer,
+      },
+    }),
   ],
   emailAndPassword: {
     enabled: true,
@@ -90,7 +105,7 @@ export const auth = betterAuth({
         if (soleOwnerOrgs.length > 0) {
           throw new APIError("BAD_REQUEST", {
             message:
-              "Cannot delete account while owning teams. Please transfer ownership or delete your teams beforehand.",
+              "Cannot delete account while owning organizations. Please transfer ownership or delete your organizations beforehand.",
           });
         }
       },
