@@ -1,7 +1,7 @@
 type LogLevel = "info" | "warn" | "error" | "debug";
 
 interface LogContext {
-  teamId?: string;
+  orgId?: string;
   actorId?: string;
   resourceId?: string;
   operation?: string;
@@ -30,7 +30,9 @@ function log(
   if (error !== undefined) {
     const name = error instanceof Error ? error.name : "UnknownError";
     const msg = error instanceof Error ? error.message : String(error);
-    console.log(`${timestamp} ${tag} ${message} | errorName=${name} errorMessage=${msg}${ctx}`);
+    console.log(
+      `${timestamp} ${tag} ${message} | errorName=${name} errorMessage=${msg}${ctx}`,
+    );
   } else {
     console.log(`${timestamp} ${tag} ${message}${ctx}`);
   }

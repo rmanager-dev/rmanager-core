@@ -9,9 +9,9 @@ import DeleteLoading from "./DeleteLoading";
 import DeleteError from "./DeleteError";
 
 function PageComponent() {
-  const [status, setStatus] = useState<
-    "loading" | "require-transfer" | "error" | "success"
-  >("loading");
+  const [status, setStatus] = useState<"loading" | "require-transfer" | "error" | "success">(
+    "loading",
+  );
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -23,7 +23,7 @@ function PageComponent() {
     }
     authClient.deleteUser({ token }).then(({ error }) => {
       if (error) {
-        if (error.code?.includes("CANNOT_DELETE_ACCOUNT_WHILE_OWNING_TEAMS")) {
+        if (error.code?.includes("CANNOT_DELETE_ACCOUNT_WHILE_OWNING_ORGANIZATIONS")) {
           setStatus("require-transfer");
         } else {
           setStatus("error");
