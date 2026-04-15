@@ -11,16 +11,12 @@ export const ProjectSelect = {
 };
 export type Project = InferDrizzleSelect<typeof ProjectSelect>;
 
-export const CreateProjectSchema = z.object({
+export const ProjectNameSchema = z.object({
   name: z
     .string()
-    .min(1, { error: "Project name must be at least 1 character" })
+    .min(3, { error: "Project name must be at least 3 characters" })
     .max(64, { error: "Project name must be at most 64 characters" }),
 });
 
-export const RenameProjectSchema = z.object({
-  name: z
-    .string()
-    .min(1, { error: "Project name must be at least 1 character" })
-    .max(64, { error: "Project name must be at most 64 characters" }),
-});
+export const CreateProjectSchema = ProjectNameSchema;
+export const RenameProjectSchema = ProjectNameSchema;
