@@ -65,10 +65,14 @@ export default function FormDialog<TFormData extends FieldValues>({
 
   const handleSubmit = async (data: TFormData) => {
     setIsLoading(true);
-    await callback(data);
-    onOpenChange(false);
-    form.reset();
-    setIsLoading(false);
+    try {
+      await callback(data);
+      onOpenChange(false);
+      form.reset();
+    } catch {
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -76,10 +80,7 @@ export default function FormDialog<TFormData extends FieldValues>({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <Form {...form}>
         <DialogContent>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="flex flex-col gap-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4">
             <DialogHeader>
               <DialogTitle>{title}</DialogTitle>
               <DialogDescription>{description}</DialogDescription>
@@ -95,9 +96,7 @@ export default function FormDialog<TFormData extends FieldValues>({
                 {submitButtonText}
               </Button>
               <DialogClose asChild className="w-full">
-                <Button variant={cancelButtonVariant}>
-                  {cancelButtonText}
-                </Button>
+                <Button variant={cancelButtonVariant}>{cancelButtonText}</Button>
               </DialogClose>
             </DialogFooter>
           </form>

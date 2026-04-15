@@ -18,15 +18,15 @@ export default function TransferOwnership() {
           <EmptyMedia variant={"icon"}>
             <UserCog />
           </EmptyMedia>
-          <EmptyTitle className="text-2xl">Transfer Team Ownership</EmptyTitle>
+          <EmptyTitle className="text-2xl">Transfer Organization Ownership</EmptyTitle>
           <EmptyDescription>
-            You cannot delete your account while you are the owner of one or
-            more teams. Please assign a new owner or delete your owned teams.
+            You cannot delete your account while you are the owner of one or more organizations.
+            Please assign a new owner or delete your owned organizations.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button className="w-3/4 h-12" variant={"outline"} asChild>
-            <Link href={"/dashboard"}>Manage my teams</Link>
+            <Link href={"/dashboard"}>Manage my organizations</Link>
           </Button>
         </EmptyContent>
       </Empty>
