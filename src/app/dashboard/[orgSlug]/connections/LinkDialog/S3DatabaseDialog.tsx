@@ -3,6 +3,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/
 import { Input } from "@/src/components/ui/input";
 import { useDatabaseMutations } from "@/src/hooks/useDatabase";
 import { useOrg } from "@/src/hooks/useOrg";
+import { DatabaseCreateSchema } from "@/src/lib/types/database-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -16,32 +17,8 @@ interface S3DatabaseDialogProps {
 export default function S3DatabaseDialog({ open, onOpenChange }: S3DatabaseDialogProps) {
   const { createDatabase } = useDatabaseMutations();
   const { data: org } = useOrg();
-  const S3CompatibleCredsSchema = z.object({
-    name: z
-      .string()
-      .min(1, { error: "Name is required" })
-      .max(64, { error: "Max name length exceeded" }),
-    endpoint: z.url("Invalid URL").max(2048, "Max URL length exceeded"),
-    region: z
-      .string()
-      .min(1, { error: "Region is required" })
-      .max(50, { error: "Max region length exceeded" }),
-    bucketName: z
-      .string()
-      .min(1, { error: "Bucket name is required" })
-      .max(100, { error: "Max bucket name length exceeded" }),
-    accessKey: z
-      .string()
-      .min(1, { error: "Access key is required" })
-      .max(256, { error: "Max access key length exceeded" }),
-    secretKey: z
-      .string()
-      .min(1, { error: "Secret key is required" })
-      .max(256, { error: "Max secret key length exceeded" }),
-  });
-
   const form = useForm({
-    resolver: zodResolver(S3CompatibleCredsSchema),
+    resolver: zodResolver(DatabaseCreateSchema),
     defaultValues: {
       name: "",
       endpoint: "",
@@ -52,7 +29,7 @@ export default function S3DatabaseDialog({ open, onOpenChange }: S3DatabaseDialo
     },
   });
 
-  const handleS3DatabaseLink = (creds: z.infer<typeof S3CompatibleCredsSchema>) => {
+  const handleS3DatabaseLink = (creds: z.infer<typeof DatabaseCreateSchema>) => {
     const id = toast.loading("Linking database...");
     createDatabase
       .mutateAsync({ orgId: org!.id, data: { ...creds, type: "S3" } })

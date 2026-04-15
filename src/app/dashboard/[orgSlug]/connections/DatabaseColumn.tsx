@@ -15,14 +15,13 @@ import { Input } from "@/src/components/ui/input";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useDatabaseMutations } from "@/src/hooks/useDatabase";
 import { useOrg, usePermissions } from "@/src/hooks/useOrg";
-import { Database, DatabaseRotateSchema } from "@/src/lib/types/database-types";
+import { Database, DatabaseRenameSchema, DatabaseRotateSchema } from "@/src/lib/types/database-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Copy, RefreshCw, RotateCcwKey, Pencil, Trash } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import z from "zod";
 
 const DatabaseRenameDialog = ({
   databaseId,
@@ -35,14 +34,8 @@ const DatabaseRenameDialog = ({
 }) => {
   const [open, onOpenChange] = useState(false);
   const { renameDatabase } = useDatabaseMutations();
-  const formSchema = z.object({
-    name: z
-      .string()
-      .min(1, { message: "Name is required" })
-      .max(64, { message: "Name must be less than 64 characters" }),
-  });
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(DatabaseRenameSchema),
     defaultValues: {
       name: "",
     },
