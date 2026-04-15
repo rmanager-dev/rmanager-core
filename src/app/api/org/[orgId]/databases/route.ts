@@ -1,5 +1,8 @@
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
-import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
+import {
+  requireOrgMember,
+  requireOrgPermission,
+} from "@/src/lib/utils/auth-utils";
 import { isSafeEndpointUrl } from "@/src/lib/utils/url-utils";
 import { ExternalDatabaseService } from "@/src/services/ExternalDatabaseService";
 import { NextResponse } from "next/server";
@@ -23,7 +26,7 @@ export async function GET(req: Request, context: Context) {
   }
 
   try {
-    await requireOrgPermission(req, orgId, {}); // Check if the user is in the organization (no special permissions needed to list databases)
+    await requireOrgMember(req, orgId); // Check if the user is in the organization (no special permissions needed to list databases)
     const databases = await ExternalDatabaseService.ListDatabase(orgId);
     return NextResponse.json(databases);
   } catch (error) {

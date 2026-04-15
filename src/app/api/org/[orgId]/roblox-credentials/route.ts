@@ -1,6 +1,9 @@
 import { RobloxCredentialInfoSchema } from "@/src/lib/types/roblox-credentials-types";
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
-import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
+import {
+  requireOrgMember,
+  requireOrgPermission,
+} from "@/src/lib/utils/auth-utils";
 import { RobloxCredentialsService } from "@/src/services/RobloxCredentialsService";
 import { NextResponse } from "next/server";
 
@@ -20,7 +23,7 @@ export async function GET(req: Request, context: Context) {
   }
 
   try {
-    await requireOrgPermission(req, orgId, {});
+    await requireOrgMember(req, orgId);
     const credentials =
       await RobloxCredentialsService.ListOrganizationRobloxCredentials(orgId);
     return NextResponse.json(credentials);

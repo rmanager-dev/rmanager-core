@@ -1,5 +1,8 @@
 import { ErrorToNextResponse } from "@/src/lib/utils/api-utils";
-import { requireOrgPermission } from "@/src/lib/utils/auth-utils";
+import {
+  requireOrgMember,
+  requireOrgPermission,
+} from "@/src/lib/utils/auth-utils";
 import { ProjectService } from "@/src/services/ProjectService";
 import { NextResponse } from "next/server";
 
@@ -27,7 +30,7 @@ export async function GET(req: Request, context: Context) {
   }
 
   try {
-    await requireOrgPermission(req, orgId, {});
+    await requireOrgMember(req, orgId);
     const data = await ProjectService.GetProjectBySlug(orgId, slug);
     return NextResponse.json(data);
   } catch (error) {
