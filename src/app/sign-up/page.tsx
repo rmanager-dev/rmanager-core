@@ -34,7 +34,7 @@ const formSchema = z
 
     password: z
       .string()
-      .min(6, { error: "Password must be at least 6 characters" })
+      .min(8, { error: "Password must be at least 8 characters" })
       .max(256, { error: "Password must not have more than 256 characters" }),
 
     confirmPassword: z.string(),
