@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import UserDropdown from "@/src/components/Navbar/UserDropdown";
 import { SidebarTrigger } from "@/src/components/ui/sidebar";
-import { useTeam, useTeams } from "@/src/hooks/useTeam";
 import { useProject, useProjects } from "@/src/hooks/useProject";
 import {
   Breadcrumb,
@@ -25,6 +24,7 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { Button } from "@/src/components/ui/button";
 import { usePathname } from "next/navigation";
+import { useOrg, useOrgs } from "@/src/hooks/useOrg";
 
 interface ItemDropdownProps<T> {
   label: string;
@@ -67,13 +67,13 @@ function ItemDropdown<T extends { id: string | number }>({
 
 export default function DashboardNavbar() {
   const pathname = usePathname();
-  const { data: teams, isLoading: isTeamsLoading } = useTeams();
-  const { data: team, isLoading: isTeamLoading } = useTeam();
+  const { data: orgs, isLoading: isOrgsLoading } = useOrgs();
+  const { data: org, isLoading: isOrgLoading } = useOrg();
   const { data: projects, isLoading: isProjectsLoading } = useProjects();
   const { data: project, isLoading: isProjectLoading } = useProject();
 
-  const afterTeamPath = pathname.split(`/dashboard/${team?.slug}`)[1];
-  const afterProjectPath = pathname.split(`/dashboard/${team?.slug}/projects/${project?.slug}`)[1];
+  const afterOrgPath = pathname.split(`/dashboard/${org?.slug}`)[1];
+  const afterProjectPath = pathname.split(`/dashboard/${org?.slug}/projects/${project?.slug}`)[1];
 
   return (
     <Navbar className="h-14">
@@ -93,36 +93,35 @@ export default function DashboardNavbar() {
                   />
                 </Link>
               </BreadcrumbItem>
-              {team && (
+              {org && (
                 <>
                   <div className="flex items-center gap-2.5 animate-in fade-in slide-in-from-left-2 duration-500">
                     <BreadcrumbSeparator />
                     <div className="flex gap-1 items-center">
                       <BreadcrumbItem>
                         <BreadcrumbLink asChild>
-                          <Link
-                            href={`/dashboard/${team.slug}`}
-                            className="flex gap-1 items-center"
-                          >
+                          <Link href={`/dashboard/${org.slug}`} className="flex gap-1 items-center">
                             <Building2 className="max-h-4" />
-                            <span className="truncate">{team.name}</span>
+                            <span className="truncate">{org.name}</span>
                           </Link>
                         </BreadcrumbLink>
                       </BreadcrumbItem>
                       <ItemDropdown
-                        label="Switch Team"
-                        items={teams}
-                        activeItem={team}
-                        getLabel={(t) => t.name}
-                        getHref={(t) =>
-                          project ? `/dashboard/${t.slug}` : `/dashboard/${t.slug}/${afterTeamPath}`
+                        label="Switch Organization"
+                        items={orgs!}
+                        activeItem={org}
+                        getLabel={(org) => org.name}
+                        getHref={(org) =>
+                          project
+                            ? `/dashboard/${org.slug}`
+                            : `/dashboard/${org.slug}/${afterOrgPath}`
                         }
                       />
                     </div>
                   </div>
                 </>
               )}
-              {team && project && (
+              {org && project && (
                 <>
                   <div className="flex items-center gap-2.5 animate-in fade-in slide-in-from-left-2 duration-500">
                     <BreadcrumbSeparator />
@@ -130,7 +129,7 @@ export default function DashboardNavbar() {
                       <BreadcrumbItem>
                         <BreadcrumbLink asChild>
                           <Link
-                            href={`/dashboard/${team.slug}/projects/${project.slug}`}
+                            href={`/dashboard/${org.slug}/projects/${project.slug}`}
                             className="flex gap-1 items-center"
                           >
                             <Box className="max-h-4" />
@@ -144,7 +143,7 @@ export default function DashboardNavbar() {
                         activeItem={project}
                         getLabel={(p) => p.name}
                         getHref={(p) =>
-                          `/dashboard/${team.slug}/projects/${p.slug}/${afterProjectPath}`
+                          `/dashboard/${org.slug}/projects/${p.slug}/${afterProjectPath}`
                         }
                       />
                     </div>

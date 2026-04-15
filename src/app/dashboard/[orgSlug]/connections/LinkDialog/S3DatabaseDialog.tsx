@@ -1,14 +1,8 @@
 import FormDialog from "@/src/components/FormDialog";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/src/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { useDatabaseMutations } from "@/src/hooks/useDatabase";
-import { useTeam } from "@/src/hooks/useTeam";
+import { useOrg } from "@/src/hooks/useOrg";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -19,12 +13,9 @@ interface S3DatabaseDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function S3DatabaseDialog({
-  open,
-  onOpenChange,
-}: S3DatabaseDialogProps) {
+export default function S3DatabaseDialog({ open, onOpenChange }: S3DatabaseDialogProps) {
   const { createDatabase } = useDatabaseMutations();
-  const { data: team } = useTeam();
+  const { data: org } = useOrg();
   const S3CompatibleCredsSchema = z.object({
     name: z
       .string()
@@ -61,12 +52,10 @@ export default function S3DatabaseDialog({
     },
   });
 
-  const handleS3DatabaseLink = (
-    creds: z.infer<typeof S3CompatibleCredsSchema>,
-  ) => {
+  const handleS3DatabaseLink = (creds: z.infer<typeof S3CompatibleCredsSchema>) => {
     const id = toast.loading("Linking database...");
     createDatabase
-      .mutateAsync({ teamId: team!.id, data: { ...creds, type: "S3" } })
+      .mutateAsync({ orgId: org!.id, data: { ...creds, type: "S3" } })
       .then(() => {
         toast.success("Successfully linked database!", { id });
       })
@@ -158,11 +147,7 @@ export default function S3DatabaseDialog({
             <FormItem>
               <FormLabel>Access Key ID</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="my-access-key-id"
-                  maxLength={256}
-                  {...field}
-                />
+                <Input placeholder="my-access-key-id" maxLength={256} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -175,11 +160,7 @@ export default function S3DatabaseDialog({
             <FormItem>
               <FormLabel>Secret Access Key</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="my-secret-access-key"
-                  maxLength={256}
-                  {...field}
-                />
+                <Input placeholder="my-secret-access-key" maxLength={256} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -12,9 +12,8 @@ import {
 } from "@/src/components/ui/item";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { useOrg, usePermissions } from "@/src/hooks/useOrg";
 import { useProject, useProjectMutations } from "@/src/hooks/useProject";
-import { useTeam } from "@/src/hooks/useTeam";
-import { hasPermission } from "@/src/lib/utils/team-utils";
 import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -48,18 +47,20 @@ const CardComponent = ({ children }: React.PropsWithChildren) => {
 
 export default function ProjectDangerZone() {
   const router = useRouter();
-  const { data: team, isLoading: isTeamLoading } = useTeam();
+  const { data: org, isLoading: isOrgLoading } = useOrg();
   const { data: project, isLoading: isProjectLoading } = useProject();
-
+  const permissions = usePermissions({
+    deleteProject: { project: ["delete"] },
+  });
   const { deleteProject } = useProjectMutations();
 
   const handleProjectDeletion = async () => {
     const id = toast.loading("Deleting project...");
     deleteProject
-      .mutateAsync({ teamId: team!.id, projectId: project!.id })
+      .mutateAsync({ orgId: org!.id, projectId: project!.id })
       .then(() => {
         toast.success("Successfully deleted project", { id });
-        router.replace(`/dashboard/${team?.slug}`);
+        router.replace(`/dashboard/${org?.slug}`);
       })
       .catch((error) => {
         if (error instanceof Error) {
@@ -72,7 +73,7 @@ export default function ProjectDangerZone() {
       });
   };
 
-  if (isTeamLoading || isProjectLoading) {
+  if (isOrgLoading || isProjectLoading) {
     return (
       <CardComponent>
         <Skeleton className="h-9 w-30" />
@@ -92,7 +93,7 @@ export default function ProjectDangerZone() {
         callback={handleProjectDeletion}
         confirmationText={project?.name}
         trigger={
-          <Button variant={"destructive"} disabled={!hasPermission(team?.role, "DeleteProject")}>
+          <Button variant={"destructive"} disabled={!permissions?.deleteProject}>
             Delete Project
           </Button>
         }

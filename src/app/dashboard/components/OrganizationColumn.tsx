@@ -1,7 +1,6 @@
 "use client";
 import CallbackDialog from "@/src/components/CallbackDialog";
 import LocalTime from "@/src/components/LocalTime";
-import { queryClient } from "@/src/components/QueryClientWrapper";
 import { Button } from "@/src/components/ui/button";
 import {
   DropdownMenu,
@@ -11,29 +10,22 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { TeamController } from "@/src/controllers/TeamController";
+import { useOrgMutations } from "@/src/hooks/useOrg";
+import { auth } from "@/src/lib/auth";
 import { authClient } from "@/src/lib/auth-client";
-import { Team } from "@/src/lib/types/team-types";
-import { useMutation } from "@tanstack/react-query";
+import { BetterAuthError } from "@/src/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Copy, LogOut, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
-export const teamColumns: ColumnDef<Team>[] = [
+export const organizationColumns: ColumnDef<typeof auth.$Infer.Organization>[] = [
   {
     accessorKey: "name",
     header: "Name",
   },
   {
-    accessorKey: "role",
-    header: "Role",
-    cell: ({ getValue }) => {
-      return <span className="capitalize">{getValue<string>()}</span>;
-    },
-  },
-  {
-    accessorKey: "joinedAt",
-    header: "Joined",
+    accessorKey: "createdAt",
+    header: "Created",
     cell: ({ getValue }) => {
       const date = new Date(getValue<string>());
       return <LocalTime time={date} />;
@@ -43,17 +35,8 @@ export const teamColumns: ColumnDef<Team>[] = [
     id: "actions",
     cell: ({ row }) => {
       const { data, isPending } = authClient.useSession();
-      const { mutateAsync: leaveTeam } = useMutation({
-        mutationFn: ({ teamId, memberId }: { teamId: string; memberId: string }) =>
-          TeamController.removeMember(teamId, memberId),
-        onSuccess: (_, { teamId }) => {
-          queryClient.setQueryData<Team[]>(["teams"], (prevData) =>
-            prevData ? prevData.filter((team) => team.id !== teamId) : [],
-          );
-        },
-      });
-
-      const team = row.original;
+      const { leaveOrg } = useOrgMutations();
+      const org = row.original;
 
       if (isPending || !data) {
         return <Skeleton className="h-8 w-8" />;
@@ -69,34 +52,30 @@ export const teamColumns: ColumnDef<Team>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="align-end">
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(team.id)}>
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(org.id)}>
                 <Copy />
-                <span>Copy Team ID</span>
+                <span>Copy Organization ID</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <CallbackDialog
-                title="Leave Team"
-                description={`Are you sure you want to leave the team "${team.name}" ?`}
+                title="Leave organization"
+                description={`Are you sure you want to leave the organization "${org.name}" ?`}
                 callback={async () => {
-                  const toastId = toast.loading("Leaving team...");
-                  try {
-                    await leaveTeam({
-                      memberId: data.user.id,
-                      teamId: team.id,
+                  const toastId = toast.loading("Leaving organization...");
+                  leaveOrg
+                    .mutateAsync({ organizationId: org.id })
+                    .then(() => {
+                      toast.success("Successfully left organization!", { id: toastId });
+                    })
+                    .catch((error) => {
+                      if (error instanceof BetterAuthError) {
+                        toast.error(error.message, { id: toastId });
+                      } else {
+                        toast.error("An unknown error happened while leaving organization", {
+                          id: toastId,
+                        });
+                      }
                     });
-                    toast.success("Successully left the team!", {
-                      id: toastId,
-                    });
-                  } catch (error) {
-                    if (error instanceof Error) {
-                      toast.error(error.message, { id: toastId });
-                    } else {
-                      toast.error(
-                        "An unknown error happened while leaving the team. Please try again later.",
-                        { id: toastId },
-                      );
-                    }
-                  }
                 }}
                 cancelButtonText="Cancel"
                 submitButtonText="Leave"
@@ -105,7 +84,7 @@ export const teamColumns: ColumnDef<Team>[] = [
                 trigger={
                   <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
                     <LogOut />
-                    <span>Leave Team</span>
+                    <span>Leave Organization</span>
                   </DropdownMenuItem>
                 }
               />

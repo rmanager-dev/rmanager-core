@@ -6,21 +6,21 @@ import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import CreateProjectDialog from "./components/CreateProjectDialog";
 import { projectColumns } from "./components/ProjectColumn";
-import { useTeam } from "@/src/hooks/useTeam";
-import { hasPermission } from "@/src/lib/utils/team-utils";
 import { useParams, useRouter } from "next/navigation";
 import { Project } from "@/src/lib/types/project-types";
+import { usePermissions } from "@/src/hooks/useOrg";
 
 const CreateProjectButton = () => {
   const [open, setIsOpen] = useState(false);
-  const { data: team } = useTeam();
+  const permissions = usePermissions({ canCreateProject: { project: ["create"] } });
+
   return (
     <>
       <CreateProjectDialog open={open} setIsOpen={setIsOpen} />
       <Button
         variant="outline"
         onClick={() => setIsOpen(true)}
-        disabled={!hasPermission(team?.role, "CreateProject")}
+        disabled={!permissions?.canCreateProject}
       >
         <PlusIcon />
         <span>Create a Project</span>
@@ -31,11 +31,11 @@ const CreateProjectButton = () => {
 
 export default function Page() {
   const { data, isLoading } = useProjects();
-  const { teamSlug } = useParams();
+  const { orgSlug } = useParams();
   const router = useRouter();
 
   const handleRowClick = (row: { original: Project }) => {
-    router.push(`/dashboard/${teamSlug}/projects/${row.original.slug}`);
+    router.push(`/dashboard/${orgSlug}/projects/${row.original.slug}`);
   };
 
   return (

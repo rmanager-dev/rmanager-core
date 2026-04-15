@@ -12,10 +12,10 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/src/compo
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { useOrg, usePermissions } from "@/src/hooks/useOrg";
 import { useProject, useProjectMutations } from "@/src/hooks/useProject";
-import { useTeam } from "@/src/hooks/useTeam";
 import { RenameProjectSchema } from "@/src/lib/types/project-types";
-import { hasPermission } from "@/src/lib/utils/team-utils";
+import { BetterAuthError } from "@/src/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -37,8 +37,11 @@ const CardComponent = ({ children }: React.PropsWithChildren) => (
 
 export default function ProjectName() {
   const router = useRouter();
-  const { data: team, isLoading: isTeamLoading } = useTeam();
+  const { data: org, isLoading: isOrgLoading } = useOrg();
   const { data: project, isLoading: isProjectLoading } = useProject();
+  const permissions = usePermissions({
+    canRename: { project: ["rename"] },
+  });
   const [open, setIsOpen] = useState(false);
   const { renameProject } = useProjectMutations();
 
@@ -56,15 +59,15 @@ export default function ProjectName() {
   const handleChangeName = (name: string) => {
     const id = toast.loading("Updating project name...");
     renameProject
-      .mutateAsync({ teamId: team!.id, projectId: project!.id, newName: name })
+      .mutateAsync({ orgId: org!.id, projectId: project!.id, newName: name })
       .then(async (newProject) => {
         toast.success("Successfully updated project name!", {
           id,
         });
-        router.replace(`/dashboard/${team?.slug}/projects/${newProject?.slug}/settings`);
+        router.replace(`/dashboard/${org?.slug}/projects/${newProject?.slug}/settings`);
       })
       .catch((error) => {
-        if (error instanceof Error) {
+        if (error instanceof BetterAuthError) {
           toast.error(error.message, { id });
         } else {
           toast.error("An unexpected error happened while updating project name", {
@@ -74,7 +77,7 @@ export default function ProjectName() {
       });
   };
 
-  if (isTeamLoading || isProjectLoading) {
+  if (isOrgLoading || isProjectLoading) {
     return (
       <CardComponent>
         <div className="flex justify-between gap-2">
@@ -84,8 +87,6 @@ export default function ProjectName() {
       </CardComponent>
     );
   }
-
-  const disabled = !hasPermission(team?.role, "RenameProject");
 
   return (
     <CardComponent>
@@ -100,7 +101,11 @@ export default function ProjectName() {
             render={({ field }) => (
               <FormItem className="w-full max-w-lg">
                 <FormControl>
-                  <Input placeholder={project?.name} disabled={disabled} {...field} />
+                  <Input
+                    placeholder={project?.name}
+                    disabled={!permissions?.canRename}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -117,7 +122,7 @@ export default function ProjectName() {
               })();
             }}
           />
-          <Button disabled={disabled}>Save</Button>
+          <Button disabled={!permissions?.canRename}>Save</Button>
         </form>
       </Form>
     </CardComponent>
