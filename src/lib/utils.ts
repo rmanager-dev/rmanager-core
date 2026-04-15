@@ -15,6 +15,26 @@ export type InferDrizzleSelect<T> = {
     : never;
 };
 
+export class BetterAuthError extends Error {
+  status: number;
+  code?: string;
+
+  constructor(error: {
+    message?: string;
+    status: number;
+    statusText: string;
+    code?: string;
+  }) {
+    super(error.message ?? error.statusText);
+    this.status = error.status;
+    this.code = error.code;
+  }
+}
+
+export function errorFromBetterAuth(error: unknown): BetterAuthError {
+  return new BetterAuthError(error as never);
+}
+
 export function nameToSlug(name: string) {
   return name
     .toLowerCase()
