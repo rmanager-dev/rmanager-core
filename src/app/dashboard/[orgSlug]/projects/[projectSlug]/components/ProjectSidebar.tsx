@@ -1,11 +1,11 @@
 "use client";
 import NavigationSidebar, { ItemGroup } from "@/src/components/NavigationSidebar";
+import { useOrg } from "@/src/hooks/useOrg";
 import { useProject } from "@/src/hooks/useProject";
-import { useTeam } from "@/src/hooks/useTeam";
 import { House, Settings } from "lucide-react";
 
 export default function ProjectSidebar() {
-  const { data: team, isLoading: isTeamLoading } = useTeam();
+  const { data: org, isLoading: isOrgLoading } = useOrg();
   const { data: project, isLoading: isProjectLoading } = useProject();
 
   const SidebarItems: ItemGroup[] = [
@@ -35,8 +35,8 @@ export default function ProjectSidebar() {
     ...group,
     items: group.items.map((item) => ({
       ...item,
-      url: `/dashboard/${team?.slug}/projects/${project?.slug}${item.url}`,
+      url: `/dashboard/${org?.slug}/projects/${project?.slug}${item.url}`,
     })),
   }));
-  return <NavigationSidebar items={dynamicItems} isLoading={isTeamLoading || isProjectLoading} />;
+  return <NavigationSidebar items={dynamicItems} isLoading={isOrgLoading || isProjectLoading} />;
 }

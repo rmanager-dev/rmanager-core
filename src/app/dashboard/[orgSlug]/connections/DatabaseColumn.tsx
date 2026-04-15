@@ -14,9 +14,8 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/
 import { Input } from "@/src/components/ui/input";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useDatabaseMutations } from "@/src/hooks/useDatabase";
-import { useTeam } from "@/src/hooks/useTeam";
+import { useOrg, usePermissions } from "@/src/hooks/useOrg";
 import { Database, DatabaseRotateSchema } from "@/src/lib/types/database-types";
-import { hasPermission } from "@/src/lib/utils/team-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Copy, RefreshCw, RotateCcwKey, Pencil, Trash } from "lucide-react";
@@ -27,11 +26,11 @@ import z from "zod";
 
 const DatabaseRenameDialog = ({
   databaseId,
-  teamId,
+  orgId,
   trigger,
 }: {
   databaseId: string;
-  teamId: string;
+  orgId: string;
   trigger: React.ReactNode;
 }) => {
   const [open, onOpenChange] = useState(false);
@@ -58,7 +57,7 @@ const DatabaseRenameDialog = ({
         const id = toast.loading("Renaming database...");
         try {
           await renameDatabase.mutateAsync({
-            teamId,
+            orgId,
             databaseId,
             newName: name,
           });
@@ -99,11 +98,11 @@ const DatabaseRenameDialog = ({
 
 const RotateDatabaseDialog = ({
   databaseId,
-  teamId,
+  orgId,
   trigger,
 }: {
   databaseId: string;
-  teamId: string;
+  orgId: string;
   trigger: React.ReactNode;
 }) => {
   const [open, onOpenChange] = useState(false);
@@ -124,7 +123,7 @@ const RotateDatabaseDialog = ({
       callback={async ({ accessKey, secretKey }) => {
         const id = toast.loading("Rotating database credentials...");
         try {
-          await rotateDatabase.mutateAsync({ teamId, databaseId, accessKey, secretKey });
+          await rotateDatabase.mutateAsync({ orgId, databaseId, accessKey, secretKey });
           toast.success("Successfully rotated database credentials!", { id });
         } catch (error) {
           if (error instanceof Error) {
@@ -183,9 +182,9 @@ export const databaseColumn: ColumnDef<Database>[] = [
     header: "Status",
     cell: ({ row }) => {
       const cred = row.original;
-      const { data: team, isLoading } = useTeam();
+      const { data: org, isLoading } = useOrg();
 
-      if (!team || isLoading) {
+      if (!org || isLoading) {
         return (
           <div className="flex justify-end">
             <Skeleton className="size-8" />
@@ -243,10 +242,16 @@ export const databaseColumn: ColumnDef<Database>[] = [
     id: "actions",
     cell: ({ row }) => {
       const db = row.original;
-      const { data: team, isLoading } = useTeam();
+      const { data: org, isLoading } = useOrg();
       const { deleteDatabase, refreshDatabase } = useDatabaseMutations();
+      const permissions = usePermissions({
+        canRefresh: { database: ["refresh"] },
+        canRename: { database: ["rename"] },
+        canRotate: { database: ["rotate"] },
+        canDelete: { database: ["delete"] },
+      });
 
-      if (!team || isLoading) {
+      if (!org || isLoading) {
         return (
           <div className="flex justify-end">
             <Skeleton className="size-8" />
@@ -257,7 +262,7 @@ export const databaseColumn: ColumnDef<Database>[] = [
       const handleRefresh = () => {
         const id = toast.loading("Refreshing database status...");
         refreshDatabase
-          .mutateAsync({ teamId: team.id, databaseId: db.id })
+          .mutateAsync({ orgId: org.id, databaseId: db.id })
           .then(() => {
             toast.success("Successfully refreshed database status!", { id });
           })
@@ -287,20 +292,17 @@ export const databaseColumn: ColumnDef<Database>[] = [
                 <Copy />
                 <span>Copy Database ID</span>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={!hasPermission(team.role, "RefreshDatabase")}
-                onClick={handleRefresh}
-              >
+              <DropdownMenuItem disabled={!permissions?.canRefresh} onClick={handleRefresh}>
                 <RefreshCw />
                 <span>Refresh Status</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DatabaseRenameDialog
                 databaseId={db.id}
-                teamId={team.id}
+                orgId={org.id}
                 trigger={
                   <DropdownMenuItem
-                    disabled={!hasPermission(team.role, "RenameDatabase")}
+                    disabled={!permissions?.canRename}
                     onSelect={(e) => e.preventDefault()}
                   >
                     <Pencil />
@@ -310,10 +312,10 @@ export const databaseColumn: ColumnDef<Database>[] = [
               />
               <RotateDatabaseDialog
                 databaseId={db.id}
-                teamId={team.id}
+                orgId={org.id}
                 trigger={
                   <DropdownMenuItem
-                    disabled={!hasPermission(team.role, "RotateDatabaseCredentials")}
+                    disabled={!permissions?.canRotate}
                     onSelect={(e) => e.preventDefault()}
                   >
                     <RotateCcwKey />
@@ -324,12 +326,12 @@ export const databaseColumn: ColumnDef<Database>[] = [
               <DropdownMenuSeparator />
               <CallbackDialog
                 title="Delete Database"
-                description="Are you sure you wanna unlink this database from your team?"
+                description="Are you sure you wanna unlink this database from your organization?"
                 callback={async () => {
                   const id = toast.loading("Deleting database...");
                   try {
                     await deleteDatabase.mutateAsync({
-                      teamId: team.id,
+                      orgId: org.id,
                       databaseId: db.id,
                     });
                     toast.success("Successfully deleted database!", { id });
@@ -348,7 +350,7 @@ export const databaseColumn: ColumnDef<Database>[] = [
                 trigger={
                   <DropdownMenuItem
                     variant="destructive"
-                    disabled={!hasPermission(team.role, "DeleteDatabase")}
+                    disabled={!permissions?.canDelete}
                     onSelect={(e) => e.preventDefault()}
                   >
                     <Trash />

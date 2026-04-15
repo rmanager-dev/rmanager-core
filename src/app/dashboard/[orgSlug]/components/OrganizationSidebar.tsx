@@ -1,11 +1,10 @@
 "use client";
 import NavigationSidebar, { ItemGroup } from "@/src/components/NavigationSidebar";
-import { useTeam } from "@/src/hooks/useTeam";
-import { hasPermission } from "@/src/lib/utils/team-utils";
+import { useOrg } from "@/src/hooks/useOrg";
 import { Box, Cable, Settings, User } from "lucide-react";
 
-export default function TeamSidebar() {
-  const { data, isLoading } = useTeam();
+export default function OrganizationSidebar() {
+  const { data, isLoading } = useOrg();
 
   const SidebarItems: ItemGroup[] = [
     {
@@ -36,15 +35,7 @@ export default function TeamSidebar() {
           Icon: Settings,
           url: "/settings",
         },
-      ].filter((item) => {
-        if (item.title === "Connections") {
-          return (
-            hasPermission(data?.role, "ListDatabases") ||
-            hasPermission(data?.role, "ListRobloxCredentials")
-          );
-        }
-        return true;
-      }),
+      ],
     },
   ];
 

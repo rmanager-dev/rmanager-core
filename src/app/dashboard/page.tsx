@@ -1,21 +1,21 @@
 "use client";
-import { teamColumns } from "./components/TeamColumn";
+import { organizationColumns } from "./components/OrganizationColumn";
 import { DataTable } from "@/src/components/DataTable";
 import { Button } from "@/src/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import CreateTeamDialog from "./components/CreateTeamDialog";
+import CreateOrganizationDialog from "./components/CreateOrgDialog";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTeams } from "@/src/hooks/useTeam";
+import { useOrgs } from "@/src/hooks/useOrg";
 
-const CreateTeamButton = () => {
+const CreateOrganizationButton = () => {
   const [open, setIsOpen] = useState(false);
   return (
     <>
-      <CreateTeamDialog open={open} setIsOpen={setIsOpen} />
+      <CreateOrganizationDialog open={open} setIsOpen={setIsOpen} />
       <Button variant={"outline"} onClick={() => setIsOpen(true)}>
         <PlusIcon />
-        <span>Create a Team</span>
+        <span>Create an Organization</span>
       </Button>
     </>
   );
@@ -23,21 +23,21 @@ const CreateTeamButton = () => {
 
 export default function Page() {
   const router = useRouter();
-  const { data, isLoading } = useTeams();
+  const { data, isLoading } = useOrgs();
   return (
     <main className="w-full overflow-auto">
       <div className="w-full px-2 py-10 md:px-10 lg:px-15 xl:px-20 flex justify-center">
         <div className="container mx-auto max-w-5xl">
-          <span className="w-full text-left text-lg font-semibold">Teams</span>
+          <span className="w-full text-left text-lg font-semibold">Organizations</span>
           <DataTable
             data={data ?? []}
-            columns={teamColumns}
-            emptyString="No Teams"
-            searchBoxPlaceholder="Search teams"
+            columns={organizationColumns}
+            emptyString="No Organizations"
+            searchBoxPlaceholder="Search organizations"
             searchBoxTarget="name"
             loading={isLoading}
             loadingString="Loading..."
-            actionComponent={<CreateTeamButton />}
+            actionComponent={<CreateOrganizationButton />}
             onRowClick={(row) => {
               const slug = row.original.slug;
               router.push(`/dashboard/${slug}`);

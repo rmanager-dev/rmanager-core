@@ -1,22 +1,15 @@
 import LocalTime from "@/src/components/LocalTime";
-import { Button } from "@/src/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu";
-import { Skeleton } from "@/src/components/ui/skeleton";
+import type { auth } from "@/src/lib/auth";
 import { authClient } from "@/src/lib/auth-client";
-import { TeamMember } from "@/src/lib/types/team-types";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
 
-export const memberColumn: ColumnDef<TeamMember>[] = [
+export const memberColumn: ColumnDef<typeof auth.$Infer.Member>[] = [
   {
-    accessorKey: "email",
+    id: "email",
     header: "Member",
     cell: ({ cell }) => {
       const { data, isPending } = authClient.useSession();
-      const { id, email } = cell.row.original;
+      const { id, email } = cell.row.original.user;
 
       if (!data || isPending || id !== data.user.id) {
         return <span>{email}</span>;
@@ -31,14 +24,6 @@ export const memberColumn: ColumnDef<TeamMember>[] = [
     },
   },
   {
-    accessorKey: "twoFactorEnabled",
-    header: "2FA Enabled",
-    cell: ({ getValue }) => {
-      const isEnabled = getValue() as boolean;
-      return isEnabled ? "Yes" : "No";
-    },
-  },
-  {
     accessorKey: "role",
     header: "Role",
     cell: ({ getValue }) => {
@@ -47,7 +32,7 @@ export const memberColumn: ColumnDef<TeamMember>[] = [
     },
   },
   {
-    accessorKey: "joinedAt",
+    accessorKey: "createdAt",
     header: "Joined",
     cell: ({ getValue }) => {
       return <LocalTime time={new Date(getValue() as string)} />;

@@ -1,3 +1,4 @@
+"use client";
 import CallbackDialog from "@/src/components/CallbackDialog";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -11,8 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/src/compo
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { useTeam, useTeamMutations } from "@/src/hooks/useTeam";
-import { hasPermission } from "@/src/lib/utils/team-utils";
+import { useOrg, useOrgMutations, usePermissions } from "@/src/hooks/useOrg";
+import { BetterAuthError } from "@/src/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,19 +24,21 @@ import z from "zod";
 const CardComponent = ({ children }: React.PropsWithChildren) => (
   <Card className="w-full">
     <CardHeader>
-      <CardTitle>Team Name</CardTitle>
-      <CardDescription>This is the name used to generate the URL of your team.</CardDescription>
+      <CardTitle>Organization Name</CardTitle>
+      <CardDescription>
+        This is the name used to generate the URL of your organization.
+      </CardDescription>
     </CardHeader>
     <Separator />
     <CardContent>{children}</CardContent>
   </Card>
 );
 
-export default function TeamName() {
-  const router = useRouter();
-  const { data: team, isLoading } = useTeam();
+export default function OrganizationName() {
+  const { data: org, isLoading } = useOrg();
   const [open, setIsOpen] = useState(false);
-  const { renameTeam } = useTeamMutations();
+  const { updateOrg } = useOrgMutations();
+  const permissions = usePermissions({ canUpdateOrg: { organization: ["update"] } });
 
   const formSchema = z
     .object({
@@ -44,7 +47,7 @@ export default function TeamName() {
         .min(3, { error: "Name must be at least 3 characters" })
         .max(32, { error: "Name must be at most 32 characters" }),
     })
-    .refine((values) => values.name !== team?.name, {
+    .refine((values) => values.name !== org?.name, {
       error: "Given display name must be different than your current display name",
     });
 
@@ -56,20 +59,21 @@ export default function TeamName() {
   });
 
   const handleChangeName = (name: string) => {
-    const id = toast.loading("Updating team name...");
-    renameTeam
-      .mutateAsync({ teamId: team!.id, newName: name })
-      .then(async (newTeam) => {
-        toast.success("Successfully updated team name!", {
+    const id = toast.loading("Updating organization name...");
+    updateOrg
+      .mutateAsync({ organizationId: org!.id, data: { name } })
+      .then(() => {
+        toast.success("Successfully updated organization name!", {
           id,
         });
-        router.replace(`/dashboard/${newTeam.slug}/settings`);
+        form.reset();
       })
       .catch((error) => {
-        if (error instanceof Error) {
+        console.log(error);
+        if (error instanceof BetterAuthError) {
           toast.error(error.message, { id });
         } else {
-          toast.error("An unexpected error happened while updating team name", {
+          toast.error("An unexpected error happened while updating organization name", {
             id,
           });
         }
@@ -87,8 +91,6 @@ export default function TeamName() {
     );
   }
 
-  const disabled = !hasPermission(team?.role, "ChangeTeamName");
-
   return (
     <CardComponent>
       <Form {...form}>
@@ -102,15 +104,15 @@ export default function TeamName() {
             render={({ field }) => (
               <FormItem className="w-full max-w-lg">
                 <FormControl>
-                  <Input placeholder={team?.name} disabled={disabled} {...field} />
+                  <Input placeholder={org?.name} disabled={!permissions?.canUpdateOrg} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
           <CallbackDialog
-            title="Rename Team"
-            description="Changing your team name will invalidate your current team URL. Are you sure you want to proceed?"
+            title="Rename Organization"
+            description="Changing your organization name will invalidate your current organization URL. Are you sure you want to proceed?"
             open={open}
             onOpenChange={setIsOpen}
             callback={() => {
@@ -119,7 +121,7 @@ export default function TeamName() {
               })();
             }}
           />
-          <Button disabled={disabled}>Save</Button>
+          <Button disabled={!permissions?.canUpdateOrg}>Save</Button>
         </form>
       </Form>
     </CardComponent>

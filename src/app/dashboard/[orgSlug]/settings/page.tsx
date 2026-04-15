@@ -1,13 +1,13 @@
 "use client";
-import TeamDangerZone from "./TeamDangerZone";
-import TeamName from "./TeamName";
+import OrganizationDangerZone from "./OrganizationDangerZone";
+import OrganizationName from "./OrganizationName";
 
 export default function Page() {
   return (
     <>
-      <span className="w-full text-left text-lg font-semibold">Team Settings</span>
-      <TeamName />
-      <TeamDangerZone />
+      <span className="w-full text-left text-lg font-semibold">Organization Settings</span>
+      <OrganizationName />
+      <OrganizationDangerZone />
     </>
   );
 }

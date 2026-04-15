@@ -1,12 +1,7 @@
 "use client";
 import CallbackDialog from "@/src/components/CallbackDialog";
 import { Button } from "@/src/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/src/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/src/components/ui/card";
 import {
   Item,
   ItemActions,
@@ -17,9 +12,10 @@ import {
 } from "@/src/components/ui/item";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { useTeam, useTeamMutations } from "@/src/hooks/useTeam";
-import { hasPermission } from "@/src/lib/utils/team-utils";
+import { useOrg, useOrgMutations, usePermissions } from "@/src/hooks/useOrg";
+import { BetterAuthError } from "@/src/lib/utils";
 import { Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
@@ -31,18 +27,15 @@ const CardComponent = ({ children }: React.PropsWithChildren) => {
       </CardHeader>
       <Separator />
       <CardContent>
-        <Item
-          variant={"outline"}
-          className="border-destructive bg-destructive/5"
-        >
+        <Item variant={"outline"} className="border-destructive bg-destructive/5">
           <ItemMedia variant={"icon"} className="border-none bg-destructive">
             <Trash className="stroke-destructive-foreground" />
           </ItemMedia>
           <ItemContent>
-            <ItemTitle>Delete Team</ItemTitle>
+            <ItemTitle>Delete Organization</ItemTitle>
             <ItemDescription>
-              Your team will be permanently deleted including all of its
-              projects. This action is irreversible.
+              Your organization will be permanently deleted including all of its projects. This
+              action is irreversible.
             </ItemDescription>
           </ItemContent>
           <ItemActions>{children}</ItemActions>
@@ -52,22 +45,25 @@ const CardComponent = ({ children }: React.PropsWithChildren) => {
   );
 };
 
-export default function TeamDangerZone() {
-  const { data: team, isLoading } = useTeam();
-  const { deleteTeam } = useTeamMutations();
+export default function OrganizationDangerZone() {
+  const router = useRouter();
+  const { data: org, isLoading } = useOrg();
+  const { deleteOrg } = useOrgMutations();
+  const permissions = usePermissions({ canDeleteOrg: { organization: ["delete"] } });
 
-  const handleTeamDeletion = async () => {
-    const id = toast.loading("Deleting team...");
-    deleteTeam
-      .mutateAsync(team!.id)
+  const handleOrganizationDeletion = async () => {
+    const id = toast.loading("Deleting organization...");
+    deleteOrg
+      .mutateAsync({ organizationId: org!.id })
       .then(() => {
-        toast.success("Successfully deleted team", { id });
+        toast.success("Successfully deleted organization", { id });
+        router.replace("/dashboard");
       })
       .catch((error) => {
-        if (error instanceof Error) {
+        if (error instanceof BetterAuthError) {
           toast.error(error.message, { id });
         } else {
-          toast.error("An unexpected error happened while deleting team", {
+          toast.error("An unexpected error happened while deleting organization", {
             id,
           });
         }
@@ -85,20 +81,17 @@ export default function TeamDangerZone() {
   return (
     <CardComponent>
       <CallbackDialog
-        title="Delete Team"
-        description="Are you sure you want to delete this team? This action is irreversible"
+        title="Delete Organization"
+        description="Are you sure you want to delete this organization? This action is irreversible"
         cancelButtonText="Cancel"
         submitButtonText="Delete"
         submitButtonVariant={"destructive"}
         cancelButtonVariant={"outline"}
-        callback={handleTeamDeletion}
-        confirmationText={team?.name}
+        callback={handleOrganizationDeletion}
+        confirmationText={org?.name}
         trigger={
-          <Button
-            variant={"destructive"}
-            disabled={!hasPermission(team?.role, "DeleteTeam")}
-          >
-            Delete Team
+          <Button variant={"destructive"} disabled={!permissions?.canDeleteOrg}>
+            Delete Organization
           </Button>
         }
       />

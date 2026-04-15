@@ -1,8 +1,8 @@
 import FormDialog from "@/src/components/FormDialog";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
+import { useOrg } from "@/src/hooks/useOrg";
 import { useProjectMutations } from "@/src/hooks/useProject";
-import { useTeam } from "@/src/hooks/useTeam";
 import { CreateProjectSchema } from "@/src/lib/types/project-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,7 +14,7 @@ interface CreateProjectDialogProps {
 }
 
 export default function CreateProjectDialog({ open, setIsOpen }: CreateProjectDialogProps) {
-  const { data: team } = useTeam();
+  const { data: org } = useOrg();
   const { createProject } = useProjectMutations();
 
   const form = useForm({
@@ -23,10 +23,10 @@ export default function CreateProjectDialog({ open, setIsOpen }: CreateProjectDi
   });
 
   const handleCreate = async (name: string) => {
-    if (!team) return;
+    if (!org) return;
     const toastId = toast.loading("Creating project...");
     createProject
-      .mutateAsync({ teamId: team.id, name })
+      .mutateAsync({ orgId: org.id, name })
       .then(() => {
         toast.success("Project created!", { id: toastId });
         setIsOpen(false);

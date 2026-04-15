@@ -12,14 +12,13 @@ import {
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { useOrg, usePermissions } from "@/src/hooks/useOrg";
 import { useRobloxCredentialMutations } from "@/src/hooks/useRobloxCredential";
-import { useTeam } from "@/src/hooks/useTeam";
 import {
   RobloxCredential,
   RobloxCredentialRenameSchema,
   RobloxCredentialRotateSchema,
 } from "@/src/lib/types/roblox-credentials-types";
-import { hasPermission } from "@/src/lib/utils/team-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
@@ -32,7 +31,7 @@ const RenameRobloxCredentialDialog = ({
   credId,
   children,
 }: { credId: string } & React.PropsWithChildren) => {
-  const { data: team } = useTeam();
+  const { data: org } = useOrg();
   const { renameRobloxCredential } = useRobloxCredentialMutations();
   const form = useForm({
     resolver: zodResolver(RobloxCredentialRenameSchema),
@@ -49,7 +48,7 @@ const RenameRobloxCredentialDialog = ({
       callback={({ name }) => {
         const id = toast.loading("Renaming Roblox credential...");
         renameRobloxCredential
-          .mutateAsync({ teamId: team!.id, credId, newName: name })
+          .mutateAsync({ orgId: org!.id, credId, newName: name })
           .then(() => {
             toast.success("Successfully renamed Roblox credential!", { id });
           })
@@ -88,7 +87,7 @@ const RotateRobloxCredentialDialog = ({
   credId,
   children,
 }: { credId: string } & React.PropsWithChildren) => {
-  const { data: team } = useTeam();
+  const { data: org } = useOrg();
   const { rotateRobloxCredential } = useRobloxCredentialMutations();
   const form = useForm({
     resolver: zodResolver(RobloxCredentialRotateSchema),
@@ -105,7 +104,7 @@ const RotateRobloxCredentialDialog = ({
       callback={({ key }) => {
         const id = toast.loading("Rotating Roblox credential...");
         rotateRobloxCredential
-          .mutateAsync({ teamId: team!.id, credId, newKey: key })
+          .mutateAsync({ orgId: org!.id, credId, newKey: key })
           .then(() => {
             toast.success("Successfully rotated Roblox credential!", { id });
           })
@@ -166,9 +165,9 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
     header: "Status",
     cell: ({ row }) => {
       const cred = row.original;
-      const { data: team, isLoading } = useTeam();
+      const { data: org, isLoading } = useOrg();
 
-      if (!team || isLoading) {
+      if (!org || isLoading) {
         return (
           <div className="flex justify-end">
             <Skeleton className="size-8" />
@@ -217,10 +216,16 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
     id: "actions",
     cell: ({ row }) => {
       const cred = row.original;
-      const { data: team, isLoading } = useTeam();
+      const { data: org, isLoading } = useOrg();
       const { deleteRobloxCredential, refreshRobloxCredential } = useRobloxCredentialMutations();
+      const permissions = usePermissions({
+        canRefresh: { roblox_credential: ["refresh"] },
+        canRename: { roblox_credential: ["rename"] },
+        canRotate: { roblox_credential: ["rotate"] },
+        canDelete: { roblox_credential: ["delete"] },
+      });
 
-      if (!team || isLoading) {
+      if (!org || isLoading) {
         return (
           <div className="flex justify-end">
             <Skeleton className="size-8" />
@@ -231,7 +236,7 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
       const handleKeyRefresh = () => {
         const id = toast.loading("Refreshing Roblox credential info...");
         refreshRobloxCredential
-          .mutateAsync({ teamId: team.id, credId: cred.id })
+          .mutateAsync({ orgId: org.id, credId: cred.id })
           .then(() => {
             toast.success("Successfully refreshed Roblox credential info!", { id });
           })
@@ -262,7 +267,7 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
                 <span>Copy Key ID</span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                disabled={!hasPermission(team.role, "RefreshRobloxCredential")}
+                disabled={!permissions?.canRefresh}
                 onClick={() => handleKeyRefresh()}
               >
                 <RefreshCw />
@@ -271,7 +276,7 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
               <DropdownMenuSeparator />
               <RenameRobloxCredentialDialog credId={cred.id}>
                 <DropdownMenuItem
-                  disabled={!hasPermission(team.role, "RenameRobloxCredential")}
+                  disabled={!permissions?.canRename}
                   onSelect={(e) => {
                     e.preventDefault();
                   }}
@@ -282,7 +287,7 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
               </RenameRobloxCredentialDialog>
               <RotateRobloxCredentialDialog credId={cred.id}>
                 <DropdownMenuItem
-                  disabled={!hasPermission(team.role, "RotateRobloxCredential")}
+                  disabled={!permissions?.canRotate}
                   onSelect={(e) => {
                     e.preventDefault();
                   }}
@@ -294,12 +299,12 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
               <DropdownMenuSeparator />
               <CallbackDialog
                 title="Delete Roblox Credential"
-                description="Are you sure you wanna unlink this roblox credential from your team?"
+                description="Are you sure you wanna unlink this roblox credential from your organization?"
                 callback={async () => {
                   const id = toast.loading("Deleting roblox credential...");
                   try {
                     await deleteRobloxCredential.mutateAsync({
-                      teamId: team.id,
+                      orgId: org.id,
                       credId: cred.id,
                     });
                     toast.success("Successfully deleted roblox credential!", {
@@ -320,7 +325,7 @@ export const robloxCredentialColumn: ColumnDef<RobloxCredential>[] = [
                 trigger={
                   <DropdownMenuItem
                     variant="destructive"
-                    disabled={!hasPermission(team.role, "DeleteRobloxCredential")}
+                    disabled={!permissions?.canDelete}
                     onSelect={(e) => {
                       e.preventDefault();
                     }}
