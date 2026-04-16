@@ -26,7 +26,7 @@ const CardComponent = ({ children }: React.PropsWithChildren) => (
     <CardHeader>
       <CardTitle>Organization Name</CardTitle>
       <CardDescription>
-        This is the name used to generate the URL of your organization.
+        This is the organization's name displayed accross the dashboard
       </CardDescription>
     </CardHeader>
     <Separator />
@@ -48,7 +48,8 @@ export default function OrganizationName() {
         .max(32, { error: "Name must be at most 32 characters" }),
     })
     .refine((values) => values.name !== org?.name, {
-      error: "Given display name must be different than your current display name",
+      error: "Given organization name must be different than your current organization name",
+      path: ["name"],
     });
 
   const form = useForm({
@@ -96,7 +97,7 @@ export default function OrganizationName() {
       <Form {...form}>
         <form
           className="flex justify-between gap-2"
-          onSubmit={form.handleSubmit(() => setIsOpen(true))}
+          onSubmit={form.handleSubmit(({ name }) => handleChangeName(name))}
         >
           <FormField
             control={form.control}
@@ -109,17 +110,6 @@ export default function OrganizationName() {
                 <FormMessage />
               </FormItem>
             )}
-          />
-          <CallbackDialog
-            title="Rename Organization"
-            description="Changing your organization name will invalidate your current organization URL. Are you sure you want to proceed?"
-            open={open}
-            onOpenChange={setIsOpen}
-            callback={() => {
-              form.handleSubmit(({ name }) => {
-                handleChangeName(name);
-              })();
-            }}
           />
           <Button disabled={!permissions?.canUpdateOrg}>Save</Button>
         </form>
