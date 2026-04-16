@@ -46,6 +46,18 @@ export const auth = betterAuth({
         developer,
         viewer,
       },
+      organizationHooks: {
+        beforeCreateOrganization: async ({ organization }) => {
+          if (!organization.name || organization.name.length < 3)
+            throw new APIError("BAD_REQUEST", { message: "Organization name must be at least 3 characters" });
+          if (organization.name.length > 32)
+            throw new APIError("BAD_REQUEST", { message: "Organization name must be at most 32 characters" });
+          if (!organization.slug || organization.slug.length < 3)
+            throw new APIError("BAD_REQUEST", { message: "Organization slug must be at least 3 characters" });
+          if (organization.slug.length > 32)
+            throw new APIError("BAD_REQUEST", { message: "Organization slug must be at most 32 characters" });
+        },
+      },
     }),
   ],
   emailAndPassword: {
