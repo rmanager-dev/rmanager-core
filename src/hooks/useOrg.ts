@@ -54,7 +54,7 @@ export function usePermissions<T extends Record<string, OrgPermissions>>(
   return useMemo(() => {
     if (!org || !session) return undefined;
 
-    const membership = org.members.find((m) => m.userId === session.user.id);
+    const membership = org.members?.find((m) => m.userId === session.user.id);
     if (!membership) return undefined;
 
     const role = orgRoles[membership.role as keyof typeof orgRoles] as {
