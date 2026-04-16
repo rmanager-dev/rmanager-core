@@ -34,6 +34,7 @@ export default function CreateOrgDialog({ open, setIsOpen }: CreateOrgDialogProp
 
   const form = useForm<CreateOrgForm>({
     resolver: zodResolver(CreateOrgSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       slug: "",
@@ -42,7 +43,7 @@ export default function CreateOrgDialog({ open, setIsOpen }: CreateOrgDialogProp
 
   const name = form.watch("name");
   useEffect(() => {
-    form.setValue("slug", nameToSlug(name));
+    form.setValue("slug", nameToSlug(name), { shouldValidate: name.length >= 3 });
   }, [name]);
 
   const handleOrgCreation = async ({ name, slug }: CreateOrgForm) => {
