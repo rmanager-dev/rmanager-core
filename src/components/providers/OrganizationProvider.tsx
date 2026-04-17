@@ -14,26 +14,14 @@ export default async function OrganizationProvider({
 }) {
   const queryClient = new QueryClient();
   const { orgSlug } = await params;
-  const h = await headers();
 
-  let org;
-  try {
-    org = await auth.api.getFullOrganization({
-      headers: h,
+  await auth.api
+    .getFullOrganization({
+      headers: await headers(),
       query: { organizationSlug: orgSlug },
-    });
-  } catch {
-    redirect("/dashboard");
-  }
-
-  await queryClient.prefetchQuery({
-    queryKey: ["organization", orgSlug],
-    queryFn: async () =>
-      await auth.api.getFullOrganization({
-        headers: h,
-        query: { organizationSlug: orgSlug },
-      }),
-  });
+    })
+    .then((org) => queryClient.setQueryData(["organization", orgSlug], org))
+    .catch(() => redirect("/dashboard"));
 
   return <HydrationBoundary state={dehydrate(queryClient)}>{children}</HydrationBoundary>;
 }
