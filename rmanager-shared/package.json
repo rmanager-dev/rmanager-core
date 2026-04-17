@@ -1,0 +1,42 @@
+{
+  "name": "@rmanager/shared",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./db": "./src/db/index.ts",
+    "./db/schema": "./src/db/schema/index.ts",
+    "./services/*": "./src/services/*.ts",
+    "./lib/auth": "./src/lib/auth.ts",
+    "./lib/crypto/*": "./src/lib/crypto/*.ts",
+    "./lib/email": "./src/lib/email.ts",
+    "./lib/permissions": "./src/lib/permissions.ts",
+    "./lib/types/*": "./src/lib/types/*.ts",
+    "./lib/utils": "./src/lib/utils.ts",
+    "./lib/utils/*": "./src/lib/utils/*.ts"
+  },
+  "scripts": {
+    "test": "npx drizzle-kit push --url file:test.db --schema ./src/db/schema/index.ts --dialect sqlite && vitest --mode test",
+    "push-db": "npx drizzle-kit push --url file:local.db --schema ./src/db/schema/index.ts --dialect sqlite",
+    "studio": "npx drizzle-kit studio"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.940.0",
+    "@better-auth/infra": "^0.1.14",
+    "@libsql/client": "^0.15.15",
+    "better-auth": "^1.6.0",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.41.0",
+    "nodemailer": "^7.0.10",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/nodemailer": "^7.0.3",
+    "dotenv-cli": "^11.0.0",
+    "drizzle-kit": "^0.31.6",
+    "tsx": "^4.20.6",
+    "typescript": "^5",
+    "vitest": "^4.0.18"
+  }
+}
