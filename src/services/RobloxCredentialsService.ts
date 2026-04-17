@@ -178,18 +178,6 @@ export const RobloxCredentialsService = {
     organizationId: string,
     creds: RobloxCredentialInfo,
   ): Promise<RobloxCredential> {
-    let finalStatus: RobloxCredentialStatus = "healthy";
-    let message;
-    const keyInfo = await this._introspectKey(creds.key);
-
-    if (!keyInfo.enabled) {
-      finalStatus = "error";
-      message = roblox_credential_status.disabled;
-    } else if (keyInfo.expired) {
-      finalStatus = "error";
-      message = roblox_credential_status.expired;
-    }
-
     const encodedKey = EncryptString256(creds.key);
     try {
       const [newRecord] = await db
@@ -198,21 +186,18 @@ export const RobloxCredentialsService = {
           id: randomUUID(),
           organizationId,
           name: creds.name,
-          status: finalStatus,
-          errorMessage: message,
+          status: "error",
           keyCiphertext: encodedKey.encryptedData,
           keyIv: encodedKey.initializationVector,
           keyTag: encodedKey.authTag,
-          expirationDate: keyInfo.expirationTimeUtc
-            ? new Date(keyInfo.expirationTimeUtc)
-            : null,
-          keyOwnerRobloxId: keyInfo.authorizedUserId,
+          keyOwnerRobloxId: 0,
           createdBy: actorId,
         })
-        .returning(RobloxCredentialSelect);
+        .returning({ id: roblox_credentials.id });
 
-      return newRecord;
-    } catch {
+      return await this.RefreshRobloxCredential(organizationId, newRecord.id);
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
       throw DatabaseError;
     }
   },
