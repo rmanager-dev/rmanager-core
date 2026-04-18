@@ -1,0 +1,19 @@
+{
+  "name": "@rmanager/api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {},
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.940.0",
+    "@better-auth/infra": "^0.1.14",
+    "@hono/node-server": "^1.19.14",
+    "@hono/zod-validator": "^0.7.6",
+    "better-auth": "^1.6.0",
+    "hono": "^4.12.14",
+    "nodemailer": "^7.0.10",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^7.0.3"
+  }
+}
