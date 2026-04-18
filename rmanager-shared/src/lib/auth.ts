@@ -1,5 +1,5 @@
-import { db } from "../db";
-import * as schema from "../db/schema";
+import { db } from "@rmanager/shared/db";
+import * as schema from "@rmanager/shared/db/schema";
 import { APIError, betterAuth } from "better-auth";
 import { admin, organization, twoFactor } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -11,8 +11,7 @@ import {
   admin as adminRole,
   developer,
   viewer,
-} from "./permissions";
-import { ApiError } from "./utils/api-utils";
+} from "@rmanager/shared/lib/permissions";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -26,9 +25,24 @@ export const auth = betterAuth({
     ipAddress: {
       ipAddressHeaders: ["x-forwarded-for"],
     },
+    defaultCookieAttributes: {
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+    },
+    ...(process.env.COOKIE_DOMAIN && {
+      crossSubDomainCookies: {
+        enabled: true,
+        domain: process.env.COOKIE_DOMAIN,
+      },
+    }),
   },
   appName: "rManager",
-  trustedOrigins: process.env.TRUSTED_ORIGIN ? [process.env.TRUSTED_ORIGIN] : [],
+  baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL,
+  basePath: "/auth",
+  trustedOrigins: process.env.TRUSTED_ORIGINS
+    ? process.env.TRUSTED_ORIGINS.split(",")
+    : ["http://localhost:3000", "http://localhost:3001"],
   plugins: [
     dash(),
     admin(),
