@@ -4,11 +4,15 @@
   "private": true,
   "workspaces": [
     "rmanager-web",
-    "rmanager-shared"
+    "rmanager-shared",
+    "rmanager-api"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=rmanager-web",
     "build": "npm run build --workspace=rmanager-web",
     "test": "npm run test --workspace=rmanager-shared"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.3"
   }
 }
