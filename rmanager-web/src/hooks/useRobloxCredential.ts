@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { RobloxCredentialController } from "../controllers/RobloxCredentialController";
+import { RobloxCredentialController } from "@/src/controllers/RobloxCredentialController";
 import {
   RobloxCredential,
   RobloxCredentialInfo,
-} from "../lib/types/roblox-credentials-types";
+} from "@rmanager/shared/lib/types/roblox-credentials-types";
 import { useOrg } from "./useOrg";
 
 export function useRobloxCredentials() {

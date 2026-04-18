@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@rmanager/shared/lib/auth";
-import { ProjectService } from "@rmanager/shared/services/ProjectService";
+import { ProjectService } from "../../../../rmanager-api/src/services/ProjectService";
 import { QueryClient, HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";

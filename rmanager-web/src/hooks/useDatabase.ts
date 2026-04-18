@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Database, DatabaseInfo } from "../lib/types/database-types";
+import { Database, DatabaseInfo } from "@rmanager/shared/lib/types/database-types";
 import { useRouter } from "next/navigation";
-import { ExternalDatabaseController } from "../controllers/ExternalDatabaseController";
+import { ExternalDatabaseController } from "@/src/controllers/ExternalDatabaseController";
 import { useOrg } from "./useOrg";
 
 export function useDatabases() {
