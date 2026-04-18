@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
 import { createLogger } from "@rmanager/shared/lib/utils/logger";
-import { ApiError, ErrorResponse, ResponseToError } from "@rmanager/shared/lib/utils/api-utils";
+import {
+  ApiError,
+  ErrorResponse,
+  ResponseToError,
+} from "@rmanager/shared/lib/utils/api-utils";
 
-export { ApiError, ErrorResponse, ResponseToError } from "@rmanager/shared/lib/utils/api-utils";
-export { UserNotFound, DatabaseError, AccessDenied, AuthenticationRequired } from "@rmanager/shared/lib/utils/api-utils";
+export {
+  UserNotFound,
+  DatabaseError,
+  AccessDenied,
+  AuthenticationRequired,
+} from "@rmanager/shared/lib/utils/api-utils";
 
 const logger = createLogger("api-utils");
 
@@ -26,7 +34,10 @@ export async function fetcher<T>(
   url: string,
   options?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(url, options);
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`,
+    { credentials: "include", ...options },
+  );
   const data = await response.json();
 
   if (!response.ok) {

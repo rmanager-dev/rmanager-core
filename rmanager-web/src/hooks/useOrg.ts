@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { Organization } from "better-auth/plugins";
-import { authClient } from "../lib/auth-client";
-import { errorFromBetterAuth } from "../lib/utils";
+import { authClient } from "@/src/lib/auth-client";
+import { errorFromBetterAuth } from "@/src/lib/utils";
 import {
   OrgPermissions,
   owner,

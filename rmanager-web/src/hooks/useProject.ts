@@ -2,8 +2,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Project } from "../lib/types/project-types";
-import { ProjectController } from "../controllers/ProjectController";
+import { Project } from "@rmanager/shared/lib/types/project-types";
+import { ProjectController } from "@/src/controllers/ProjectController";
 import { useOrg } from "./useOrg";
 
 export function useProject() {
