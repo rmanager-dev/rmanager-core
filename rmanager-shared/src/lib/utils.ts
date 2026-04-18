@@ -1,5 +1,3 @@
-import type { Column } from "drizzle-orm";
-
 export type InferDrizzleSelect<T> = {
   [K in keyof T]: T[K] extends {
     _: { data: infer TData; notNull: infer TNotNull };
