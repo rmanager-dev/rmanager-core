@@ -8,7 +8,7 @@ import {
   SunMoon,
   User,
 } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@/src/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,14 +19,14 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "@/src/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import React from "react";
 import { authClient } from "@/src/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { queryClient } from "../QueryClientWrapper";
+import { queryClient } from "@/src/components/QueryClientWrapper";
 
 export default function UserDropdown({
   triggerProps,

@@ -5,7 +5,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "@/src/components/ui/dialog";
 import React from "react";
 import {
   Item,
@@ -13,8 +13,8 @@ import {
   ItemContent,
   ItemMedia,
   ItemTitle,
-} from "../ui/item";
-import { Button } from "../ui/button";
+} from "@/src/components/ui/item";
+import { Button } from "@/src/components/ui/button";
 
 interface TwoFactorSwitcherDialogProps {
   open: boolean;

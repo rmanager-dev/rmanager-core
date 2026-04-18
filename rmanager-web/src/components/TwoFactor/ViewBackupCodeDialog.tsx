@@ -8,10 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { Checkbox } from "../ui/checkbox";
+} from "@/src/components/ui/dialog";
+import { Button } from "@/src/components/ui/button";
+import { Label } from "@/src/components/ui/label";
+import { Checkbox } from "@/src/components/ui/checkbox";
 import { Check, Copy, Download } from "lucide-react";
 import { useCopyToClipboard } from "@/src/hooks/useCopyToClipboard";
 import { useDownloadFile } from "react-downloadfile-hook";

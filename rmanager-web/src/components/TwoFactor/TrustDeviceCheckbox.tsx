@@ -1,7 +1,7 @@
 import { FieldValues } from "react-hook-form";
-import { FormControl, FormField, FormItem } from "../ui/form";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
+import { FormControl, FormField, FormItem } from "@/src/components/ui/form";
+import { Checkbox } from "@/src/components/ui/checkbox";
+import { Label } from "@/src/components/ui/label";
 
 interface TrustDeviceCheckboxProps {
   form: FieldValues;

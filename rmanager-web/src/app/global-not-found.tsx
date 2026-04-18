@@ -8,9 +8,9 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "../components/ui/empty";
+} from "@/src/components/ui/empty";
 import { Search } from "lucide-react";
-import { Button } from "../components/ui/button";
+import { Button } from "@/src/components/ui/button";
 import Link from "next/link";
 import { ThemeProvider } from "next-themes";
 

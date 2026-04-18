@@ -1,10 +1,10 @@
 import "@/src/app/globals.css";
 import { ThemeProvider } from "next-themes";
-import ThemedToaster from "../components/ThemedToaster";
+import ThemedToaster from "@/src/components/ThemedToaster";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Metadata } from "next";
-import QueryClientWrapper from "../components/QueryClientWrapper";
+import QueryClientWrapper from "@/src/components/QueryClientWrapper";
 
 export const metadata: Metadata = {
   title: "rManager",
