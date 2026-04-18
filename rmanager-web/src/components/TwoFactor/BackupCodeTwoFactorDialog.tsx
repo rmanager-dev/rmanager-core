@@ -4,16 +4,16 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
-import FormDialog from "../FormDialog";
+import FormDialog from "@/src/components/FormDialog";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
+} from "@/src/components/ui/form";
 import TrustDeviceCheckbox from "./TrustDeviceCheckbox";
-import { Input } from "../ui/input";
+import { Input } from "@/src/components/ui/input";
 
 interface BackupCodeTwoFactorDialogProps {
   open: boolean;

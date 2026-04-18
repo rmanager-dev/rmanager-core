@@ -1,5 +1,5 @@
 import React from "react";
-import { RobloxCredentialStatus } from "../lib/types/roblox-credentials-types";
+import { RobloxCredentialStatus } from "@rmanager/shared/lib/types/roblox-credentials-types";
 import { Badge } from "./ui/badge";
 import { Info } from "lucide-react";
 import {

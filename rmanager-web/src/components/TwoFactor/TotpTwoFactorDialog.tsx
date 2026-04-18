@@ -7,12 +7,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
-import { Input } from "../ui/input";
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
 import { authClient } from "@/src/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import FormDialog from "../FormDialog";
+import FormDialog from "@/src/components/FormDialog";
 import TrustDeviceCheckbox from "./TrustDeviceCheckbox";
 
 interface TotpTwoFactorDialogProps {
