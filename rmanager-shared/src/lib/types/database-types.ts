@@ -34,19 +34,37 @@ export const DatabaseSelect = {
 export type Database = InferDrizzleSelect<typeof DatabaseSelect>;
 
 export const DatabaseCreateSchema = z.object({
-  name: z.string().min(3, { error: "Name must be at least 3 characters" }).max(64, { error: "Max name length exceeded" }),
+  name: z
+    .string()
+    .min(3, { error: "Name must be at least 3 characters" })
+    .max(64, { error: "Max name length exceeded" }),
   endpoint: z
     .url("Invalid URL")
     .max(2048, "Max URL length exceeded")
     .refine(isSafeEndpointUrl, "Endpoint URL must be a public HTTPS address"),
-  region: z.string().min(2, { error: "Region is required" }).max(50, { error: "Max region length exceeded" }),
-  bucketName: z.string().min(3, { error: "Bucket name must be at least 3 characters" }).max(100, { error: "Max bucket name length exceeded" }),
-  accessKey: z.string().min(1, { error: "Access key is required" }).max(256, { error: "Max access key length exceeded" }),
-  secretKey: z.string().min(1, { error: "Secret key is required" }).max(256, { error: "Max secret key length exceeded" }),
+  region: z
+    .string()
+    .min(2, { error: "Region is required" })
+    .max(50, { error: "Max region length exceeded" }),
+  bucketName: z
+    .string()
+    .min(3, { error: "Bucket name must be at least 3 characters" })
+    .max(100, { error: "Max bucket name length exceeded" }),
+  accessKey: z
+    .string()
+    .min(1, { error: "Access key is required" })
+    .max(256, { error: "Max access key length exceeded" }),
+  secretKey: z
+    .string()
+    .min(1, { error: "Secret key is required" })
+    .max(256, { error: "Max secret key length exceeded" }),
 });
 
 export const DatabaseRenameSchema = z.object({
-  name: z.string().min(3, { error: "Name must be at least 3 characters" }).max(64, { error: "Max name length exceeded" }),
+  name: z
+    .string()
+    .min(3, { error: "Name must be at least 3 characters" })
+    .max(64, { error: "Max name length exceeded" }),
 });
 
 export const DatabaseRotateSchema = z.object({
