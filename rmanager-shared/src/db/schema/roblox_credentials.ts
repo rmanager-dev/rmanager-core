@@ -1,9 +1,8 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { sql } from "drizzle-orm";
+import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./user";
 import { organization } from "./organization";
 
-export const roblox_credentials = sqliteTable("roblox_credentials", {
+export const roblox_credentials = pgTable("roblox_credentials", {
   id: text("id").primaryKey(),
   organizationId: text("organization_id")
     .notNull()
@@ -21,20 +20,10 @@ export const roblox_credentials = sqliteTable("roblox_credentials", {
 
   keyOwnerRobloxId: integer("key_owner_roblox_id").notNull(),
 
-  expirationDate: integer("expiration_date", {
-    mode: "timestamp_ms",
-  }),
-  lastUsed: integer("last_used", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
-  lastRefreshedAt: integer("last_refreshed_at", {
-    mode: "timestamp_ms",
-  })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
+  expirationDate: timestamp("expiration_date"),
+  lastUsed: timestamp("last_used").defaultNow().notNull(),
+  lastRefreshedAt: timestamp("last_refreshed_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: text("created_by").references(() => user.id, {
     onDelete: "set null",
   }),

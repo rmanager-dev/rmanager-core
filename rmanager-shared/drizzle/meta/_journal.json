@@ -1,61 +1,12 @@
 {
   "version": "7",
-  "dialect": "sqlite",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "6",
-      "when": 1766417651350,
-      "tag": "0000_chemical_the_santerians",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1774627700925,
-      "tag": "0001_lucky_lucky_pierre",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1774631008429,
-      "tag": "0002_daffy_wolf_cub",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1775382237392,
-      "tag": "0003_happy_starhawk",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1775383387755,
-      "tag": "0004_kind_vision",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1775474479580,
-      "tag": "0005_heavy_night_nurse",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1775501978062,
-      "tag": "0006_illegal_wraith",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1776360673025,
-      "tag": "0007_mixed_post",
+      "version": "7",
+      "when": 1776528339170,
+      "tag": "0000_puzzling_carnage",
       "breakpoints": true
     }
   ]

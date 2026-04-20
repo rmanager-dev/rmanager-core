@@ -1,26 +1,19 @@
-import { sql } from "drizzle-orm";
+import { pgTable, text, boolean, timestamp } from "drizzle-orm/pg-core";
 
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-export const user = sqliteTable("user", {
+export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  emailVerified: integer("email_verified", { mode: "boolean" })
-    .default(false)
-    .notNull(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   role: text("role"),
-  banned: integer("banned", { mode: "boolean" }).default(false),
+  banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
-  banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
-  twoFactorEnabled: integer("two_factor_enabled", { mode: "boolean" }).default(
-    false,
-  ),
+  banExpires: timestamp("ban_expires"),
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
 });

@@ -1,27 +1,26 @@
 import {
   index,
-  integer,
-  sqliteTable,
+  pgTable,
   text,
+  timestamp,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/pg-core";
 import { user } from "./user";
-import { sql } from "drizzle-orm";
 
-export const organization = sqliteTable(
+export const organization = pgTable(
   "organization",
   {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
     logo: text("logo"),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: timestamp("created_at").notNull(),
     metadata: text("metadata"),
   },
   (table) => [uniqueIndex("organization_slug_uidx").on(table.slug)],
 );
 
-export const member = sqliteTable(
+export const member = pgTable(
   "member",
   {
     id: text("id").primaryKey(),
@@ -32,7 +31,7 @@ export const member = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     role: text("role").default("member").notNull(),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: timestamp("created_at").notNull(),
   },
   (table) => [
     index("member_organizationId_idx").on(table.organizationId),
@@ -40,7 +39,7 @@ export const member = sqliteTable(
   ],
 );
 
-export const invitation = sqliteTable(
+export const invitation = pgTable(
   "invitation",
   {
     id: text("id").primaryKey(),
@@ -50,10 +49,8 @@ export const invitation = sqliteTable(
     email: text("email").notNull(),
     role: text("role"),
     status: text("status").default("pending").notNull(),
-    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
     inviterId: text("inviter_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),

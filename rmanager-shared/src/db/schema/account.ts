@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
+import { index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
-export const account = sqliteTable(
+export const account = pgTable(
   "account",
   {
     id: text("id").primaryKey(),
@@ -14,20 +14,12 @@ export const account = sqliteTable(
     accessToken: text("access_token"),
     refreshToken: text("refresh_token"),
     idToken: text("id_token"),
-    accessTokenExpiresAt: integer("access_token_expires_at", {
-      mode: "timestamp_ms",
-    }),
-    refreshTokenExpiresAt: integer("refresh_token_expires_at", {
-      mode: "timestamp_ms",
-    }),
+    accessTokenExpiresAt: timestamp("access_token_expires_at"),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
     scope: text("scope"),
     password: text("password"),
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .notNull(),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [index("account_userId_idx").on(table.userId)],
 );

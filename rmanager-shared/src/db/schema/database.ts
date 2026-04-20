@@ -1,9 +1,8 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./user";
-import { sql } from "drizzle-orm";
 import { organization } from "./organization";
 
-export const database = sqliteTable("database", {
+export const database = pgTable("database", {
   id: text("id").primaryKey(),
   organizationId: text("organization_id")
     .notNull()
@@ -30,18 +29,10 @@ export const database = sqliteTable("database", {
   skIv: text("sk_iv").notNull(),
   skTag: text("sk_tag").notNull(),
 
-  lastUsed: integer("last_used", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
-  lastRefreshedAt: integer("last_refreshed_at", {
-    mode: "timestamp_ms",
-  })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
+  lastUsed: timestamp("last_used").defaultNow().notNull(),
+  lastRefreshedAt: timestamp("last_refreshed_at").defaultNow().notNull(),
 
-  createdAt: integer("createdAt", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: text("created_by").references(() => user.id, {
     onDelete: "set null",
   }),
