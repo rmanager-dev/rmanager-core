@@ -10,7 +10,7 @@ import {
 } from "@rmanager/shared/lib/permissions";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   basePath: "/auth",
   fetchOptions: { credentials: "include" },
   plugins: [

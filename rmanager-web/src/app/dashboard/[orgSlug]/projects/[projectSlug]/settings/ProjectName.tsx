@@ -8,19 +8,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/src/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useOrg, usePermissions } from "@/src/hooks/useOrg";
 import { useProject, useProjectMutations } from "@/src/hooks/useProject";
 import { RenameProjectSchema } from "@rmanager/shared/lib/types/project-types";
-import { BetterAuthError } from "@/src/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { BetterAuthError } from "@rmanager/shared/lib/utils";
 
 const CardComponent = ({ children }: React.PropsWithChildren) => (
   <Card className="w-full">
@@ -45,9 +51,13 @@ export default function ProjectName() {
   const [open, setIsOpen] = useState(false);
   const { renameProject } = useProjectMutations();
 
-  const formSchema = RenameProjectSchema.refine((values) => values.name !== project?.name, {
-    error: "New project name must be different than your current project name",
-  });
+  const formSchema = RenameProjectSchema.refine(
+    (values) => values.name !== project?.name,
+    {
+      error:
+        "New project name must be different than your current project name",
+    },
+  );
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -64,15 +74,20 @@ export default function ProjectName() {
         toast.success("Successfully updated project name!", {
           id,
         });
-        router.replace(`/dashboard/${org?.slug}/projects/${newProject?.slug}/settings`);
+        router.replace(
+          `/dashboard/${org?.slug}/projects/${newProject?.slug}/settings`,
+        );
       })
       .catch((error) => {
         if (error instanceof BetterAuthError) {
           toast.error(error.message, { id });
         } else {
-          toast.error("An unexpected error happened while updating project name", {
-            id,
-          });
+          toast.error(
+            "An unexpected error happened while updating project name",
+            {
+              id,
+            },
+          );
         }
       });
   };

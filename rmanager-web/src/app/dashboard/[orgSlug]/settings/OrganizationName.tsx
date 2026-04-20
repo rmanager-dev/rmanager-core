@@ -8,12 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/src/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useOrg, useOrgMutations, usePermissions } from "@/src/hooks/useOrg";
-import { BetterAuthError } from "@/src/lib/utils";
+import { BetterAuthError } from "@rmanager/shared/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -38,7 +44,9 @@ export default function OrganizationName() {
   const { data: org, isLoading } = useOrg();
   const [open, setIsOpen] = useState(false);
   const { updateOrg } = useOrgMutations();
-  const permissions = usePermissions({ canUpdateOrg: { organization: ["update"] } });
+  const permissions = usePermissions({
+    canUpdateOrg: { organization: ["update"] },
+  });
 
   const formSchema = z
     .object({
@@ -48,7 +56,8 @@ export default function OrganizationName() {
         .max(32, { error: "Name must be at most 32 characters" }),
     })
     .refine((values) => values.name !== org?.name, {
-      error: "Given organization name must be different than your current organization name",
+      error:
+        "Given organization name must be different than your current organization name",
       path: ["name"],
     });
 
@@ -74,9 +83,12 @@ export default function OrganizationName() {
         if (error instanceof BetterAuthError) {
           toast.error(error.message, { id });
         } else {
-          toast.error("An unexpected error happened while updating organization name", {
-            id,
-          });
+          toast.error(
+            "An unexpected error happened while updating organization name",
+            {
+              id,
+            },
+          );
         }
       });
   };
@@ -105,7 +117,11 @@ export default function OrganizationName() {
             render={({ field }) => (
               <FormItem className="w-full max-w-lg">
                 <FormControl>
-                  <Input placeholder={org?.name} disabled={!permissions?.canUpdateOrg} {...field} />
+                  <Input
+                    placeholder={org?.name}
+                    disabled={!permissions?.canUpdateOrg}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

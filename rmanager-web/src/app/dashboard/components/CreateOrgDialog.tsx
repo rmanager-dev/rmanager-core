@@ -1,10 +1,16 @@
 "use client";
 
 import FormDialog from "@/src/components/FormDialog";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { useOrgMutations } from "@/src/hooks/useOrg";
-import { BetterAuthError, nameToSlug } from "@/src/lib/utils";
+import { BetterAuthError, nameToSlug } from "@rmanager/shared/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -13,7 +19,10 @@ import { toast } from "sonner";
 import z from "zod";
 
 const CreateOrgSchema = z.object({
-  name: z.string().min(3, { error: "Name must be at least 3 characters" }).max(32),
+  name: z
+    .string()
+    .min(3, { error: "Name must be at least 3 characters" })
+    .max(32),
   slug: z
     .string()
     .min(3, { error: "Slug must be at least 3 characters" })
@@ -28,7 +37,10 @@ interface CreateOrgDialogProps {
   setIsOpen: (open: boolean) => void;
 }
 
-export default function CreateOrgDialog({ open, setIsOpen }: CreateOrgDialogProps) {
+export default function CreateOrgDialog({
+  open,
+  setIsOpen,
+}: CreateOrgDialogProps) {
   const { createOrg } = useOrgMutations();
   const router = useRouter();
 
@@ -43,7 +55,9 @@ export default function CreateOrgDialog({ open, setIsOpen }: CreateOrgDialogProp
 
   const name = form.watch("name");
   useEffect(() => {
-    form.setValue("slug", nameToSlug(name), { shouldValidate: name.length >= 3 });
+    form.setValue("slug", nameToSlug(name), {
+      shouldValidate: name.length >= 3,
+    });
   }, [name]);
 
   const handleOrgCreation = async ({ name, slug }: CreateOrgForm) => {
@@ -51,11 +65,16 @@ export default function CreateOrgDialog({ open, setIsOpen }: CreateOrgDialogProp
     await createOrg
       .mutateAsync({ name, slug })
       .then((newOrg) => {
-        toast.success("Successfully created your organization!", { id: toastId });
+        toast.success("Successfully created your organization!", {
+          id: toastId,
+        });
         router.replace(`/dashboard/${newOrg.slug}`);
       })
       .catch((error) => {
-        if (error instanceof BetterAuthError && error.code == "ORGANIZATION_ALREADY_EXISTS") {
+        if (
+          error instanceof BetterAuthError &&
+          error.code == "ORGANIZATION_ALREADY_EXISTS"
+        ) {
           toast.dismiss(toastId);
           form.setError("slug", { message: "This slug is already taken" });
           form.setFocus("slug");

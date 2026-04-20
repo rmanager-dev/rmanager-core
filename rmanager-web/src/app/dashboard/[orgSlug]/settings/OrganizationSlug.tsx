@@ -8,12 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/src/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useOrg, useOrgMutations, usePermissions } from "@/src/hooks/useOrg";
-import { BetterAuthError } from "@/src/lib/utils";
+import { BetterAuthError } from "@rmanager/shared/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -39,7 +45,9 @@ export default function OrganizationSlug() {
   const { data: org, isLoading } = useOrg();
   const [open, setIsOpen] = useState(false);
   const { updateOrg } = useOrgMutations();
-  const permissions = usePermissions({ canUpdateOrg: { organization: ["update"] } });
+  const permissions = usePermissions({
+    canUpdateOrg: { organization: ["update"] },
+  });
 
   const formSchema = z
     .object({
@@ -71,7 +79,10 @@ export default function OrganizationSlug() {
         router.push(`/dashboard/${o.slug}/settings`);
       })
       .catch((error) => {
-        if (error instanceof BetterAuthError && error.code == "ORGANIZATION_SLUG_ALREADY_TAKEN") {
+        if (
+          error instanceof BetterAuthError &&
+          error.code == "ORGANIZATION_SLUG_ALREADY_TAKEN"
+        ) {
           toast.dismiss(id);
           form.setError("slug", { message: "Slug is already taken" });
           form.setFocus("slug");
@@ -79,9 +90,12 @@ export default function OrganizationSlug() {
           console.log(error.code);
           toast.error(error.message, { id });
         } else {
-          toast.error("An unexpected error happened while updating organization slug", {
-            id,
-          });
+          toast.error(
+            "An unexpected error happened while updating organization slug",
+            {
+              id,
+            },
+          );
         }
       });
   };
@@ -110,7 +124,11 @@ export default function OrganizationSlug() {
             render={({ field }) => (
               <FormItem className="w-full max-w-lg">
                 <FormControl>
-                  <Input placeholder={org?.slug} disabled={!permissions?.canUpdateOrg} {...field} />
+                  <Input
+                    placeholder={org?.slug}
+                    disabled={!permissions?.canUpdateOrg}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -30,14 +30,15 @@ export function ErrorToNextResponse(error: unknown): NextResponse {
   );
 }
 
-export async function fetcher<T>(
+export async function baseFetcher<T>(
+  baseUrl: string,
   url: string,
   options?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`,
-    { credentials: "include", ...options },
-  );
+  const response = await fetch(`${baseUrl}${url}`, {
+    credentials: "include",
+    ...options,
+  });
   const data = await response.json();
 
   if (!response.ok) {
@@ -45,4 +46,11 @@ export async function fetcher<T>(
   }
 
   return data as T;
+}
+
+export async function fetcher<T>(
+  url: string,
+  options?: RequestInit,
+): Promise<T> {
+  return baseFetcher<T>(process.env.NEXT_PUBLIC_API_URL!, url, options);
 }
