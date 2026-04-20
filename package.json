@@ -8,11 +8,10 @@
     "rmanager-api"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=rmanager-web",
-    "build": "npm run build --workspace=rmanager-web",
-    "test": "npm run test --workspace=rmanager-shared"
+    "dev": "docker compose up postgres -d && concurrently \"npm run dev --workspace=rmanager-api\"  \"npm run dev --workspace=rmanager-web\""
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "prettier": "^3.8.3"
   }
 }
