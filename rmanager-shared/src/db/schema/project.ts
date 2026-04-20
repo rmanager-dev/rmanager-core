@@ -1,8 +1,7 @@
-import { sqliteTable, text, integer, unique } from "drizzle-orm/sqlite-core";
-import { sql } from "drizzle-orm";
+import { pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 import { organization } from "./organization";
 
-export const project = sqliteTable(
+export const project = pgTable(
   "project",
   {
     id: text("id").primaryKey(),
@@ -14,9 +13,7 @@ export const project = sqliteTable(
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
 
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => [unique().on(t.organizationId, t.slug)],
 );

@@ -15,7 +15,7 @@ import {
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "sqlite",
+    provider: "pg",
     schema,
   }),
   experimental: {
@@ -38,7 +38,7 @@ export const auth = betterAuth({
     }),
   },
   appName: "rManager",
-  baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_API_URL,
   basePath: "/auth",
   trustedOrigins: process.env.TRUSTED_ORIGINS
     ? process.env.TRUSTED_ORIGINS.split(",")

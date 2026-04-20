@@ -361,11 +361,10 @@ export const RobloxCredentialsService = {
         }
 
         // Return the final credential info (fallback for when _introspectKey rejected)
-        const result = await tx
+        const [result] = await tx
           .select(RobloxCredentialSelect)
           .from(roblox_credentials)
-          .where(eq(roblox_credentials.id, credId))
-          .get();
+          .where(eq(roblox_credentials.id, credId));
 
         if (!result) throw DatabaseError;
         return result;

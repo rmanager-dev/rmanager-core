@@ -1,7 +1,7 @@
-import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, pgTable, text } from "drizzle-orm/pg-core";
 import { user } from "./user";
 
-export const twoFactor = sqliteTable(
+export const twoFactor = pgTable(
   "two_factor",
   {
     id: text("id").primaryKey(),
