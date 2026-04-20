@@ -60,7 +60,6 @@ export default function DangerZonePreferences() {
     const toasterId = toast.loading("Deleting your account...");
     await authClient.deleteUser({
       password,
-      callbackURL: "/home",
       fetchOptions: {
         onSuccess: () => {
           toast.success(

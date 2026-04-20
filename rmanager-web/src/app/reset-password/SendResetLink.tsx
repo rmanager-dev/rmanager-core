@@ -40,7 +40,7 @@ export default function SendResetLink() {
     const toastId = toast.loading("Sending password reset link...");
     const { error } = await authClient.requestPasswordReset({
       email,
-      redirectTo: "/reset-password",
+      redirectTo: `${process.env.NEXT_PUBLIC_WEB_URL}/reset-password`,
     });
 
     if (error) {

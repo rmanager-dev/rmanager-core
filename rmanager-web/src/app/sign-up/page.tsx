@@ -75,7 +75,7 @@ export default function SignupCard() {
           toast.error(error.error.message, { id: toastId }); // If there was an error, modify the toaster to be an error toaster and indicate the error's message
         },
       },
-      callbackURL: "/dashboard",
+      callbackURL: `${process.env.NEXT_PUBLIC_WEB_URL}/dashboard`,
     });
     setIsLoading(false);
   };

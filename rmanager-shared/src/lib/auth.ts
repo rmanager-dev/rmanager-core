@@ -152,11 +152,10 @@ export const auth = betterAuth({
         }
       },
       sendDeleteAccountVerification: async ({ user, url, token }) => {
-        const baseUrl = new URL(url).origin;
         await emailTransporter.sendMail({
           to: user.email,
           subject: "Account deletion",
-          text: `A request was made to delete your account. This action is permanent and cannot be undone. To continue with account deletion, please click the following link: ${baseUrl}/auth/delete-status?token=${token}`,
+          text: `A request was made to delete your account. This action is permanent and cannot be undone. To continue with account deletion, please click the following link: ${process.env.WEB_ORIGIN}/auth/delete-status?token=${token}`,
         });
       },
     },

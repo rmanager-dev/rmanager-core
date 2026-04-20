@@ -99,7 +99,7 @@ export default function EmailPreferences() {
 
     await authClient.changeEmail({
       newEmail: values.email,
-      callbackURL: "/dashboard/user/preferences",
+      callbackURL: `${process.env.NEXT_PUBLIC_WEB_URL}/dashboard/user/preferences`,
       fetchOptions: {
         onSuccess: () => {
           toast.success(
@@ -127,7 +127,7 @@ export default function EmailPreferences() {
 
     await authClient.sendVerificationEmail({
       email: user!.email,
-      callbackURL: "/dashboard/user/preferences",
+      callbackURL: `${process.env.NEXT_PUBLIC_WEB_URL}/dashboard/user/preferences`,
       fetchOptions: {
         onSuccess: () => {
           toast.success(
