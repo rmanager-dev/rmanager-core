@@ -1,0 +1,38 @@
+volumes:
+  postgres:
+
+secrets:
+  envfile:
+    file: .env
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: rmanager
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: rmanager
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - 127.0.0.1:5432:5432
+
+  api:
+    build:
+      context: .
+      dockerfile: rmanager-api/Dockerfile
+    ports:
+      - 127.0.0.1:3001:3001
+    env_file: .env
+    depends_on: [postgres]
+
+  web:
+    build:
+      context: .
+      dockerfile: rmanager-web/Dockerfile
+      secrets:
+        - envfile
+    ports:
+      - 127.0.0.1:3000:3000
+    env_file: .env
+    depends_on: [postgres, api]
