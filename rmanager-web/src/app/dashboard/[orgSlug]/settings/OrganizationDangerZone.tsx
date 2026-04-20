@@ -1,7 +1,12 @@
 "use client";
 import CallbackDialog from "@/src/components/CallbackDialog";
 import { Button } from "@/src/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/src/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/src/components/ui/card";
 import {
   Item,
   ItemActions,
@@ -13,7 +18,7 @@ import {
 import { Separator } from "@/src/components/ui/separator";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useOrg, useOrgMutations, usePermissions } from "@/src/hooks/useOrg";
-import { BetterAuthError } from "@/src/lib/utils";
+import { BetterAuthError } from "@rmanager/shared/lib/utils";
 import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -27,15 +32,18 @@ const CardComponent = ({ children }: React.PropsWithChildren) => {
       </CardHeader>
       <Separator />
       <CardContent>
-        <Item variant={"outline"} className="border-destructive bg-destructive/5">
+        <Item
+          variant={"outline"}
+          className="border-destructive bg-destructive/5"
+        >
           <ItemMedia variant={"icon"} className="border-none bg-destructive">
             <Trash className="stroke-destructive-foreground" />
           </ItemMedia>
           <ItemContent>
             <ItemTitle>Delete Organization</ItemTitle>
             <ItemDescription>
-              Your organization will be permanently deleted including all of its projects. This
-              action is irreversible.
+              Your organization will be permanently deleted including all of its
+              projects. This action is irreversible.
             </ItemDescription>
           </ItemContent>
           <ItemActions>{children}</ItemActions>
@@ -49,7 +57,9 @@ export default function OrganizationDangerZone() {
   const router = useRouter();
   const { data: org, isLoading } = useOrg();
   const { deleteOrg } = useOrgMutations();
-  const permissions = usePermissions({ canDeleteOrg: { organization: ["delete"] } });
+  const permissions = usePermissions({
+    canDeleteOrg: { organization: ["delete"] },
+  });
 
   const handleOrganizationDeletion = async () => {
     const id = toast.loading("Deleting organization...");
@@ -63,9 +73,12 @@ export default function OrganizationDangerZone() {
         if (error instanceof BetterAuthError) {
           toast.error(error.message, { id });
         } else {
-          toast.error("An unexpected error happened while deleting organization", {
-            id,
-          });
+          toast.error(
+            "An unexpected error happened while deleting organization",
+            {
+              id,
+            },
+          );
         }
       });
   };

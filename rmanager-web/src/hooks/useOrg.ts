@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { Organization } from "better-auth/plugins";
 import { authClient } from "@/src/lib/auth-client";
-import { errorFromBetterAuth } from "@/src/lib/utils";
+import { errorFromBetterAuth } from "@rmanager/shared/lib/utils";
 import {
   OrgPermissions,
   owner,
