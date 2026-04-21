@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: rmanager-api/Dockerfile
     ports:
-      - 127.0.0.1:3001:3001
+      - 127.0.0.1:3001:${API_PORT}
     env_file: .env
     depends_on: [postgres]
 
