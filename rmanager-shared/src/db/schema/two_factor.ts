@@ -1,4 +1,4 @@
-import { index, pgTable, text } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text } from "drizzle-orm/pg-core";
 import { user } from "./user";
 
 export const twoFactor = pgTable(
@@ -10,6 +10,7 @@ export const twoFactor = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    verified: boolean("verified").notNull(),
   },
   (table) => [
     index("twoFactor_secret_idx").on(table.secret),
