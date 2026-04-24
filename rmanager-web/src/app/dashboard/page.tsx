@@ -28,7 +28,9 @@ export default function Page() {
     <main className="w-full overflow-auto">
       <div className="w-full px-2 py-10 md:px-10 lg:px-15 xl:px-20 flex justify-center">
         <div className="container mx-auto max-w-5xl">
-          <span className="w-full text-left text-lg font-semibold">Organizations</span>
+          <span className="w-full text-left text-lg font-semibold">
+            Organizations
+          </span>
           <DataTable
             data={data ?? []}
             columns={organizationColumns}
