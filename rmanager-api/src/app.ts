@@ -1,19 +1,29 @@
+import "./telemetry";
 import { Hono } from "hono";
 import auth from "./routes/auth";
 import org from "./routes/org";
 import { ApiError } from "@rmanager/shared/lib/utils/api-utils";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { ZodError } from "zod";
-import { logger } from "hono/logger";
 import { cors } from "hono/cors";
+import { httpInstrumentationMiddleware } from "@hono/otel";
+import { collectTelemetry } from "./middleware/telemetry";
 
 const trustedOrigins = process.env.TRUSTED_ORIGINS
   ? process.env.TRUSTED_ORIGINS.split(",")
   : ["http://localhost:3000", "http://localhost:3001"];
 
 const app = new Hono();
-app.use(logger());
 app.use(cors({ origin: trustedOrigins, credentials: true }));
+app.use(
+  httpInstrumentationMiddleware({
+    serviceName: "hono-api",
+    serviceVersion: "1.0.0",
+  }),
+);
+if (process.env.TELEMETRY_ENABLED === "true") {
+  app.use(collectTelemetry);
+}
 
 app.route("/auth", auth);
 app.route("/org", org);
