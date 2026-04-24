@@ -1,3 +1,8 @@
+networks:
+  default:
+    external: true
+    name: observability
+
 volumes:
   postgres:
 
@@ -16,6 +21,7 @@ services:
       - postgres:/var/lib/postgresql/data
     ports:
       - 127.0.0.1:5432:5432
+    restart: unless-stopped
 
   api:
     build:
@@ -25,6 +31,7 @@ services:
       - 127.0.0.1:3001:${API_PORT}
     env_file: .env
     depends_on: [postgres]
+    restart: unless-stopped
 
   web:
     build:
@@ -36,3 +43,4 @@ services:
       - 127.0.0.1:3000:3000
     env_file: .env
     depends_on: [postgres, api]
+    restart: unless-stopped
