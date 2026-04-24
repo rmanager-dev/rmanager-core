@@ -1,14 +1,12 @@
-FROM oven/bun:1.3.5-alpine
+FROM node:22-alpine
 WORKDIR /app
 
 # Install deps before source code to cache packages
-# Install API deps
+RUN echo '{"workspaces": ["rmanager-api", "rmanager-shared"]}' > package.json
+COPY package-lock.json ./
 COPY rmanager-api/package.json ./rmanager-api/
-RUN cd rmanager-api && bun install
-
-#Install shared deps
 COPY rmanager-shared/package.json ./rmanager-shared/
-RUN cd rmanager-shared && bun install
+RUN npm ci
 
 
 # Copy source code
@@ -17,4 +15,4 @@ COPY rmanager-shared/ ./rmanager-shared/
 
 ENV NODE_ENV=production
 
-CMD ["bun", "rmanager-api/src/index.ts"]
+CMD ["npx", "tsx", "--tsconfig", "rmanager-api/tsconfig.json", "rmanager-api/src/index.ts"]
