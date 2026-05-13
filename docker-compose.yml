@@ -1,6 +1,6 @@
 networks:
-  default:
-    external: true
+  observability:
+    driver: bridge
     name: observability
 
 volumes:
